@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>第5章 导学 · 中央处理器 · 408计组带学</title>
+<link rel="stylesheet" href="../css/style.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body>
+<header class="site-header"><div class="inner">
+  <a class="site-title" href="../index.html">408 计算机组成原理带学</a>
+  <nav class="chapnav">
+    <a href="../index.html">首页</a>
+    <a href="index.html" class="cur">第5章</a>
+    <a href="quiz.html">本章习题</a>
+  </nav>
+</div></header>
+<main>
+<nav class="crumbs"><a href="../index.html">首页</a> / <a href="index.html">第5章 中央处理器</a> / 本章导学</nav>
+
+<h1>第5章 中央处理器</h1>
+
+<p>中央处理器是计算机的核心，也是全书的难点所在：数据通路分析、指令执行阶段的节拍与控制信号安排、流水线技术与性能分析出综合题，而关于各种寄存器的特点、各指令执行的不同时间长短、控制器的相关概念、流水线的相关概念则易出选择题。本章是全书页数最多、插图最多的一章，建议带着下面的四个问题逐节推进，学完每节都回头对照"本章小结"自查。</p>
+
+<div class="callout exam">
+<span class="tag">408考纲要求</span>
+<ul>
+<li><strong>（一）CPU 的功能和基本结构</strong></li>
+<li><strong>（二）指令执行过程</strong></li>
+<li><strong>（三）数据通路的功能和基本结构</strong></li>
+<li><strong>（四）控制器的功能和工作原理</strong></li>
+<li><strong>（五）异常和中断机制</strong>：异常和中断的基本概念；异常和中断的分类；异常和中断的检测和响应。</li>
+<li><strong>（六）指令流水线</strong>：指令流水线的基本概念；指令流水线的基本实现；结构冒险、数据冒险和控制冒险的处理；超标量和动态流水线的基本概念。</li>
+<li><strong>（七）多处理器的基本概念</strong>：SISD、SIMD、MIMD、向量处理器的基本概念；硬件多线程的基本概念；多核（multi-core）处理器的基本概念；共享内存多处理器（SMP）的基本概念。</li>
+</ul>
+</div>
+
+<h2>复习提示：带着四个问题学</h2>
+<p>教材在本章开头建议读者边学边思考以下问题，章末给出参考答案（见下方「本章小结」）：</p>
+<ol>
+<li>指令和数据均存放在主存中，计算机如何在时间和空间上区分它们是指令还是数据？</li>
+<li>什么是指令周期和时钟周期？它们之间有何关系？</li>
+<li>什么是微指令？它和第4章谈到的指令有什么关系？</li>
+<li>什么是指令流水线？指令流水线相对于传统体系结构的优势是什么？</li>
+</ol>
+
+<h2>本章地图</h2>
+<div class="map-grid">
+  <div class="map-card">
+    <a class="sec-link" href="s-51.html">5.1 CPU的功能和基本结构</a>
+    <div class="desc">指令执行与控制六大功能；运算器、控制器、中断系统与 MAR/MDR 的组成；12 个关键部件的作用；用户可见与用户不可见两类寄存器的划分。</div>
+  </div>
+  <div class="map-card">
+    <a class="sec-link" href="s-52.html">5.2 指令执行过程</a>
+    <div class="desc">取指—执行—中断检测的一般流程；三级时序系统与节拍；指令周期及其四类周期（取指/间址/执行/中断）与五段划分；单周期、多周期、流水线三种执行模型的 CPI。</div>
+  </div>
+  <div class="map-card">
+    <a class="sec-link" href="s-53.html">5.3 数据通路的功能和基本结构</a>
+    <div class="desc">组合逻辑元件与时序逻辑元件；总线式（单总线/多总线）与专用通路；单总线数据通路上加法、取数指令的完整数据流与控制信号序列；单周期专用通路的取指部件、R/I/访存指令通路与完整数据通路。</div>
+  </div>
+  <div class="map-card">
+    <a class="sec-link" href="s-54.html">5.4 控制器的功能和工作原理</a>
+    <div class="desc">控制器的结构与职责；硬布线控制器（节拍与微操作序列）；微程序控制器（微命令/微指令/微程序层次、控存、微指令的编码方式与地址形成、水平型与垂直型格式）；控存容量与微指令格式设计计算例。</div>
+  </div>
+  <div class="map-card">
+    <a class="sec-link" href="s-55.html">5.5 异常和中断机制</a>
+    <div class="desc">异常（内中断）与中断（外中断）的概念与差异；故障/自陷/终止三类异常；可屏蔽与不可屏蔽中断；响应过程的关中断、保存断点和程序状态、向量机制三个阶段。</div>
+  </div>
+  <div class="map-card">
+    <a class="sec-link" href="s-56.html">5.6 指令流水线</a>
+    <div class="desc">五段流水线（IF/ID/EX/MEM/WB）与时空图；执行时间与吞吐率计算；MIPS 各类指令的功能段划分；结构冒险、数据冒险、控制冒险及暂停/转发/延迟分支三类处理；超标量、超长指令字与超流水线。</div>
+  </div>
+  <div class="map-card">
+    <a class="sec-link" href="s-57.html">5.7 多处理器的基本概念</a>
+    <div class="desc">Flynn 四分类（SISD/SIMD/MISD/MIMD）与向量处理器；细粒度、粗粒度、同时多线程（SMT）；多核处理器；共享内存多处理器（SMP）与 UMA/NUMA。</div>
+  </div>
+</div>
+
+<h2>本章小结</h2>
+<p>下表整理自教材本章小结，回答开篇的四个思考题。</p>
+<table>
+<thead>
+<tr><th style="width:34%">问题</th><th>结论要点</th></tr>
+</thead>
+<tbody>
+<tr>
+<td>指令和数据均存放在主存中，计算机如何在时间和空间上区分它们是指令还是数据？</td>
+<td>指令和数据在计算机中均以<strong>二进制形式</strong>存于主存中，内存本身无法区分二者。计算机通过<strong>工作阶段</strong>从时间上区分：取指阶段取出的是指令，执行阶段取出的是数据。在空间上，CPU 根据当前阶段访问的部件，将数据送至<strong>不同部件</strong>：取指阶段的数据被存至指令寄存器中，执行阶段的数据被写入寄存器并送入 ALU 运算。因此，指令与数据的区分不由内存决定，而由 CPU 的时序信号与特定部件来共同完成。</td>
+</tr>
+<tr>
+<td>什么是指令周期和时钟周期？它们之间有何关系？</td>
+<td><strong>指令周期</strong>是指 CPU 从主存中取出并执行一条指令的全部时间。在多周期 CPU 中，它包含多个时钟周期；在单周期 CPU 中，则恰好等于一个时钟周期。<strong>时钟周期</strong>是时钟信号的一个节拍，也是 CPU 操作最基本的时序单位。因此，指令周期与时钟周期的关系取决于处理器结构。</td>
+</tr>
+<tr>
+<td>什么是微指令？它和第4章谈到的指令有什么关系？</td>
+<td><strong>微指令</strong>是微程序控制方式中的基本控制单元。控制单元发出的最基本控制信号称为<strong>微命令</strong>，一组用于完成特定操作的微命令构成一条微指令，若干微指令按序列形成微程序，用于解释并执行一条<strong>机器指令</strong>。在微程序控制器中，每条机器指令通常对应一个微程序，而该微程序由多条微指令组成，每条微指令可并行发出多个微命令。</td>
+</tr>
+<tr>
+<td>什么是指令流水线？指令流水线相对于传统体系结构的优势是什么？</td>
+<td><strong>指令流水线</strong>是一种将指令执行划分为若干有序阶段，并让多条指令的各个阶段在时间上重叠执行的技术。每个阶段由专用功能部件完成；当前一条指令进入下一阶段时，后一条指令即可进入当前阶段，从而实现多条指令的连续处理。它并不缩短单条指令的执行延迟，但能显著提高单位时间内完成的指令数量（即吞吐率）。由于仅需增加流水线寄存器等少量硬件，即可获得数倍的吞吐率提升，因此成为现代处理器广泛采用的并行处理技术。</td>
+</tr>
+</tbody>
+</table>
+
+<h2>常见问题和易混淆知识点</h2>
+
+<h3><span class="sec-id">问题 1</span>流水线段越多，并行度就越高，是否流水段越多，指令执行越快？</h3>
+<p>并非流水线段越多，指令执行越快，原因有二：</p>
+<ol>
+<li>流水段增加会引起更多的流水线寄存器，其延迟限制了时钟周期的进一步缩短；同时，段数增加也会导致单条指令从进入到流出所需的时钟周期数增加。此外，存在数据或控制冒险时，流水线需要插入停顿，而段数越多，潜在的相关就越多，潜在损失也越显著。</li>
+<li>随着流水段数的增加，用于处理结构冒险、数据冒险和控制转移的控制逻辑急剧复杂化，不仅增加硬件开销，还可能成为新的性能瓶颈。</li>
+</ol>
+
+<h3><span class="sec-id">问题 2</span>读后写（WAR）和写后写（WAW）相关的概念</h3>
+<p>在<strong>非按序执行</strong>的流水线中，由于允许后进入流水线的指令超越先进入的指令先完成执行，因此不仅可能发生 RAW 相关，也可能发生 WAR 和 WAW 相关。</p>
+<p>1）<strong>读后写（Write After Read，WAR）相关</strong>：指当前指令需先读取寄存器的值，后续指令才能向该寄存器写入。若执行顺序颠倒，即写操作发生在读操作之前，则当前指令将读到错误的新值。在下列指令中，寄存器 R1 可能存在此类相关：当 I2 在 I1 读取 R1 之前写入该寄存器时，I1 会错误地读取 I2 写入的新值。</p>
+<pre><code>I1  add R3,R1,R2    # (R1)+(R2)→R3
+I2  sub R1,R4,R5    # (R4)-(R5)→R1</code></pre>
+<p>在 WAR 相关中，指令 I2 的<strong>目的操作数</strong>是指令 I1 的<strong>源操作数</strong>。</p>
+<p>2）<strong>写后写（Write After Write，WAW）相关</strong>：指当前指令应先写入寄存器，后续指令再写入同一寄存器，以保证最终结果为后者；若执行顺序颠倒，导致后一条指令先完成写操作，则寄存器的最终值将违背程序语义。在下列指令中，寄存器 R1 可能存在此类相关：当 I2 在 I1 之前写入 R1 时，R1 的最终值将错误地变为 I1 的结果，而非 I2 的结果。</p>
+<pre><code>I1  add R1,R2,R3    # (R2)+(R3)→R1
+I2  sub R1,R4,R5    # (R4)-(R5)→R1</code></pre>
+<p>在 WAW 相关中，指令 I2 和指令 I1 的<strong>目的操作数相同</strong>。</p>
+<div class="callout warn">
+<span class="tag">易混</span>三种相关的判断抓手：<strong>RAW</strong> = 后面指令要<strong>读</strong>前面指令要写的寄存器（按序执行流水线唯一可能出现的）；<strong>WAR</strong> = 后面指令要<strong>写</strong>前面指令正要读的寄存器（I2 的目的操作数 = I1 的源操作数）；<strong>WAW</strong> = 前后两条指令写<strong>同一个</strong>寄存器（目的操作数相同）。
+</div>
+
+<div class="pager">
+  <a class="prev" href="../index.html"><span class="dir">上一篇</span>首页</a>
+  <a class="next" href="s-51.html"><span class="dir">下一篇</span>5.1 CPU的功能和基本结构</a>
+</div>
+</main>
+<footer class="site-footer"><div class="inner">
+  <p>本站为个人学习用途整理，内容与插图取自王道《计算机组成原理考研复习指导》，版权归原出版方所有，仅供交流，请勿商用。</p>
+  <p><a href="../index.html">← 返回首页</a> · <a href="quiz.html">本章习题</a></p>
+</div></footer>
+</body>
+</html>

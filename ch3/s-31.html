@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>3.1 存储器概述 · 第3章 · 408计组带学</title>
+<link rel="stylesheet" href="../css/style.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body>
+<header class="site-header"><div class="inner">
+  <a class="site-title" href="../index.html">408 计算机组成原理带学</a>
+  <nav class="chapnav">
+    <a href="../index.html">首页</a>
+    <a href="index.html" class="cur">第3章</a>
+    <a href="quiz.html">本章习题</a>
+  </nav>
+</div></header>
+<main>
+<nav class="crumbs"><a href="../index.html">首页</a> / <a href="index.html">第3章 存储系统</a> / 3.1 存储器概述</nav>
+
+<h1>3.1 存储器概述</h1>
+
+<p>这一节先把存储器的「户口」理清楚：存储器有哪些类别（3.1.1）、主存由什么构成、CPU 怎么访存（3.1.2）、为什么要把存储器分成层层叠叠的塔（3.1.3）、用什么指标衡量一颗存储器的好坏（3.1.4）。对应考纲的「存储器的分类」与「层次化存储器的基本结构」两条，选择题常考分类判断、层次分工与 MAR/MDR 位数的计算。</p>
+
+<h3><span class="sec-id">3.1.1</span>存储器的分类</h3>
+<p>存储器种类繁多，可以从不同角度进行分类。无论哪种分类，前提都一样：<strong>存储元件必须具有两个可区分的稳定物理状态</strong>，以分别表示二进制数 0 和 1。</p>
+
+<h4>1. 按存储元件分类</h4>
+<p>常用的存储元件有半导体器件、磁性材料和光介质三类：</p>
+<ul>
+<li><strong>半导体存储器</strong>（如 DRAM、SRAM）：半导体器件利用电荷或电压来存储信息；</li>
+<li><strong>磁表面存储器</strong>（如硬盘、磁带）：磁性材料通过磁化方向表示数据；</li>
+<li><strong>光存储器</strong>（如光盘）：光介质依靠反射率或透射率来记录信息。</li>
+</ul>
+
+<h4>2. 按存取方式分类</h4>
+<ol>
+<li><strong>随机存取存储器（RAM）</strong>：可对任意存取单元进行读/写，且<strong>存取时间与物理位置无关</strong>。其特点是读/写灵活、使用方便，半导体存储器均属此类，常用于主存或高速缓存。</li>
+<li><strong>串行存取存储器</strong>：需按物理顺序检索来定位数据，存取时间依赖于数据在存储介质中的位置，通常以记录块为单位编址。典型代表是磁带，具有容量大但速度慢的特点。</li>
+<li><strong>直接存取存储器</strong>：兼顾随机访问和串行访问的特点，可先直接定位到目标区域，再按顺序存取数据。典型代表是磁盘存储系统。</li>
+<li><strong>相联存储器</strong>：按内容而非地址进行存取，查找速度快且与存储位置无关，但成本高、容量小。主要用于快表（TLB）、路由表等小容量高速查找场景。</li>
+</ol>
+<div class="callout exam">
+<span class="tag">考点</span>存储器分类及特点（2011 真题）。四类存取方式的判别关键：<strong>随机</strong>=时间与位置无关；<strong>串行</strong>=按顺序逐段检索；<strong>直接</strong>=先定位区域再顺序存取；<strong>相联</strong>=按内容而非地址。磁带是串行、磁盘是直接存取，这两个「非随机」的例子最常被拿来设问。
+</div>
+
+<h4>3. 按信息的可改变性分类</h4>
+<p>可分为<strong>可读写存储器</strong>和<strong>只读存储器</strong>（Read-Only Memory, ROM）。ROM 中的信息在正常工作时只能读取，通常不可修改，但某些类型（如 EPROM、Flash）支持特定条件下的重写。RAM 属于可读写存储器，与 ROM 一样，通常采用随机存取方式。</p>
+
+<h4>4. 按信息的可保存性分类</h4>
+<ol>
+<li><strong>易失性存储器</strong>：断电后信息即丢失，如 RAM；</li>
+<li><strong>非易失性存储器</strong>：断电后信息仍能保持，如 ROM、Flash 存储器、磁盘和光盘等。</li>
+</ol>
+<p>此外，若读取操作会破坏存储单元的原有信息，则称为<strong>破坏性读出</strong>，读出后需立即执行再生操作以恢复数据；若读取不改变内容、无须再生，则为非破坏性读出。</p>
+<div class="callout warn">
+<span class="tag">易混</span>三条容易混淆的线：①「随机存取」说的是<strong>存取时间与位置无关</strong>，不要望文生义理解成「随机地乱存」；② ROM 名为「只读」，但它的访问方式仍是<strong>随机存取</strong>，某些类型还能有限度地重写；③ 破坏性读出是 DRAM 的属性（读后要再生），不要安到 SRAM 头上。
+</div>
+
+<h3><span class="sec-id">3.1.2</span>主存储器的组成和基本操作</h3>
+<p>主存储器（Main Memory, MM）的基本组成如图 3.1 所示。其中，由大量用于存储二进制数 0 或 1 的<strong>记忆单元</strong>（也称存储元）构成的<strong>存储矩阵</strong>（也称存储体、存储阵列）是存储器的核心部件。每个记忆单元是一种具有两种稳定物理状态、能够表示 0 和 1 的器件。为访问存储体中的信息，必须对存储单元编号（编址）。<strong>编址单位</strong>是指具有相同地址的一组记忆单元，称为一个<strong>存储单元</strong>。现代计算机通常采用<strong>字节编址</strong>方式，即每个地址对应 1 字节（8 位）数据。</p>
+<figure>
+<img src="../assets/ch3/fig-p091.png" alt="主存储器的基本组成框图" loading="lazy">
+<figcaption>图3.1 主存储器的基本组成框图（王道教材）</figcaption>
+</figure>
+<p>当 CPU 执行指令需访问主存时，首先将目标地址送入<strong>存储器地址寄存器（MAR）</strong>，并通过地址线传至主存的地址寄存器，<strong>地址译码器</strong>据此选中对应的存储单元。同时，CPU 通过控制线发送读/写控制信号：若为写操作，CPU 将待写入的数据存入<strong>存储器数据寄存器（MDR）</strong>，在控制电路作用下经数据线写入选中单元；若为读操作，主存选中单元的内容经数据线送至 MDR。</p>
+<div class="callout exam">
+<span class="tag">考点</span>MAR 和 MDR 的位数与寻址范围的计算（2021 真题）。<strong>MAR 的位数等于地址线位数</strong>，决定了主存的最大可寻址范围——例如 36 位地址线的寻址范围为 \(0 \sim 2^{36}-1\)，共 \(2^{36}\) 个字节（64GB）；<strong>MDR 的位数等于数据线宽度</strong>——数据线为 64 位、按字节编址时，每次可并行存取 8 个字节。
+</div>
+
+<h3><span class="sec-id">3.1.3</span>存储器的层次化结构</h3>
+<p>为缓解存储系统在<strong>容量、速度与成本</strong>之间的矛盾，现代计算机普遍采用多级存储器结构。从上至下（寄存器 → Cache → 主存 → 磁盘/辅存 → 磁带、光盘），各层存储器的单位价格逐层降低，存取速度逐层变慢，容量逐层增大，CPU 的访问频率也随之降低。该层次结构主要体现在两个关键层级：<strong>Cache-主存层</strong>和<strong>主存-辅存层</strong>。其中，Cache 和主存可直接与 CPU 交换信息；辅存则通过主存间接与 CPU 通信；主存作为枢纽，能与 CPU、Cache 及辅存交换数据。</p>
+<figure>
+<img src="../assets/ch3/fig-p091_2.png" alt="多级存储器结构（层次金字塔）" loading="lazy">
+<figcaption>图3.2 多级存储器结构（层次金字塔）（王道教材）</figcaption>
+</figure>
+<figure>
+<img src="../assets/ch3/fig-p091_3.png" alt="三级存储系统的层次结构及其构成" loading="lazy">
+<figcaption>图3.3 三级存储系统的层次结构及其构成（王道教材）</figcaption>
+</figure>
+<p>存储层次的核心思想是：<strong>上一层存储器作为下一层的高速缓存</strong>。当 CPU 访问数据时，按 Cache → 主存 → 辅存的顺序逐级查找；若所需数据不在上一层，则从下层逐级调入——先读入主存，再从主存加载至 Cache。从 CPU 视角看，Cache-主存层的速度接近 Cache，而容量和单位成本接近主存；主存-辅存层的速度接近主存，而容量和单位成本接近辅存。</p>
+<p>两个层级的主要目标有所分工，且调度方式不同：</p>
+<ul>
+<li><strong>Cache-主存层</strong>：用于解决 CPU 与主存<strong>速度不匹配</strong>的问题，数据调度由<strong>硬件自动完成</strong>，对系统和程序员均透明；</li>
+<li><strong>主存-辅存层</strong>：用于解决系统<strong>存储容量不足</strong>的问题，数据调度由<strong>硬件与操作系统协同完成</strong>，对应用程序员透明（对系统程序员不透明）。</li>
+</ul>
+<div class="callout exam">
+<span class="tag">考点</span>主存和辅存之间的数据调动由<strong>硬件和操作系统</strong>共同完成，仅对应用程序员透明——这是选择题最爱考的判断点，与「Cache-主存层完全由硬件完成、对所有程序员透明」对照记忆。
+</div>
+<div class="callout warn">
+<span class="tag">易混</span>两层结构的「透明」对象不同：Cache-主存层对所有程序员透明；主存-辅存层只对应用程序员透明，系统程序员必须亲自管理它。另外记住一条基本关系：<strong>上一层的内容总是下一层内容的子集副本</strong>——Cache 中的数据来自主存，主存中的数据来自辅存。
+</div>
+<p>随着主存-辅存层的不断发展，逐渐形成了<strong>虚拟存储系统</strong>。在该系统中，程序员使用的地址空间（虚拟地址空间）远大于实际主存容量，程序可按更大的相对地址空间进行编写（详见 3.6 节）。</p>
+
+<h3><span class="sec-id">3.1.4</span>存储器的主要性能指标</h3>
+<h4>1. 存取时间</h4>
+<p>完成一次读/写操作所需的时间。其中<strong>读出时间</strong>是指从主存接收到有效地址到数据有效输出的时间；<strong>写入时间</strong>是指从主存接收到有效地址到数据成功写入指定单元的时间。</p>
+<h4>2. 存取周期</h4>
+<p>存储器进行<strong>连续两次独立的读/写操作</strong>所需的最小时间间隔。存取时间不等于存取周期——通常<strong>存取周期大于存取时间</strong>，因为每次读写操作完成后，存储器需要一段时间恢复内部状态。对于破坏性读出的存储器（如 DRAM），读出后必须立即再生数据，因此其存取周期往往显著大于存取时间，甚至可达 \(T_m = 2T_s\)（其中 \(T_m\) 为存取周期，\(T_s\) 为存取时间）。</p>
+<figure>
+<img src="../assets/ch3/fig-p092.png" alt="存取时间与存取周期的关系" loading="lazy">
+<figcaption>图3.4 存取时间与存取周期的关系（王道教材）</figcaption>
+</figure>
+<h4>3. 存储器带宽</h4>
+<p>存储器每秒能够传输的最大数据量。例如，若存储周期为 50ns，每个周期可传输 64 位数据，则理论带宽为 \(64\text{bit}/50\text{ns} = 1.28\,\text{Gb/s}\)。在实际系统中，存储器常组织为多模块结构，允许多个模块并行工作，从而将带宽提升至单模块带宽的若干倍（见 3.2.3 节）。</p>
+<div class="callout warn">
+<span class="tag">易混</span>带宽单位的大写 B 与小写 b：<strong>b 是比特、B 是字节</strong>。\(64\text{bit}/50\text{ns} = 1.28\times 10^9\,\text{b/s} = 1.28\,\text{Gb/s}\)，换算成字节约 0.16GB/s。选择题常在 b/B 换算上设坑，落笔前先确认问的是 bit 还是 Byte。
+</div>
+<div class="callout tip">
+<span class="tag">小结</span>三个指标一条线记：存取时间管「一次多快」，存取周期管「连续两次最小间隔」（周期 ≥ 时间），带宽管「每秒吞吐多少」——带宽 = 每次传输的数据量 ÷ 存取周期。
+</div>
+
+<div class="pager">
+  <a class="prev" href="index.html"><span class="dir">上一篇</span>第3章 导学</a>
+  <a class="next" href="s-32.html"><span class="dir">下一篇</span>3.2 主存储器</a>
+</div>
+</main>
+<footer class="site-footer"><div class="inner">
+  <p>本站为个人学习用途整理，内容与插图取自王道《计算机组成原理考研复习指导》，版权归原出版方所有，仅供交流，请勿商用。</p>
+  <p><a href="../index.html">← 返回首页</a> · <a href="quiz.html">本章习题</a></p>
+</div></footer>
+</body>
+</html>

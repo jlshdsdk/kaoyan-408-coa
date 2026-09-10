@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>第1章 导学 · 计算机系统概述 · 408计组带学</title>
+<link rel="stylesheet" href="../css/style.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body>
+<header class="site-header"><div class="inner">
+  <a class="site-title" href="../index.html">408 计算机组成原理带学</a>
+  <nav class="chapnav">
+    <a href="../index.html">首页</a>
+    <a href="index.html" class="cur">第1章</a>
+    <a href="quiz.html">本章习题</a>
+  </nav>
+</div></header>
+<main>
+<nav class="crumbs"><a href="../index.html">首页</a> / <a href="index.html">第1章 计算机系统概述</a> / 本章导学</nav>
+
+<h1>第1章 计算机系统概述</h1>
+
+<p>本章是全书的开篇，目标是在动手拆解 CPU、存储器之前，先在脑子里装进一张「整机的地图」：计算机由什么组成、软硬件如何分工、程序是怎样一步步跑起来的，以及用什么指标衡量一台计算机快不快。初学时有些概念读不懂很正常，先混个脸熟，后面各章会反复回来把它们讲透。</p>
+
+<div class="callout exam">
+<span class="tag">408考纲要求</span>
+<ul>
+<li><strong>（一）计算机系统层次结构</strong>：计算机系统的基本组成；计算机硬件的基本组成；计算机软件和硬件的关系；计算机系统的工作原理——「存储程序」的方式、高级语言程序与机器语言程序的转换、指令和程序的执行过程。</li>
+<li><strong>（二）计算机性能指标</strong>：吞吐量、响应时间、CPU时钟周期、主频、CPI、CPU执行时间；MIPS、MFLOPS、GFLOPS、TFLOPS、PFLOPS、EFLOPS、ZFLOPS。</li>
+</ul>
+</div>
+
+<div class="callout ext">
+<span class="tag">大纲变动</span>教材中带 <strong>*</strong> 号的 1.1「计算机发展历程」已从 408 统考考纲中删除，本站保留为课外拓展，学有余力再看即可。
+</div>
+
+<h2>本章地图</h2>
+<div class="map-grid">
+  <div class="map-card">
+    <a class="sec-link" href="s-11.html">*1.1 计算机发展历程<span class="badge-ext">课外拓展 · 大纲已删</span></a>
+    <div class="desc">从电子管、晶体管到集成电路的四代更替，摩尔定律与软硬件的共同进化。</div>
+  </div>
+  <div class="map-card">
+    <a class="sec-link" href="s-12.html">1.2 计算机系统层次结构</a>
+    <div class="desc">冯·诺依曼机的五大部件与「存储程序」思想，从高级语言到机器指令的层层翻译，ISA 这一软硬分界面。</div>
+  </div>
+  <div class="map-card">
+    <a class="sec-link" href="s-13.html">1.3 计算机的性能指标</a>
+    <div class="desc">主频、CPI、CPU执行时间、MIPS、FLOPS 怎么算、怎么比——选择题的公式粮仓。</div>
+  </div>
+</div>
+
+<h2>复习提示：带着这三个问题学</h2>
+<p>教材在本章开头建议读者边学边思考以下问题，本章末尾给出参考答案（见下方「本章小结」）：</p>
+<ol>
+<li>主频高的 CPU 一定比主频低的 CPU 性能更高吗？为什么？</li>
+<li>翻译程序、汇编程序、编译程序与解释程序有何区别？各自的特性是什么？</li>
+<li>不同级别的语言所编写的程序有何差异？哪一类语言可被硬件直接执行？</li>
+</ol>
+
+<h2>本章小结</h2>
+<p>下表整理自教材本章小结，回答开篇的三个问题。</p>
+<table>
+<thead>
+<tr><th style="width:38%">问题</th><th>结论要点</th></tr>
+</thead>
+<tbody>
+<tr>
+<td>主频较高的 CPU 一定比主频较低的 CPU 性能更高吗？</td>
+<td>不一定。CPU 性能受多种因素影响，不能仅凭主频高低判断优劣。主频表示 CPU 内部时钟信号的振荡频率，反映执行指令节拍的快慢，但并不直接等同于实际运行速度。实际性能还取决于微架构设计、流水线深度、缓存容量与层级、指令集效率、功耗、并行能力等。主频较低但微架构先进的 CPU，可能因更高的每周期指令数（IPC）而胜过主频更高但架构陈旧的处理器。</td>
+</tr>
+<tr>
+<td>翻译程序、汇编程序、编译程序与解释程序有何区别？</td>
+<td>翻译程序是把一种编程语言转换为另一种语言的程序的总称，包括编译程序、解释程序和汇编程序。编译程序一次性全部翻译、生成可独立执行的文件；解释程序逐句翻译并立即执行、不生成目标程序；汇编程序专指把汇编语言源程序翻译为机器语言程序（详见下方常见问题 1）。</td>
+</tr>
+<tr>
+<td>不同级别的语言所编写的程序有何差异？哪类语言可被硬件直接执行？</td>
+<td>机器语言由二进制指令构成，与硬件指令一一对应，可被 CPU 直接执行；汇编语言使用助记符，需经汇编后执行；高级语言更抽象，需编译或解释转换。只有机器语言能被硬件直接执行。</td>
+</tr>
+</tbody>
+</table>
+
+<h2>常见问题和易混淆知识点</h2>
+
+<h3><span class="sec-id">问题 1</span>翻译程序、解释程序、汇编程序、编译程序的区别和联系是什么？</h3>
+<p><strong>翻译程序</strong>是将一种编程语言转换为另一种语言的程序，主要包括编译程序、解释程序和汇编程序。<strong>编译程序</strong>将高级语言源程序一次性全部翻译为目标程序（如机器码或汇编代码），生成可独立执行的文件，编译一次后无须重复翻译；<strong>解释程序</strong>逐条读取源程序语句，翻译成机器指令并立即执行，通常不生成可存储的目标程序，执行过程为「边翻译边执行」；<strong>汇编程序</strong>是一种特殊的翻译程序，将汇编语言源程序翻译为机器语言程序。</p>
+<div class="callout warn">
+<span class="tag">易混</span>编译程序与汇编程序的区别只看<strong>源语言</strong>：源语言为高级语言（如 C、Java）、目标语言为低级语言（汇编语言或机器语言）的，称为编译程序；源语言为汇编语言、目标语言为机器语言的，称为汇编程序。
+</div>
+
+<h3><span class="sec-id">问题 2</span>什么是透明性？透明性指什么都能看见吗？</h3>
+<p>恰好相反。在计算机领域，<strong>透明性</strong>指从某类用户的视角<strong>无法感知</strong>某一事物或属性的存在，与日常生活中的「透明 = 看得见」含义相反。例如，指令的格式、机器结构、数据指令格式等，对高级语言程序员是透明的（无须关心），而对汇编语言程序员则不是透明的。CPU 中的指令寄存器（IR）、存储器地址寄存器（MAR）和存储器数据寄存器（MDR）对所有程序员均透明。</p>
+
+<h3><span class="sec-id">问题 3</span>计算机体系结构和计算机组成的区别和联系是什么？</h3>
+<p><strong>体系结构</strong>指程序员可见的系统属性，包括指令集、数据类型、寻址方式等，属于抽象层面的定义；<strong>组成</strong>是体系结构的具体实现，涉及硬件如何完成取指、译码、执行等操作，包含大量对程序员透明的细节。例如，是否提供乘法指令属于体系结构问题，而采用何种电路（阵列乘法器还是移位相加）来实现属于组成问题。两台机器可以具有相同体系结构、不同组成方式，从而在性能和成本上差异显著。</p>
+
+<h3><span class="sec-id">问题 4</span>基准程序执行得越快说明机器性能越好吗？</h3>
+<p>一般而言，基准程序的执行速度可以反映机器性能。但单一程序通常只覆盖特定工作负载，对计算、访存、I/O 等资源的需求各异，难以全面代表系统整体性能。</p>
+
+<div class="pager">
+  <a class="prev" href="../index.html"><span class="dir">上一篇</span>首页</a>
+  <a class="next" href="s-11.html"><span class="dir">下一篇</span>*1.1 计算机发展历程（课外拓展）</a>
+</div>
+</main>
+<footer class="site-footer"><div class="inner">
+  <p>本站为个人学习用途整理，内容与插图取自王道《计算机组成原理考研复习指导》，版权归原出版方所有，仅供交流，请勿商用。</p>
+  <p><a href="../index.html">← 返回首页</a> · <a href="quiz.html">本章习题</a></p>
+</div></footer>
+</body>
+</html>

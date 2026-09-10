@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>第2章 习题精选 · 408计组带学</title>
+<link rel="stylesheet" href="../css/style.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body>
+<header class="site-header"><div class="inner">
+  <a class="site-title" href="../index.html">408 计算机组成原理带学</a>
+  <nav class="chapnav">
+    <a href="../index.html">首页</a>
+    <a href="index.html" class="cur">第2章</a>
+    <a href="quiz.html">本章习题</a>
+  </nav>
+</div></header>
+<main>
+<nav class="crumbs"><a href="../index.html">首页</a> / <a href="index.html">第2章 数据的表示和运算</a> / 本章习题</nav>
+
+<h1>第2章 习题精选</h1>
+
+<div class="callout exam">
+<span class="tag">考情</span>本章是全书<strong>计算重镇</strong>：2.1 考补码/移码的表示范围与转换、符号扩展和 C 语言整型转换，2.2 考<strong>移位运算、补码加减与溢出判断（OF/CF）</strong>，2.3 考 <strong>IEEE 754 表示与表示范围、浮点数加减五步流程</strong>，2010—2025 年统考真题几乎年年覆盖（本页收录 2009/2010/2011/2012/2013/2014/2017/2018/2020/2022/2023/2024/2025 真题共 14 道）。综合题集中在补码加减与 OF/SF 判别、乘法器电路、浮点数加减完整流程与类型转换精度分析，务必做到<strong>每一步机器数都能写出来</strong>。
+</div>
+
+<p>本页共 32 题：选择题 25 道（第 1～8 题出自做题本 2.1 数制与编码，第 9～17 题出自 2.2 运算方法和运算电路，第 18～25 题出自 2.3 浮点数的表示与运算），综合题 7 道（做题本第 2 章综合题共 9 题，其中 2.2 的 4 题全部收录、2.3 收录 3 题；做题本未编入原码/补码一位乘与除法的手算步骤题，乘除运算电路考点以第 29 题及配图为准）。题干【 】内为做题本出处；选择题答案均已与《选择题【答案速查】》网格逐题核对。</p>
+
+<h2 class="q-section-title">一、选择题（第1～25题）</h2>
+
+<div class="q-item">
+  <p><span class="q-no">第1题</span>【2.1·P29】若十进制数为 137.5，则其八进制数为（　）</p>
+  <ol class="options">
+    <li>89.8</li>
+    <li>211.4</li>
+    <li>211.5</li>
+    <li>1011111.101</li>
+  </ol>
+  <details class="ans"><summary>答案与解析</summary><div class="ans-body">
+    <p><span class="ans-letter">答案：B</span></p>
+    <p>① 整数部分除 8 取余：<code class="bin">137 = 128+8+1 = 1000 1001B</code>，按 3 位二进制一组划分：<code class="bin">010 | 001 | 001</code> → <code class="bin">211Q</code>（十进制验算：\(2\times64+1\times8+1 = 137\) ✓）。</p>
+    <p>② 小数部分乘 8 取整：\(0.5\times8 = 4.0\) → 取 4 → <code class="bin">0.4Q</code>。</p>
+    <p>故 \(137.5 = 211.4Q\)，选 B。D 是二进制形式且数值不符（<code class="bin">1011111.101B = 127.625</code>）；A、C 的整数部分都不是 137。</p>
+  </div></details>
+</div>
+
+<div class="q-item">
+  <p><span class="q-no">第2题</span>【2.1·P30】一个 16 位无符号二进制数的表示范围是（　）</p>
+  <ol class="options">
+    <li>0～65536</li>
+    <li>0～65535</li>
+    <li>−32768～32767</li>
+    <li>−32768～32768</li>
+  </ol>
+  <details class="ans"><summary>答案与解析</summary><div class="ans-body">
+    <p><span class="ans-letter">答案：B</span></p>
+    <p>n 位无符号数的范围为 \(0 \sim 2^n-1\)，16 位时为 \(0 \sim 2^{16}-1 = 65535\)，选 B。C 是“n+1 位补码”的范围（−32768～32767 对应 16 位补码），A、D 把上界多算了一位（2<sup>16</sup> 需 17 位才能表示）。</p>
+  </div></details>
+</div>
+
+<div class="q-item">
+  <p><span class="q-no">第3题</span>【2.1·P30】若 \([X]_补 = 1.1101010\)，则 \([X]_原 =\)（　）</p>
+  <ol class="options">
+    <li>1.0010101</li>
+    <li>1.0010110</li>
+    <li>0.0010110</li>
+    <li>0.1101010</li>
+  </ol>
+  <details class="ans"><summary>答案与解析</summary><div class="ans-body">
+    <p><span class="ans-letter">答案：B</span></p>
+    <p>符号位为 1 → X 是负数，负数由补码求原码：数值位<strong>取反、末位加 1</strong>（符号位不变）：</p>
+    <p><code class="bin">1.1101010 → 数值位 1101010 → 取反 0010101 → 加 1 → 0010110</code>，故 \([X]_原 = 1.0010110\)，选 B。</p>
+    <p>验算：\(X = -(0.0010110)_2 = -0.171875\)，而 \([X]_补 = 2 + X = 1.828125 = 1.1101010_2\) ✓。A 忘了加 1，C、D 符号位错误。</p>
+  </div></details>
+</div>
+
+<div class="q-item">
+  <p><span class="q-no">第4题</span>【2.1·P30】若定点整数为 64 位，含 1 位符号位，则采用补码表示的绝对值最大的负数为（　）</p>
+  <ol class="options">
+    <li>\(-2^{64}\)</li>
+    <li>\(-(2^{64}-1)\)</li>
+    <li>\(-2^{63}\)</li>
+    <li>\(-(2^{63}-1)\)</li>
+  </ol>
+  <details class="ans"><summary>答案与解析</summary><div class="ans-body">
+    <p><span class="ans-letter">答案：C</span></p>
+    <p>64 位含 1 位符号位 → 数值部分 63 位。补码整数的范围为 \(-2^{63} \sim 2^{63}-1\)，绝对值最大的负数即下界 \(-2^{63}\)（机器数 <code class="bin">1000…0</code>），选 C。D 是原码/反码的下界；补码比原码/反码<strong>多表示一个最小负数</strong>，这正是“0 表示唯一”换来的代价与收益。</p>
+  </div></details>
+</div>
+
+<div class="q-item">
+  <p><span class="q-no">第5题</span>【2.1·P31】假定一个十进制数为 −66，按补码形式存放在一个 8 位寄存器中，该寄存器的内容用十六进制表示为（　）</p>
+  <ol class="options">
+    <li>C2H</li>
+    <li>BEH</li>
+    <li>BDH</li>
+    <li>42H</li>
+  </ol>
+  <details class="ans"><summary>答案与解析</summary><div class="ans-body">
+    <p><span class="ans-letter">答案：B</span></p>
+    <p>① \([+66]_补\)：\(66 = 64+2 = 0100\ 0010B = 42H\)；</p>
+    <p>② 负数补码：连同符号位取反加 1：<code class="bin">0100 0010 → 1011 1101 → +1 → 1011 1110</code>。</p>
+    <p>\([−66]_补 = 1011\ 1110B = BEH\)，选 B。验算：<code class="bin">BEH = 190</code>，\(190 − 256 = −66\) ✓。D 是 +66；C 的 BDH = −67（取反后忘 +1 的典型错误）；A 的 C2H = −62。</p>
+  </div></details>
+</div>
+
+<div class="q-item">
+  <p><span class="q-no">第6题</span>【2.1·P31】16 位补码 0x8FA0 扩展为 32 位应该是（　）</p>
+  <ol class="options">
+    <li>0x0000 8FA0</li>
+    <li>0xFFFF 8FA0</li>
+    <li>0xFFFF FFA0</li>
+    <li>0x8000 8FA0</li>
+  </ol>
+  <details class="ans"><summary>答案与解析</summary><div class="ans-body">
+    <p><span class="ans-letter">答案：B</span></p>
+    <p><code class="bin">0x8FA0 = 1000 1111 1010 0000B</code>，最高位（符号位）为 1 → 是负数。补码整数扩展位数时做<strong>符号扩展</strong>：新增的 16 位全部补符号位 1，低 16 位保持不变：</p>
+    <p><code class="bin">1111 1111 1111 1111 1000 1111 1010 0000 = 0xFFFF 8FA0</code>，选 B。</p>
+    <p>A 是零扩展，只适用于无符号数；C 把低 16 位的 8FA0 也改动了；D 无此规则。验算：扩展前后真值都应为 \(−0x7060 = −28768\)（0x8FA0 = 36768，36768−65536 = −28768；0xFFFF8FA0 = 4294938528，4294938528−2<sup>32</sup> = −28768 ✓）。</p>
+  </div></details>
+</div>
+
+<div class="q-item">
+  <p><span class="q-no">第7题</span>【2.1·P31·2012 统考真题】假定编译器规定 int 型和 short 型长度分别为 32 位和 16 位，执行下列 C 语言语句：</p>
+  <pre><code>unsigned short x=65530;
+unsigned int y=x;</code></pre>
+  <p>得到 y 的机器数为（　）</p>
+  <ol class="options">
+    <li>0000 7FFAH</li>
+    <li>0000 FFFAH</li>
+    <li>FFFF 7FFAH</li>
+    <li>FFFF FFFAH</li>
+  </ol>
+  <details class="ans"><summary>答案与解析</summary><div class="ans-body">
+    <p><span class="ans-letter">答案：B</span></p>
+    <p>x 是 <strong>unsigned short</strong>：\(65530 = 0xFFFA\)。短无符号数赋给更长的 unsigned int 时做<strong>零扩展</strong>（高位补 0）：\(y = 0x0000\ FFFA = 65530\)，数值不变，选 B。D（符号扩展，全补 1）是 x 为 short（有符号 −6）时的结果，是本题最大陷阱。</p>
+  </div></details>
+</div>
+
+<div class="q-item">
+  <p><span class="q-no">第8题</span>【2.1·P32·2025 统考真题】在 32 位计算机上执行下列 C 语言代码段后，ui 的值是（　）</p>
+  <pre><code>short si=-32767;
+unsigned int ui=si;</code></pre>
+  <ol class="options">
+    <li>\(2^{15}-1\)</li>
+    <li>\(2^{15}+1\)</li>
+    <li>\(2^{32}-2^{15}-1\)</li>
+    <li>\(2^{32}-2^{15}+1\)</li>
+  </ol>
+  <details class="ans"><summary>答案与解析</summary><div class="ans-body">
+    <p><span class="ans-letter">答案：D</span></p>
+    <p>① \([si]_补\)（16 位）：\(32767 = 0111\ 1111\ 1111\ 1111B\)，故 \([−32767]_补 = 1000\ 0000\ 0000\ 0001B = 8001H\)。</p>
+    <p>② 有符号短整型赋给 32 位时先<strong>符号扩展</strong>到 32 位：<code class="bin">FFFF 8001H</code>。</p>
+    <p>③ 按 unsigned int 解释：\(ui = 2^{32} − 32767 = 2^{32} − (2^{15}−1) = 2^{32} − 2^{15} + 1\)，选 D。</p>
+    <p>C 的错误在于把 32767 当成 \(2^{15}\)（实际是 \(2^{15}−1\)）。</p>
+  </div></details>
+</div>
+
+<div class="q-item">
+  <p><span class="q-no">第9题</span>【2.2·P48】补码定点整数 0101 0101 算术左移两位后的值为（　）</p>
+  <ol class="options">
+    <li>0100 0111</li>
+    <li>0101 0100</li>
+    <li>0100 0110</li>
+    <li>0101 0101</li>
+  </ol>
+  <details class="ans"><summary>答案与解析</summary><div class="ans-body">
+    <p><span class="ans-letter">答案：B</span></p>
+    <p>算术左移的操作规则：各位依次左移，<strong>低位补 0</strong>，移出的高位丢弃。左移两位：</p>
+    <p><code class="bin">0101 0101 → 0101 0100</code>（移出高两位"01"，末尾补两个 0），选 B。</p>
+    <p>说明：若按真值看，+85 左移本应伴随溢出（85×2 超出 8 位补码上限），本题考查的是“左移低位补 0”这一移位操作本身，四个选项中只有 B 符合该过程。对照第10题（右移、符号位复制）一起记忆。</p>
+  </div></details>
+</div>
+
+<div class="q-item">
+  <p><span class="q-no">第10题</span>【2.2·P49】补码定点整数 1001 0101 右移一位后的值为（　）</p>
+  <ol class="options">
+    <li>0100 1010</li>
+    <li>01001010 1</li>
+    <li>1000 1010</li>
+    <li>1100 1010</li>
+  </ol>
+  <details class="ans"><summary>答案与解析</summary><div class="ans-body">
+    <p><span class="ans-letter">答案：D</span></p>
+    <p>补码的算术右移：<strong>符号位保持不变，并将符号位复制进最高数值位</strong>（相当于除以 2 向更小方向取整）。</p>
+    <p><code class="bin">1001 0101 → 1100 1010</code>：原数 <code class="bin">1001 0101</code> = −107，右移后 <code class="bin">1100 1010</code> = −54 = −107/2 取整（向 −∞ 取整）✓，选 D。A、B 是逻辑右移（补 0）的结果，会改变负数的符号；C 只在最高位补了 0，不是算术右移。</p>
+  </div></details>
+</div>
+
+<div class="q-item">
+  <p><span class="q-no">第11题</span>【2.2·P49】判断加减法溢出时，可采用判断进位的方式，若符号位的进位为 \(C_0\)，最高数值位的进位为 \(C_1\)，则产生溢出的条件是（　）<br>
+  I. \(C_0\) 产生进位　II. \(C_1\) 产生进位　III. \(C_0\)、\(C_1\) 都产生进位　IV. \(C_0\)、\(C_1\) 都不产生进位　V. \(C_0\) 产生进位，\(C_1\) 不产生进位　VI. \(C_0\) 不产生进位，\(C_1\) 产生进位</p>
+  <ol class="options">
+    <li>I 和 II</li>
+    <li>III</li>
+    <li>IV</li>
+    <li>V 和 VI</li>
+  </ol>
+  <details class="ans"><summary>答案与解析</summary><div class="ans-body">
+    <p><span class="ans-letter">答案：D</span></p>
+    <p>单符号位补码加减法中，溢出标志 \(OF = C_0 \oplus C_1\)：两个进位<strong>相同</strong>（都有 III / 都没有 IV）说明结果未越界；<strong>只有一个有进位</strong>（V 或 VI）说明数值部分向符号位的进位与符号位自身的进位不一致，结果越界，即溢出。故溢出条件为 V 和 VI，选 D。等价表述：正数相加得负、或负数相加得正时溢出。</p>
+  </div></details>
+</div>
+
+<div class="q-item">
+  <p><span class="q-no">第12题</span>【2.2·P50】某计算机字长为 8 位，CPU 中有一个 8 位加法器。已知无符号数 \(x = 69\)，\(y = 38\)，如果在该加法器中计算 \(x-y\)，则加法器的两个输入端信息和输入的低位进位信息分别为（　）</p>
+  <ol class="options">
+    <li>0100 0101、0010 0110、0</li>
+    <li>0100 0101、1101 1001、1</li>
+    <li>0100 0101、1101 1010、0</li>
+    <li>0100 0101、1101 1010、1</li>
+  </ol>
+  <details class="ans"><summary>答案与解析</summary><div class="ans-body">
+    <p><span class="ans-letter">答案：B</span></p>
+    <p>减法在加法器中转为加法：\(x-y = x + [\lnot y] + 1\)（即先按位取反，再用低位进位补 1）。</p>
+    <p>① \([x] = 69 = 0100\ 0101B\)；② \([y] = 38 = 0010\ 0110B\)；③ \(\lnot[y] = 1101\ 1001B\)；④ 低位进位 \(C_{in} = 1\)（完成“取反加 1”）。</p>
+    <p>故输入为 <code class="bin">0100 0101</code>、<code class="bin">1101 1001</code>、进位 1，选 B。C/D 的 <code class="bin">1101 1010</code> 已是完整的 \([−38]_补\)，数学上与 B 等价，但教材规定的减法电路统一按“取反 + 低位进位 1”实现，故标准答案取 B。验算：\(0100\ 0101 + 1101\ 1001 + 1 = 0001\ 1111 = 31 = 69-38\) ✓。</p>
+  </div></details>
+</div>
+
+<div class="q-item">
+  <p><span class="q-no">第13题</span>【2.2·P50】某计算机中有一个 8 位加法器，有符号整数 x 和 y 的机器数用补码表示，\([x]_补 = F5H\)，\([y]_补 = 7EH\)，如果在该加法器中计算 \(x-y\)，则加法器的低位进位输入信息和运算后的溢出标志 OF 分别是（　）</p>
+  <ol class="options">
+    <li>1、1</li>
+    <li>1、0</li>
+    <li>0、1</li>
+    <li>0、0</li>
+  </ol>
+  <details class="ans"><summary>答案与解析</summary><div class="ans-body">
+    <p><span class="ans-letter">答案：A</span></p>
+    <p>① 低位进位：减法实现为 \(x + \lnot[y]_补 + 1\) → 低位进位 = 1。</p>
+    <p>② \([y]_补 = 7EH = 0111\ 1110B\)，取反得 \(1000\ 0001B\)；逐位相加：</p>
+    <p><code class="bin">1111 0101 (x=−11) + 1000 0001 + 1 = 0111 0111 (mod 256)</code></p>
+    <p>③ 真值：\(x-y = −11 − 126 = −137\)，超出 8 位补码范围 \([-128, 127]\) → 溢出，OF = 1（机器数 <code class="bin">0111 0111</code> = +119 显然错误；进位判别：\(C_0 = 1\)，\(C_1 = 0\)，\(OF = C_0 \oplus C_1 = 1\)）。故为“1、1”，选 A。</p>
+  </div></details>
+</div>
+
+<div class="q-item">
+  <p><span class="q-no">第14题</span>【2.2·P50】某 8 位计算机中，x 和 y 是两个有符号整数，用补码表示，\([x]_补 = 44H\)，\([y]_补 = DCH\)，则 \(x/2 + 2y\) 的机器数及相应的溢出标志 OF 分别是（　）</p>
+  <ol class="options">
+    <li>CAH、0</li>
+    <li>CAH、1</li>
+    <li>DAH、0</li>
+    <li>DAH、1</li>
+  </ol>
+  <details class="ans"><summary>答案与解析</summary><div class="ans-body">
+    <p><span class="ans-letter">答案：C</span></p>
+    <p>① \(x = 44H = 0100\ 0100B = 68\)；\(y = DCH = 1101\ 1100B\)，取反加一得真值 \(-36\)。</p>
+    <p>② \(x/2\)：算术右移 1 位：<code class="bin">0100 0100 → 0010 0010 = 22H</code>（= 34）。</p>
+    <p>③ \(2y\)：算术左移 1 位：<code class="bin">1101 1100 → 1011 1000 = B8H</code>（= −72）。</p>
+    <p>④ 相加：<code class="bin">0010 0010 + 1011 1000 = 1101 1010 = DAH</code>；真值 \(34 + (−72) = −38\)，在 \([-128,127]\) 内 → OF = 0（负数加负数得负，符号一致）。</p>
+    <p>故机器数 DAH、OF = 0，选 C。验算：DAH = 218，218−256 = −38 ✓。</p>
+  </div></details>
+</div>
+
+<div class="q-item">
+  <p><span class="q-no">第15题</span>【2.2·P51·2010 统考真题】假定有四个整数用 8 位补码分别表示：\(r_1 =\)FEH、\(r_2 =\)F2H、\(r_3 =\)90H、\(r_4 =\)F8H。若将运算结果存放在一个 8 位寄存器中，则下列运算会发生溢出的是（　）</p>
+  <ol class="options">
+    <li>\(r_1 \times r_2\)</li>
+    <li>\(r_2 \times r_3\)</li>
+    <li>\(r_1 \times r_4\)</li>
+    <li>\(r_2 \times r_4\)</li>
+  </ol>
+  <details class="ans"><summary>答案与解析</summary><div class="ans-body">
+    <p><span class="ans-letter">答案：B</span></p>
+    <p>先求各补码的真值：\(r_1 = FEH = -2\)，\(r_2 = F2H = -14\)，\(r_3 = 90H = -112\)，\(r_4 = F8H = -8\)。</p>
+    <table>
+      <thead><tr><th>运算</th><th>真值</th><th>是否在 [−128, 127] 内</th></tr></thead>
+      <tbody>
+        <tr><td>A. \(r_1\times r_2\)</td><td>\((-2)\times(-14) = 28\)</td><td>是，不溢出</td></tr>
+        <tr><td>B. \(r_2\times r_3\)</td><td>\((-14)\times(-112) = 1568\)</td><td><strong>否，溢出</strong></td></tr>
+        <tr><td>C. \(r_1\times r_4\)</td><td>\((-2)\times(-8) = 16\)</td><td>是，不溢出</td></tr>
+        <tr><td>D. \(r_2\times r_4\)</td><td>\((-14)\times(-8) = 112\)</td><td>是，不溢出</td></tr>
+      </tbody>
+    </table>
+    <p>故选 B。注意两个负数相乘结果为正，正数上界只有 127，最容易溢出。</p>
+  </div></details>
+</div>
+
+<div class="q-item">
+  <p><span class="q-no">第16题</span>【2.2·P51·2014 统考真题】若 \(x = 103\)，\(y = -25\)，则下列表达式采用 8 位定点补码运算实现时，会发生溢出的是（　）</p>
+  <ol class="options">
+    <li>\(x+y\)</li>
+    <li>\(-x+y\)</li>
+    <li>\(x-y\)</li>
+    <li>\(-x-y\)</li>
+  </ol>
+  <details class="ans"><summary>答案与解析</summary><div class="ans-body">
+    <p><span class="ans-letter">答案：C</span></p>
+    <p>8 位补码表示范围为 \([-128, 127]\)，逐项求真值：</p>
+    <p>① \(x+y = 103-25 = 78\) ✓；② \(-x+y = -103-25 = -128\)，恰好等于补码可表示的最小值，<strong>不溢出</strong>；③ \(x-y = 103-(-25) = 128 > 127\) → <strong>溢出</strong>；④ \(-x-y = -103+25 = -78\) ✓。故选 C。</p>
+    <p>机器层面：计算 \(x-y\) 时 \([x]_补 = 0110\ 0111\)，\([y]_补 = 1110\ 0111\)，\([-y]_补 = 0001\ 1001\)，相加得 <code class="bin">0110 0111 + 0001 1001 = 1000 0000</code>，两正数相加得“负”（双符号位 10），OF = 1。</p>
+  </div></details>
+</div>
+
+<div class="q-item">
+  <p><span class="q-no">第17题</span>【2.2·P52·2024 统考真题】下列关于整数乘法运算的叙述中，错误的是（　）</p>
+  <ol class="options">
+    <li>用阵列乘法器实现的乘运算可以在一个时钟周期内完成</li>
+    <li>用 ALU 和移位器实现的乘运算无法在一个时钟周期内完成</li>
+    <li>变量与常数的乘运算可编译优化为若干移位及加/减运算指令</li>
+    <li>两个变量的乘运算无法编译转换为移位及加法等指令的循环实现</li>
+  </ol>
+  <details class="ans"><summary>答案与解析</summary><div class="ans-body">
+    <p><span class="ans-letter">答案：D</span></p>
+    <p>D 错误（本题选错误项）：两个变量相乘完全可以用“移位 + 加法”指令的<strong>循环（软件乘法）</strong>实现——每轮判断乘数末位决定是否加被乘数，再右移一位，循环 n 轮，编译器或子程序都可以这样做。</p>
+    <p>A 正确：阵列乘法器是全组合逻辑，与-加阵列一拍即可出结果；B 正确：ALU+移位器的硬件乘法需 n 轮“加/减 + 右移”，无法一拍完成；C 正确：常量乘法（如 ×10 = (x&lt;&lt;3)+(x&lt;&lt;1)）可编译为移位与加/减指令。</p>
+  </div></details>
+</div>
+
+<div class="q-item">
+  <p><span class="q-no">第18题</span>【2.3·P67】假定采用 IEEE 754 标准中的单精度浮点数格式表示一个数为 4510 0000H，则该数的值是（　）</p>
+  <ol class="options">
+    <li>\(+1.125_{10}\times2^{10}\)</li>
+    <li>\(+1.125_{10}\times2^{11}\)</li>
+    <li>\(+0.125_{10}\times2^{11}\)</li>
+    <li>\(+0.125_{10}\times2^{10}\)</li>
+  </ol>
+  <details class="ans"><summary>答案与解析</summary><div class="ans-body">
+    <p><span class="ans-letter">答案：B</span></p>
+    <p><code class="bin">4510 0000H = 0100 0101 0001 0000 0000 0000 0000 0000B</code>，按格式切分：</p>
+    <table>
+      <thead><tr><th>数符</th><th>阶码（8 位）</th><th>尾数（23 位）</th></tr></thead>
+      <tbody>
+        <tr><td>0</td><td>1000 1010</td><td>001 0000 0000 0000 0000 0000</td></tr>
+      </tbody>
+    </table>
+    <p>① 阶码真值：\(E = 1000\ 1010B - 0111\ 1111B = 138 - 127 = 11\)；</p>
+    <p>② 规格化尾数（含隐含的 1）：\(M = 1.001B = 1 + 0.125 = 1.125\)。</p>
+    <p>故值 = \(+1.125\times2^{11}\)，选 B。注意 IEEE 754 的隐含 1 属于规格化尾数，不能写成 0.125×2<sup>11</sup>。</p>
+  </div></details>
+</div>
+
+<div class="q-item">
+  <p><span class="q-no">第19题</span>【2.3·P68】在按字节编址的 32 位计算机中，按边界对齐方式为以下结构型变量 x 分配存储空间：</p>
+  <pre><code>struct cont_info{
+     char id;
+     unsigned post;
+     char phone;
+}x;</code></pre>
+  <p>若 x 的首地址为 0x8049820，则成员变量 phone 的起始地址为（　）</p>
+  <ol class="options">
+    <li>0x8049828</li>
+    <li>0x8049826</li>
+    <li>0x8049825</li>
+    <li>0x8049822</li>
+  </ol>
+  <details class="ans"><summary>答案与解析</summary><div class="ans-body">
+    <p><span class="ans-letter">答案：A</span></p>
+    <p>边界对齐规则：每个成员的起始地址必须是自身长度（对齐要求）的整数倍。</p>
+    <p>① <code class="bin">id</code>（char，1 字节）：占用 0x8049820；</p>
+    <p>② <code class="bin">post</code>（unsigned，4 字节）：下一个可用地址 0x8049821 不是 4 的倍数，填充 3 字节 → 从 0x8049824 开始，占 0x8049824～0x8049827；</p>
+    <p>③ <code class="bin">phone</code>（char，1 字节）：紧随其后 → 0x8049828。</p>
+    <p>整个结构体总大小还要补齐为最长成员（4 字节）的整数倍，共 12 字节。故 phone 地址为 0x8049828，选 A。</p>
+  </div></details>
+</div>
+
+<div class="q-item">
+  <p><span class="q-no">第20题</span>【2.3·P69·2009 统考真题】浮点数加、减运算过程一般包括对阶、尾数运算、规格化、舍入和判断溢出等步骤。设浮点数的阶码和尾数均采用补码表示，且位数分别为 5 位和 7 位（均含 2 位符号位）。若有两个数 \(X = 2^7\times29/32\) 和 \(Y = 2^5\times5/8\)，则用浮点加法计算 \(X+Y\) 的最终结果是（　）</p>
+  <ol class="options">
+    <li>00111 1100010</li>
+    <li>00111 01000010</li>
+    <li>01000 0010001</li>
+    <li>发生溢出</li>
+  </ol>
+  <details class="ans"><summary>答案与解析</summary><div class="ans-body">
+    <p><span class="ans-letter">答案：D</span></p>
+    <p>① 初始表示：\(X\)：阶码 \(7 = 00\,111\)（双符号位补码，5 位），尾数 \(29/32 = 00.11101\)；\(Y\)：阶码 \(5 = 00\,101\)，尾数 \(5/8 = 00.10100\)。</p>
+    <p>② 对阶（小阶向大阶）：\(\Delta E = 7-5 = 2\)，\(Y\) 的阶码加 2 变为 <code class="bin">00111</code>，尾数右移 2 位：<code class="bin">00.10100 → 00.00101</code>（移出的两位为 0，无精度损失）。</p>
+    <p>③ 尾数相加：<code class="bin">00.11101 + 00.00101 = 01.00010</code>，双符号位为 <code class="bin">01</code> → 尾数出现“溢出”形态，需右规（不是真正溢出）。</p>
+    <p>④ 右规：尾数右移 1 位得 <code class="bin">00.10001</code>，阶码加 1：\(7+1 = 8\)，即阶码 = <code class="bin">01 000</code> 形态的 8。</p>
+    <p>⑤ 判溢出：阶码共 5 位含 2 位符号位，数值部分只剩 3 位，补码表示范围为 \(-8 \sim +7\)；此时阶码真值为 <strong>8</strong>，超出范围 → <strong>阶码上溢</strong>，结果发生溢出，选 D。</p>
+    <p>真值验证：\(X = 116\)，\(Y = 20\)，\(X+Y = 136\)；该格式可表示的最大正数为 \(0.11111\times2^7 = 124 < 136\)，确实放不下。C 选项（阶码 01000、尾数 0010001，值 = 136）正是“忘判阶码溢出”的陷阱。</p>
+  </div></details>
+</div>
+
+<div class="q-item">
+  <p><span class="q-no">第21题</span>【2.3·P70·2013 统考真题】某数采用 IEEE 754 单精度浮点数格式表示为 C640 0000H，则该数的值是（　）</p>
+  <ol class="options">
+    <li>\(-1.5\times2^{13}\)</li>
+    <li>\(-1.5\times2^{12}\)</li>
+    <li>\(-0.5\times2^{13}\)</li>
+    <li>\(-0.5\times2^{12}\)</li>
+  </ol>
+  <details class="ans"><summary>答案与解析</summary><div class="ans-body">
+    <p><span class="ans-letter">答案：A</span></p>
+    <p><code class="bin">C640 0000H = 1100 0110 0100 0000 0000 0000 0000 0000B</code>：</p>
+    <p>① 数符 = 1 → 负数；② 阶码 = <code class="bin">1000 1100</code> = 140 → \(E = 140 - 127 = 13\)；③ 尾数 = <code class="bin">100 0000 …0</code>，规格化尾数（含隐含 1）\(M = 1.1B = 1.5\)。</p>
+    <p>值 = \(-1.5\times2^{13}\)，选 A。C/D 的错误是把隐含的 1 丢掉（只剩 0.5）。</p>
+  </div></details>
+</div>
+
+<div class="q-item">
+  <p><span class="q-no">第22题</span>【2.3·P71·2018 统考真题】IEEE 754 单精度浮点格式表示的数中，最小的规格化正数是（　）</p>
+  <ol class="options">
+    <li>\(1.0\times2^{-126}\)</li>
+    <li>\(1.0\times2^{-127}\)</li>
+    <li>\(1.0\times2^{-128}\)</li>
+    <li>\(1.0\times2^{-149}\)</li>
+  </ol>
+  <details class="ans"><summary>答案与解析</summary><div class="ans-body">
+    <p><span class="ans-letter">答案：A</span></p>
+    <p>规格化数要求阶码字段不为全 0（也不为全 1）：最小阶码字段为 <code class="bin">0000 0001</code>，对应真阶 \(E = 1-127 = -126\)；此时尾数取最小（隐含 1，小数部分全 0），即 \(1.0\)。故最小规格化正数 = \(1.0\times2^{-126}\)，选 A。</p>
+    <p>D 的 \(2^{-149} = 1.0\times2^{-126}\times2^{-23}\) 是<strong>最小非规格化正数</strong>（阶码全 0，尾数最低位为 1），规格化数不含它。</p>
+  </div></details>
+</div>
+
+<div class="q-item">
+  <p><span class="q-no">第23题</span>【2.3·P71·2022 统考真题】−0.4375 的 IEEE 754 单精度浮点数表示为（　）</p>
+  <ol class="options">
+    <li>BEE0 0000H</li>
+    <li>BF60 0000H</li>
+    <li>BF70 0000H</li>
+    <li>C0E0 0000H</li>
+  </ol>
+  <details class="ans"><summary>答案与解析</summary><div class="ans-body">
+    <p><span class="ans-letter">答案：A</span></p>
+    <p>① \(0.4375 = 0.0111B\)（\(0.25+0.125+0.0625\)）→ 规格化：\(1.11\times2^{-2}\)（小数点右移 2 位，真阶 = −2）。</p>
+    <p>② 阶码 = 偏置 + 真阶 = \(127 + (-2) = 125 = 0111\ 1101B\)；</p>
+    <p>③ 数符 = 1（负数），尾数字段 = <code class="bin">110 0000 0000 0000 0000 0000</code>；</p>
+    <p>④ 拼接：<code class="bin">1 01111101 11000000000000000000000</code> → 每 4 位一组：<code class="bin">1011 1110 1110 0000 0000 0000 0000 0000</code> = <strong>BEE0 0000H</strong>，选 A。</p>
+  </div></details>
+</div>
+
+<div class="q-item">
+  <p><span class="q-no">第24题</span>【2.3·P72·2023 统考真题】已知 float 型变量用 IEEE 754 单精度浮点数格式表示。若 float 型变量 x 的机器数为 8020 0000H，则 x 的值是（　）</p>
+  <ol class="options">
+    <li>\(-2^{-128}\)</li>
+    <li>\(-1.01\times2^{-127}\)</li>
+    <li>\(-1.01\times2^{-126}\)</li>
+    <li>非数（NaN）</li>
+  </ol>
+  <details class="ans"><summary>答案与解析</summary><div class="ans-body">
+    <p><span class="ans-letter">答案：A</span></p>
+    <p><code class="bin">8020 0000H = 1000 0000 0010 0000 0000 0000 0000 0000B</code>：</p>
+    <p>① 数符 = 1；② 阶码字段 = <code class="bin">0000 0000</code>（全 0）→ <strong>非规格化数</strong>，隐含位为 0，值 = \((-1)^s\times0.M\times2^{-126}\)；③ 尾数字段 \(M = 010\ 0000\,;\dots0 = 0.01B = 0.25\)。</p>
+    <p>故 \(x = -0.25\times2^{-126} = -2^{-2}\times2^{-126} = -2^{-128}\)，选 A。D 错：NaN 要求阶码全 1。</p>
+  </div></details>
+</div>
+
+<div class="q-item">
+  <p><span class="q-no">第25题</span>【2.3·P72·2025 统考真题】某 32 位计算机按字节编址，采用小端方式存放数据，编译器按边界对齐方式为下列 C 语言结构型数组变量 employee 分配存储空间。</p>
+  <pre><code>struct record{
+     int id;
+     char name[10];
+     int salary;
+} employee[200];</code></pre>
+  <p>若 employee 的首地址为 0000 A0B0H，employee[1].id 的机器数为 1234 5678H，则该机器数中的 56H 所在存储单元的地址是（　）</p>
+  <ol class="options">
+    <li>0000 A0C3H</li>
+    <li>0000 A0C4H</li>
+    <li>0000 A0C5H</li>
+    <li>0000 A0C6H</li>
+  </ol>
+  <details class="ans"><summary>答案与解析</summary><div class="ans-body">
+    <p><span class="ans-letter">答案：C</span></p>
+    <p>① 单个结构体大小：id（4B）+ name（10B）+ 填充（2B，使 salary 4 字节对齐）+ salary（4B）= 20B，且 20 已是 4 的倍数。</p>
+    <p>② employee[1] 首地址 = A0B0H + 14H（20 的十六进制）= <strong>0000 A0C4H</strong>，其 id 占 A0C4H～A0C7H。</p>
+    <p>③ 小端方式：低位字节存低地址：A0C4H 存 78H、A0C5H 存 56H、A0C6H 存 34H、A0C7H 存 12H。</p>
+    <p>故 56H 所在单元地址为 0000 A0C5H，选 C。</p>
+  </div></details>
+</div>
+
+<h2 class="q-section-title">二、综合题（第26～32题）</h2>
+
+<div class="q-item">
+  <p><span class="q-no">第26题</span>【2.2·P52】已知 32 位寄存器 R1 中存放的变量 x 的机器码为 8000 0004H，unsigned int 型的乘除法采用逻辑移位操作，int 型的乘除法采用算术移位操作，请问：</p>
+  <ol>
+    <li>当 x 是 unsigned int 型时，x 的真值是多少？x/2 存放在 R1 中的机器码是什么？x/2 的真值是多少？2x 存放在 R1 中的机器码是什么？2x 的真值是多少？</li>
+    <li>当 x 是 int 型时，x 的真值是多少？x/2 存放在 R1 中的机器码是什么？x/2 的真值是多少？2x 存放在 R1 中的机器码是什么？2x 的真值是多少？</li>
+  </ol>
+  <details class="ans"><summary>答案与解析</summary><div class="ans-body">
+    <ol>
+      <li>
+        <p>① \(x = 8000\ 0004H = 2^{31} + 4 = 2\,147\,483\,652\)。</p>
+        <p>② x/2 用<strong>逻辑右移</strong>（高位补 0）：<code class="bin">1000 0000 …0000 0100 → 0100 0000 …0000 0010 = 4000 0002H</code>，真值 \(= 2^{30}+2 = 1\,073\,741\,826\)。</p>
+        <p>③ 2x 用<strong>逻辑左移</strong>（低位补 0）：<code class="bin">1000 0000 …0000 0100 → 0000 0000 …0000 1000 = 0000 0008H</code>，机器数按无符号解释真值为 8。真实值 \(2x = 4\,294\,967\,304 > 2^{32}-1\)，最高位的 1 已被移出丢弃（无符号乘法溢出），8 只是截断结果。</p>
+      </li>
+      <li>
+        <p>① 最高位为 1 → 负数：\(x = -(2^{31}-4) = -2\,147\,483\,644\)（求真值：连同符号取反加一得 <code class="bin">7FFF FFFCH</code>）。</p>
+        <p>② x/2 用<strong>算术右移</strong>（高位补符号位 1）：<code class="bin">1000 …0100 → 1100 …0010 = C000 0002H</code>，真值 \(= -(2^{30}-2) = -1\,073\,741\,822\)（<code class="bin">C000 0002H</code> 取反加一得 <code class="bin">3FFF FFFEH</code>）。</p>
+        <p>③ 2x：补码算术左移与逻辑左移相同（低位补 0）：<code class="bin">→ 0000 0008H</code>，按补码解释真值为 8；真实值 \(2x = -4\,294\,967\,288\) 超出 int 范围发生溢出，8 只是移位后的机器数。</p>
+      </li>
+    </ol>
+  </div></details>
+</div>
+
+<div class="q-item">
+  <p><span class="q-no">第27题</span>【2.2·P52】假设有两个整数 \(x = -68\)，\(y = -80\)，采用补码形式（含 1 位符号位）表示，x 和 y 分别存放在寄存器 A 和 B 中。另外，还有两个寄存器 C 和 D，A、B、C、D 都是 8 位的寄存器。请回答下列问题（要求最终用十六进制数表示二进制数序列）：</p>
+  <ol>
+    <li>寄存器 A 和 B 中的内容分别是什么？</li>
+    <li>x 和 y 相加后的结果存放在寄存器 C 中，则寄存器 C 中的内容是什么？此时，溢出标志 OF、符号标志 SF 各是什么？</li>
+    <li>x 和 y 相减后的结果存放在寄存器 D 中，则寄存器 D 中的内容是什么？此时，溢出标志 OF、符号标志 SF 各是什么？</li>
+  </ol>
+  <details class="ans"><summary>答案与解析</summary><div class="ans-body">
+    <ol>
+      <li>
+        <p>① \(68 = 0100\ 0100B\)，\([−68]_补\)：连同符号位取反加 1：<code class="bin">0100 0100 → 1011 1011 → +1 → 1011 1100</code>，A = <strong>BCH</strong>。</p>
+        <p>② \(80 = 0101\ 0000B\)，\([−80]_补\)：<code class="bin">0101 0000 → 1010 1111 → +1 → 1011 0000</code>，B = <strong>B0H</strong>。</p>
+      </li>
+      <li>
+        <p>逐位相加（含进位标注）：</p>
+        <p><code class="bin">1011 1100</code>（−68）<br><code class="bin">+ 1011 0000</code>（−80）<br><code class="bin">= (1) 0110 1100</code></p>
+        <p>进位过程：bit4 \(1+1\) 产生进位 → bit5 \(1+1+1\) 产生进位 → bit6 \(0+0+1 = 1\) 无进位（\(C_1 = 0\)）→ bit7 \(1+1 = 0\) 产生进位（\(C_0 = 1\)）。\(OF = C_0 \oplus C_1 = 1\) → <strong>溢出</strong>（也可用双符号位验证：\(11.0111100 + 11.0110000 = 10.1101100\)，符号位为 10 判溢出，且表示负溢出）。</p>
+        <p>C = <strong>6CH</strong>；真值 \(x+y = -148 < -128\)，确实超出 8 位补码范围；机器数符号位为 0 → <strong>SF = 0</strong>，<strong>OF = 1</strong>。</p>
+      </li>
+      <li>
+        <p>\([y]_补 = B0H\)，\([−y]_补\)：连同符号取反加 1：<code class="bin">1011 0000 → 0100 1111 → +1 → 0101 0000 = 50H</code>（即 +80）。</p>
+        <p>逐位相加（含进位标注）：</p>
+        <p><code class="bin">1011 1100</code>（−68）<br><code class="bin">+ 0101 0000</code>（+80）<br><code class="bin">= (1) 0000 1100</code></p>
+        <p>进位过程：bit4 \(1+1\) 产生进位 → bit5 \(1+0+1\) 产生进位 → bit6 \(0+1+1\) 产生进位（\(C_1 = 1\)）→ bit7 \(1+0+1\) 产生进位（\(C_0 = 1\)）。\(OF = C_0 \oplus C_1 = 1 \oplus 1 = 0\) → 不溢出。</p>
+        <p>D = <strong>0CH</strong>（= 0000 1100B = 12），真值 \(-68-(-80) = 12\) ✓（验算：\(BCH + 50H = 10CH\)，舍去进位即 \(0CH\)）；<strong>OF = 0，SF = 0</strong>（机器数符号位为 0，结果为正）。</p>
+      </li>
+    </ol>
+  </div></details>
+</div>
+
+<div class="q-item">
+  <p><span class="q-no">第28题</span>【2.2·P52·2011 统考真题】假定在一个 8 位字长的计算机中运行如下 C 程序段：</p>
+  <pre><code>unsigned int x=134;
+unsigned int y=246;
+int m=x;
+int n=y;
+unsigned int z1=x-y;
+unsigned int z2=x+y;
+int k1=m-n;
+int k2=m+n;</code></pre>
+  <p>若编译器编译时将 8 个 8 位寄存器 R1～R8 分别分配给变量 x、y、m、n、z1、z2、k1 和 k2。请回答下列问题（提示：有符号整数用补码表示）。</p>
+  <ol>
+    <li>执行上述程序段后，寄存器 R1、R5 和 R6 的内容分别是什么（用十六进制表示）？</li>
+    <li>执行上述程序段后，变量 m 和 k1 的值分别是多少（用十进制表示）？</li>
+    <li>上述程序段涉及有符号整数加减、无符号整数加减运算，这四种运算能否利用同一个加法器辅助电路实现？简述理由。</li>
+    <li>计算机内部如何判断有符号整数加减运算的结果是否发生溢出？上述程序段中，哪些有符号整数运算语句的执行结果会发生溢出？</li>
+  </ol>
+  <details class="ans"><summary>答案与解析</summary><div class="ans-body">
+    <ol>
+      <li>
+        <p>① R1 = x：\(134 = 1000\ 0110B =\) <strong>86H</strong>。</p>
+        <p>② R5 = z1 = x−y = 134−246 = −112（按模 256 运算，位模式相同）。−112 的补码：\(112 = 0111\ 0000B\) → 取反加一 <code class="bin">1000 1111 + 1 = 1001 0000</code> → <strong>90H</strong>（无符号解释为 144 = 134−246+256 ✓）。</p>
+        <p>③ R6 = z2 = x+y = 380，\(380 \bmod 256 = 124 = 0111\ 1100B =\) <strong>7CH</strong>（无符号溢出，CF = 1，机器数 124）。</p>
+      </li>
+      <li>
+        <p>赋值只复制位模式：m 的机器数 = x 的机器数 = <code class="bin">86H = 1000 0110B</code>，按 int（补码）解释：\(m = 134-256 = \mathbf{-122}\)（这正是本题的考点：134 已超过 8 位 int 的正数上限 127，转成有符号解释后变负）。</p>
+        <p>n 的机器数 = <code class="bin">F6H = 1111 0110B</code>，按补码解释 \(n = 246-256 = -10\)；k1 = m−n = \(-122-(-10) = \mathbf{-112}\)。</p>
+      </li>
+      <li>
+        <p>能。补码加减法与无符号整数加减法在机器层的位级运算<strong>完全相同</strong>：减法都转化为“加上目标数的负数补码”（\(x-y = x+[\lnot y]+1\)），都按模 \(2^8\) 进行，同一个加法器及辅助的取反、进位电路即可实现。二者区别只体现在标志位的解释上：无符号数看进位/借位标志 CF，有符号数看溢出标志 OF。</p>
+      </li>
+      <li>
+        <p>有符号整数加减溢出判断：① 采用双符号位时，结果两符号位不同（01 或 10）则溢出；② 单符号位时，\(OF =\) 符号位进位 \(\oplus\) 最高数值位进位（二者不同则溢出）；③ 也可由操作数与结果符号判断“正加正得负 / 负加负得正”。</p>
+        <p>程序段中有符号运算为 k1 = m−n 与 k2 = m+n：k1 = −112 在 \([-128,127]\) 内不溢出；k2 = m+n = −122+(−10) = −132 &lt; −128 → 溢出。机器层面：<code class="bin">1000 0110 + 1111 0110 = (1)0111 1100</code>，逐位可见仅 bit1、bit2 产生进位且未传到符号位（\(C_1 = 0\)），符号位 \(1+1\) 产生进位（\(C_0 = 1\)），\(OF = 1 \oplus 0 = 1\) → <strong>k2 = m+n 溢出</strong>，机器数 <code class="bin">7CH</code>（+124，负加负得正）。</p>
+      </li>
+    </ol>
+  </div></details>
+</div>
+
+<div class="q-item">
+  <p><span class="q-no">第29题</span>【2.2·P53·2020 统考真题】有实现 \(x\times y\) 的两个 C 语言函数如下：</p>
+  <pre><code>unsigned umul(unsigned x, unsigned y){ return x*y; }
+int imul(int x, int y) { return x*y; }</code></pre>
+  <p>假定某计算机 M 中的 ALU 只能进行加减运算和逻辑运算。请回答下列问题。</p>
+  <ol>
+    <li>若 M 的指令系统中没有乘法指令，但有加法、减法和位移等指令，则在 M 上也能实现上述两个函数中的乘法运算，为什么？</li>
+    <li>若 M 的指令系统中有乘法指令，则基于 ALU、移位器、寄存器及相应控制逻辑实现乘法指令时，控制逻辑的作用是什么？</li>
+    <li>针对以下三种情况：① 没有乘法指令；② 有使用 ALU 和移位器实现的乘法指令；③ 有使用阵列乘法器实现的乘法指令，函数 umul() 在哪种情况下执行的时间最长？在哪种情况下执行的时间最短？说明理由。</li>
+    <li>n 位整数乘法指令可保存 2n 位乘积，当只取低 n 位作为乘积时，其结果可能会发生溢出。当 n = 32，\(x = 2^{31}-1\)，\(y = 2\) 时，有符号整数乘法指令和无符号整数乘法指令得到的 \(x\times y\) 的 2n 位乘积分别是什么（用十六进制表示）？此时函数 umul() 和 imul() 的返回结果是否溢出？对于无符号整数乘法运算，当仅取乘积的低 n 位作为乘法结果时，如何用 2n 位乘积进行溢出判断？</li>
+  </ol>
+  <figure>
+    <img src="../assets/ch2/fig-p058.png" alt="32 位补码一位乘法运算器的逻辑结构" loading="lazy">
+    <figcaption>图2.1 32 位补码一位乘法运算器：被乘数寄存器 X、32 位 ALU（加/减）、64 位乘积寄存器 P｜乘数寄存器 Y（右移）、控制逻辑计数器 C<sub>n</sub>（王道教材 P58）</figcaption>
+  </figure>
+  <details class="ans"><summary>答案与解析</summary><div class="ans-body">
+    <ol>
+      <li>
+        <p>乘法的本质是<strong>“多次加法 + 多次移位”</strong>的部分积累加：</p>
+        <p>① umul（无符号）：每轮检测乘数最低位，为 1 则将“被乘数对齐的部分积”加到乘积寄存器 P，为 0 则不加，然后 P、Y 整体<strong>逻辑右移</strong>一位，共 n 轮；</p>
+        <p>② imul（有符号）：补码一位乘（Booth 算法）根据乘数寄存器 Y 的最低两位 \(\{y_n, y_{n+1}\}\) 决定“+X / −X / 不操作”，再做<strong>算术右移</strong>，同样只用到加法、减法和移位。</p>
+        <p>因此即使没有乘法指令，用加法、减法、移位和转移指令编写的循环程序也能实现两个函数的乘法运算。</p>
+      </li>
+      <li>
+        <p>控制逻辑（配合计数器 \(C_n\)）的作用：① 控制循环轮数，计数满 n 轮结束乘法；② 每轮根据乘数寄存器 Y 的末位（及附加位）生成 ALU 的“加 / 减 / 不操作（直传）”控制信号；③ 向 P、Y 发出右移控制脉冲与写使能信号，使部分积与乘数同步右移，并把 ALU 输出正确回写到 P。</p>
+      </li>
+      <li>
+        <p>① 时间最长：无乘法指令时用软件循环模拟，每轮需要多条指令（判断、加/减、移位、循环变量维护、取指开销）。</p>
+        <p>③ 时间最短：阵列乘法器是<strong>全组合逻辑</strong>（与门产生全部位积、进位加阵列求和），数据一次流过即可得到 2n 位乘积，只需一个时钟周期（一拍），不依赖多轮“加-移”。</p>
+        <p>② 居中：每轮“加/减”一拍 + “右移”一拍，约 2n 个时钟周期。故 umul() 在①中执行时间最长，在③中最短。</p>
+      </li>
+      <li>
+        <p>真实乘积：\((2^{31}-1)\times2 = 2^{32}-2 = 4\,294\,967\,294\)。</p>
+        <p>① 无符号乘法 2n 位乘积 = <strong>0000 0000 FFFF FFFEH</strong>（该值 \(< 2^{32}\)，高 32 位为 0）。</p>
+        <p>② 有符号乘法（补码）2n 位乘积 = <strong>0000 0000 FFFF FFFEH</strong>——乘积为正且小于 \(2^{63}\)，补码与无符号的位模式相同。</p>
+        <p>③ 取低 32 位均为 <code class="bin">FFFF FFFEH</code>：umul() 的高 32 位全 0 → <strong>不溢出</strong>，返回值 4294967294 恰为真实乘积；imul() 的真实乘积 \(2^{32}-2 > 2^{31}-1\) → <strong>溢出</strong>（OF = 1，高 32 位 <code class="bin">0000 0000</code> 不是低 32 位 <code class="bin">FFFF FFFEH</code> 的符号扩展），返回值按补码解释为 −2，不是真实乘积。</p>
+        <p>④ 无符号乘法溢出判断：仅当 <strong>高 n 位（乘积寄存器 P 的内容）全为 0</strong> 时不溢出；高 n 位不全为 0 则说明真实乘积超出 n 位无符号范围，发生溢出。</p>
+      </li>
+    </ol>
+  </div></details>
+</div>
+
+<div class="q-item">
+  <p><span class="q-no">第30题</span>【2.3·P72】现有一计算机字长 32 位（\(D_{31} \sim D_0\)），符号位是第 31 位。对于二进制 <code class="bin">1000 1111 1110 1111 1100 0000 0000 0000</code>，回答下列问题：</p>
+  <ol>
+    <li>表示一个补码整数，其十进制值是多少？</li>
+    <li>表示一个无符号整数，其十进制值是多少？</li>
+    <li>表示一个 IEEE 754 标准的单精度浮点数，其值是多少？</li>
+  </ol>
+  <details class="ans"><summary>答案与解析</summary><div class="ans-body">
+    <p>该机器数 = <code class="bin">8FEF C000H</code>。</p>
+    <ol>
+      <li>
+        <p>最高位 1 → 负数。求绝对值：取反加一：<code class="bin">0111 0000 0001 0000 0011 1111 1111 1111 + 1 = 0111 0000 0001 0000 0100 0000 0000 0000 = 7010 4000H</code>。</p>
+        <p>分字节计算：\(70H\times2^{24} + 10H\times2^{16} + 40H\times2^{8} = 1\,879\,048\,192 + 1\,048\,576 + 16\,384 = 1\,880\,113\,152\)。</p>
+        <p>故补码整数值 = <strong>−1 880 113 152</strong>。</p>
+      </li>
+      <li>
+        <p>无符号值 = \(8FEF\,C000H = 8FH\times2^{24} + EFH\times2^{16} + C0H\times2^{8} = 143\times16\,777\,216 + 239\times65\,536 + 192\times256 = 2\,399\,141\,888 + 15\,663\,104 + 49\,152 =\) <strong>2 414 854 144</strong>。（验算：无符号值 − 补码负数绝对值 = \(2\,414\,854\,144 + 1\,880\,113\,152 = 2^{32}\) ✓）</p>
+      </li>
+      <li>
+        <p>按 IEEE 754 单精度切分：</p>
+        <table>
+          <thead><tr><th>数符（1 位）</th><th>阶码（8 位）</th><th>尾数（23 位）</th></tr></thead>
+          <tbody>
+            <tr><td>1</td><td>0001 1111</td><td>110 1111 1100 0000 0000 0000</td></tr>
+          </tbody>
+        </table>
+        <p>① 阶码真值：\(E = 0001\ 1111B - 0111\ 1111B = 31 - 127 = -96\)；</p>
+        <p>② 规格化尾数（含隐含 1）：<code class="bin">1.110 1111 1100 …0</code>，即 \(M = 1 + \dfrac{447}{512} = 1.873046875\)（小数部分 <code class="bin">110111111B = 447</code>）；</p>
+        <p>③ 值 = \(-1.873046875\times2^{-96}\)（非规格化判断：阶码字段非全 0/全 1 → 规格化数）。</p>
+      </li>
+    </ol>
+  </div></details>
+</div>
+
+<div class="q-item">
+  <p><span class="q-no">第31题</span>【2.3·P73】已知两个实数 \(x = -68\)，\(y = -8.25\)，它们在 C 语言中定义为 float 型变量，分别存放在寄存器 A 和 B 中。另外，还有两个寄存器 C 和 D，A、B、C、D 都是 32 位的寄存器。请问（要求用十六进制表示二进制序列）：</p>
+  <ol>
+    <li>寄存器 A 和 B 中的内容分别是什么？</li>
+    <li>x 和 y 相加后的结果存放在 C 寄存器中，寄存器 C 中的内容是什么？</li>
+    <li>x 和 y 相减后的结果存放在 D 寄存器中，寄存器 D 中的内容是什么？</li>
+  </ol>
+  <details class="ans"><summary>答案与解析</summary><div class="ans-body">
+    <ol>
+      <li>
+        <p>① \(68 = 100\ 0100B = 1.000100\times2^6\)（小数点左移 6 位）→ 阶码 = 偏置 + 真阶 = \(127+6 = 133 = 1000\ 0101B\)。</p>
+        <p>A = <code class="bin">1 10000101 00010000000000000000000</code> = <strong>C288 0000H</strong>。</p>
+        <p>② \(8.25 = 1000.01B = 1.00001\times2^3\) → 阶码 = \(127+3 = 130 = 1000\ 0010B\)。</p>
+        <p>B = <code class="bin">1 10000010 00001000000000000000000</code> = <strong>C104 0000H</strong>。</p>
+      </li>
+      <li>
+        <p>\(x+y = -(68+8.25) = -76.25\)，按浮点加减<strong>五步</strong>写：</p>
+        <p>① <strong>对阶</strong>：求阶差 \(\Delta E = 6-3 = 3\)，小阶向大阶：y 的尾数（含隐含 1）右移 3 位：<code class="bin">1.00001 → 0.00100001</code>，y 变为 \(-0.00100001\times2^6\)，取大阶 E = 6。</p>
+        <p>② <strong>尾数运算</strong>：两数同号，绝对值相加：<code class="bin">1.00010000 + 0.00100001 = 1.00110001</code> → 和的尾数 = \(-1.00110001\times2^6\)。</p>
+        <p>③ <strong>规格化</strong>：尾数形如 1.xxxx，已是规格化数，不需左规或右规。</p>
+        <p>④ <strong>舍入</strong>：有效尾数仅 8 位，远少于 24 位精度，无舍入误差。</p>
+        <p>⑤ <strong>判溢出</strong>：阶码 = \(133 = 1000\ 0101B\)，在 1～254 之间 → 不上溢；和不为 0 → 不下溢。</p>
+        <p>结果拼装：\(-1.00110001\times2^6\) → <code class="bin">1 10000101 00110001000000000000000</code> = <strong>C298 8000H</strong>（值 = −76.25 ✓）。</p>
+      </li>
+      <li>
+        <p>\(x-y = x+(-y) = -68+8.25 = -59.75\)，仍按五步写：</p>
+        <p>① <strong>对阶</strong>：取大阶 E = 6，y 的尾数（含隐含 1）右移 3 位：<code class="bin">1.00001 → 0.00100001</code> → \(-0.00100001\times2^6\)。</p>
+        <p>② <strong>尾数运算</strong>：两数异号，转化为绝对值相减 \(68-8.25\)：<code class="bin">1.00010000 − 0.00100001 = 0.11101111</code> → 差 = \(-0.11101111\times2^6\)。</p>
+        <p>③ <strong>规格化</strong>：尾数最高有效位不在小数点后第 1 位 → 左规 1 位：<code class="bin">0.11101111 → 1.1101111</code>，阶码减 1：E = 5，阶码 = \(127+5 = 132 = 1000\ 0100B\)。</p>
+        <p>④ <strong>舍入</strong>：尾数仅 7 位小数，无舍入误差。</p>
+        <p>⑤ <strong>判溢出</strong>：阶码 132 在 1～254 之间，不上溢；差非 0 且已规格化 → 不下溢。</p>
+        <p>结果拼装：\(-1.1101111\times2^5\) → <code class="bin">1 10000100 11011110000000000000000</code> = <strong>C26F 0000H</strong>（值 = −59.75 ✓）。</p>
+      </li>
+    </ol>
+  </div></details>
+</div>
+
+<div class="q-item">
+  <p><span class="q-no">第32题</span>【2.3·P74·2017 统考真题】已知 \(f(n) = \sum_{i=0}^{n}2^i = 2^{n+1}-1 = \underbrace{11\cdots1}_{n+1位}B\)，计算 f(n) 的 C 语言函数 f1 如下：</p>
+  <pre><code>int f1(unsigned n){
+    int sum=1, power=1;
+    for(unsigned i=0; i&lt;=n-1; i++){
+        power *= 2;
+        sum += power;
+    }
+    return sum;
+}</code></pre>
+  <p>将 f1 中的 int 都改为 float，可得到计算 f(n) 的另一个函数 f2。假设 unsigned 型和 int 型数据都占 32 位，float 型数据采用 IEEE 754 单精度标准。请回答下列问题：</p>
+  <ol>
+    <li>当 n = 0 时，f1 会出现死循环，为什么？若将 f1 中的变量 i 和 n 都定义为 int 型，则 f1 是否还会出现死循环？为什么？</li>
+    <li>f1(23) 和 f2(23) 的返回值是否相等？机器数各是什么（用十六进制表示）？</li>
+    <li>f1(24) 和 f2(24) 的返回值分别为 33 554 431 和 33 554 432.0，为什么不相等？</li>
+    <li>\(f(31) = 2^{32}-1\)，而 f1(31) 的返回值却为 −1，为什么？若使 f1(n) 的返回值与 f(n) 相等，则最大的 n 是多少？</li>
+    <li>f2(127) 的机器数为 7F80 0000H，对应的值是什么？若使 f2(n) 的结果不溢出，则最大的 n 是多少？若使 f2(n) 的结果精确（无舍入），则最大的 n 是多少？</li>
+  </ol>
+  <details class="ans"><summary>答案与解析</summary><div class="ans-body">
+    <ol>
+      <li>
+        <p>n = 0 时循环条件为 \(i \le n-1\)。i 是 unsigned：\(n-1 = 0-1 = FFFF\ FFFFH\)，<strong>无符号下溢</strong>变成最大值 4294967295，\(0 \le 4294967295\) 恒成立 → 死循环。若 i、n 都改为 int：\(n-1 = -1\)，\(0 \le -1\) 为假 → 循环一次都不执行，不会死循环（直接返回 sum = 1）。</p>
+      </li>
+      <li>
+        <p>相等。① f1(23) = \(2^{24}-1 = 16\,777\,215\)，int 按补码精确存放 → 机器数 = <strong>00FF FFFFH</strong>。</p>
+        <p>② f2(23)：累加过程中每个加数 \(2^1\sim2^{23}\) 与部分和 \(2^{24}-1 = 1.\underbrace{11\cdots1}_{23个1}B\times2^{23}\) 都在 float 的 24 位有效数字（1 位隐含 + 23 位尾数）之内 → <strong>精确</strong>，返回 16777215.0f。其 IEEE 754 机器数：真阶 = 23 → 阶码 = \(127+23 = 150 = 1001\ 0110B\)，尾数全 1：</p>
+        <p><code class="bin">0 10010110 11111111111111111111111</code> = <strong>4B7F FFFFH</strong>。两者数值相等。</p>
+      </li>
+      <li>
+        <p>f1(24) = \(2^{25}-1 = 33\,554\,431\)（int 精确）。f2(24) 中部分和会到达 \(2^{25}-1 = 1.\underbrace{11\cdots1}_{24个1}B\times2^{24}\)，需要 <strong>25 位有效数字</strong>，超出 float 的 24 位精度 → 无法精确表示，就近舍入到最近的可表示数 \(2^{25}\)（间隔已为 4，候选 \(2^{25}-4\) 与 \(2^{25}\) 中它离 \(2^{25}\) 最近）→ 得 33 554 432.0。根因：float 只有 24 位有效数字，而 int 运算按位精确。</p>
+      </li>
+      <li>
+        <p>f1(31) 累加至最后一轮：sum = \(2^{31}-1\) 再加 \(2^{31}\) → 数学值 \(2^{32}-1 = 4\,294\,967\,295\) 超出 int 上限 \(2^{31}-1\)，补码加法按模 \(2^{32}\) <strong>溢出环绕</strong>，sum 的位模式 = <code class="bin">FFFF FFFFH</code>，按补码解释即 −1。</p>
+        <p>要 f1(n) = f(n)，需 \(2^{n+1}-1 \le 2^{31}-1\)，即 \(n+1 \le 31\) → 最大 <strong>n = 30</strong>（此时返回 \(2^{31}-1 = 2147483647\) 恰为 INT_MAX）。</p>
+      </li>
+      <li>
+        <p>7F80 0000H：数符 0、阶码 = <code class="bin">1111 1111</code>（全 1）、尾数全 0 → <strong>+∞</strong>（正上溢；累加值 \(2^{128}-1\) 已超过 float 最大规格化数 \((2-2^{-23})\times2^{127}\)）。</p>
+        <p>不溢出：结果舍入后不超过最大规格化数。n = 126 时最后部分和为 \(2^{127}-1\)，舍入为 \(2^{127}\)（阶码字段 = 254，可表示）→ 不溢出；n = 127 时结果舍入到 \(2^{128}\)，需阶码 255 → 溢出为 +∞。故最大的 <strong>n = 126</strong>。</p>
+        <p>精确（无舍入）：\(2^{n+1}-1 = 1.\underbrace{11\cdots1}_{n+1个1}B\times2^{n}\) 需要 \(n+1\) 位有效数字，float 只有 24 位 → \(n+1 \le 24\) → 最大的 <strong>n = 23</strong>（与第 (2) 问一致）。</p>
+      </li>
+    </ol>
+  </div></details>
+</div>
+
+<div class="pager">
+  <a class="prev" href="s-23.html"><span class="dir">上一篇</span>2.3 浮点数的表示与运算</a>
+  <a class="next" href="../ch3/index.html"><span class="dir">下一篇</span>第3章 存储系统</a>
+</div>
+</main>
+<footer class="site-footer"><div class="inner">
+  <p>本站为个人学习用途整理，内容与插图取自王道《计算机组成原理考研复习指导》，版权归原出版方所有，仅供交流，请勿商用。</p>
+  <p><a href="../index.html">← 返回首页</a> · <a href="quiz.html">本章习题</a></p>
+</div></footer>
+</body>
+</html>

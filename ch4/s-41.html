@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>4.1 指令系统 · 第4章 · 408计组带学</title>
+<link rel="stylesheet" href="../css/style.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body>
+<header class="site-header"><div class="inner">
+  <a class="site-title" href="../index.html">408 计算机组成原理带学</a>
+  <nav class="chapnav">
+    <a href="../index.html">首页</a>
+    <a href="index.html" class="cur">第4章</a>
+    <a href="quiz.html">本章习题</a>
+  </nav>
+</div></header>
+<main>
+<nav class="crumbs"><a href="../index.html">首页</a> / <a href="index.html">第4章 指令系统</a> / 4.1 指令系统</nav>
+
+<h1>4.1 指令系统</h1>
+
+<p>指令系统是表征一台计算机性能的重要因素。这一节先弄清<strong>指令集合体系结构（ISA）</strong>到底规定了什么，再拆开一条指令看它的<strong>基本格式</strong>（操作码 + 地址码，按地址码个数分零/一/二/三地址），最后进入本章第一个硬核计算点：<strong>定长操作码</strong>与<strong>扩展操作码</strong>的指令条数计算，以及按功能划分的<strong>六类指令</strong>。</p>
+
+<h3><span class="sec-id">4.1.1</span>指令集合体系结构</h3>
+<p>机器指令（简称指令）是指示计算机执行某种操作的命令。一台计算机的<strong>所有指令的集合</strong>构成该机的<strong>指令系统</strong>，也称<strong>指令集</strong>。指令系统是<strong>指令集合体系结构（ISA）</strong>中最核心的部分。ISA 完整定义了<strong>软件与硬件之间的接口</strong>，是机器语言或汇编语言程序员必须掌握的基础。</p>
+<p>ISA 规定的内容主要包括：</p>
+<ol>
+<li><strong>指令格式</strong>、寻址方式，以及各种操作码所需的操作数的个数、类型和寻址约束；</li>
+<li>操作数的<strong>数据类型</strong>，以及按<strong>大端还是小端</strong>方式存放；</li>
+<li>程序可访问的<strong>寄存器</strong>编号、数量和位长，存储空间的大小和编址方式；</li>
+<li>指令所支持的<strong>控制状态</strong>，如程序计数器、条件码（标志）的语义行为等。</li>
+</ol>
+<p>ISA 规定了机器硬件的行为格式，因此机器语言或汇编语言程序员必须熟悉所用机器的 ISA。然而，大多数程序员仅使用高级语言（如 C/C++/Java）编程，高级语言抽象层级较高，隐藏了许多机器细节，导致程序员难以利用与硬件结构相关的优化手段提升性能。若能理解指令系统及硬件特性，则能开发出性能更优的程序。</p>
+<div class="callout exam">
+<span class="tag">考点</span>指令集合体系结构（ISA）的内容（2022、2025 真题）。四条记忆抓手：格式与寻址约束、数据类型与大小端、寄存器与存储空间编址、PC 与条件码等控制状态。ISA 是<strong>软件和硬件的交界面</strong>，位于计算机系统结构的抽象层上。
+</div>
+
+<h3><span class="sec-id">4.1.2</span>指令的基本格式</h3>
+<p>一条指令是机器语言的一个语句，由一组有意义的二进制代码组成，其基本格式为「操作码字段 + 地址码字段」：</p>
+<table class="small">
+<tbody>
+<tr><td>操作码字段</td><td>地址码字段</td></tr>
+</tbody>
+</table>
+<p><strong>操作码</strong>指明指令应执行的操作及功能，是识别指令、理解其作用以及确定地址码含义的关键，例如指示算术加减法、程序转移或返回等。<strong>地址码</strong>给出被操作的信息（指令或数据）的地址，包括源操作数地址、目的操作数地址、下一条指令地址（转移或子程序入口地址）等。</p>
+<p><strong>指令字长</strong>指一条指令所包含的二进制位数，取决于操作码长度、地址码长度及地址码个数。在同一个指令系统中，若所有指令字长都相等，则称为<strong>定长指令字结构</strong>，它取指和译码简单，有利于流水线实现；若指令字长随功能而变，则称为<strong>变长指令字结构</strong>。由于主存通常按字节编址，指令字长通常为字节的整数倍。</p>
+<div class="callout exam">
+<span class="tag">考点</span>根据指令格式和相关内容组合成机器指令代码（2015 真题）。给定操作码和各地址码字段的位数，把它们按位拼起来就是机器指令；反过来，能从一条机器指令里切出各字段并解释其含义。
+</div>
+<p>根据指令中<strong>操作数地址码数目</strong>的不同，可将指令分为以下几种格式。</p>
+
+<h4>1. 零地址指令</h4>
+<pre><code>零地址:  ┌────┐
+         │ OP │
+         └────┘</code></pre>
+<p>指令中仅有操作码，无显式地址。这类指令有两种情况：</p>
+<ol>
+<li><strong>无须操作数的指令</strong>，如空操作（NOP）、停机、关中断等；</li>
+<li><strong>用于堆栈计算机的运算指令</strong>，其操作数隐含从栈顶和次栈顶弹出，运算结果压回栈顶。</li>
+</ol>
+
+<h4>2. 一地址指令</h4>
+<pre><code>一地址:  ┌────┬────┐
+         │ OP │ A₁ │
+         └────┴────┘</code></pre>
+<p>其具体形式由操作码决定，常见有两种：</p>
+<ol>
+<li><strong>单操作数指令</strong>：按 \(A_1\) 地址读取操作数，进行 OP 操作后结果回存 \(A_1\)。指令含义：\(OP(A_1) \to A_1\)，如加 1、减 1、取反、求补、移位等；</li>
+<li><strong>累加器双操作数指令</strong>：\(A_1\) 为源操作数地址，另一操作数隐含在累加器 ACC，结果存入 ACC。指令含义：\((ACC)\,OP\,(A_1) \to ACC\)。</li>
+</ol>
+<p>若地址码均为主存地址，完成一条一地址指令需 <strong>3 次访存</strong>（取指 1 次，取数 1 次，存结果 1 次）。</p>
+<div class="callout warn">
+<span class="tag">易混</span>一地址指令不等于只有一个操作数：单操作数形态是「取数—加工—存回」；累加器形态里其实有<strong>两个</strong>操作数，只是另一个藏在 ACC 里。判断抓手是看<strong>操作码</strong>——需要两个操作数参与的运算（如加法）在单地址机器上必然走 ACC。
+</div>
+
+<h4>3. 二地址指令</h4>
+<pre><code>二地址:  ┌────┬────┬────┐
+         │ OP │ A₁ │ A₂ │
+         └────┴────┴────┘</code></pre>
+<p>指令含义：\((A_1)\,OP\,(A_2) \to A_1\)。其中 \(A_1\) 为<strong>目的操作数地址（兼结果地址）</strong>，\(A_2\) 为源操作数地址。若地址码均为主存地址，完成一条二地址指令需 <strong>4 次访存</strong>（取指 1 次，取两个操作数 2 次，存结果 1 次）。</p>
+
+<h4>4. 三地址指令</h4>
+<pre><code>三地址:  ┌────┬────┬────┬──────┐
+         │ OP │ A₁ │ A₂ │ A₃(结果) │
+         └────┴────┴────┴──────┘</code></pre>
+<p>指令含义：\((A_1)\,OP\,(A_2) \to A_3\)。在三地址指令中，\(A_1\) 和 \(A_2\) 为两个源操作数地址，\(A_3\) 为结果地址。若地址码均为主存地址，完成一条三地址指令也需 <strong>4 次访存</strong>（取指 1 次，取两个操作数 2 次，存结果 1 次）。</p>
+<div class="callout tip">
+<span class="tag">小结</span>访存次数一句话记：<strong>取指令 1 次打底，一地址取 1 存 1 共 3 次，二/三地址取 2 存 1 共 4 次</strong>（设地址码均为主存地址）。注意「取指」本身也要访存，别漏数。
+</div>
+
+<h3><span class="sec-id">4.1.3</span>定长操作码指令格式</h3>
+<p>定长操作码指令是在指令字的<strong>最高位部分分配固定位数</strong>表示操作码。一个 \(n\) 位操作码字段的指令系统最多可表示 \(2^n\) 条指令。定长操作码有利于<strong>简化硬件译码</strong>并<strong>提高编译（指令译码）速度</strong>。在字长为 32 位或更长的系统中，这种格式是常用做法。</p>
+<div class="callout exam">
+<span class="tag">考点</span>定长操作码的指令条数（2015 真题）。最基本的两算：\(n\) 位操作码最多 \(2^n\) 条；若指令字长固定且地址码占 \(k\) 位，则操作码位数 = 字长 − \(k\)，条数随之确定。
+</div>
+
+<h3><span class="sec-id">4.1.4</span>扩展操作码指令格式</h3>
+<p>扩展操作码（变长操作码）指指令的操作码字段<strong>位数不固定</strong>，且<strong>分散在不同的位置</strong>。这种做法增加了指令译码和分析的难度，使控制器设计更加复杂。最常见的变长操作码方法是<strong>扩展操作码</strong>（见图 4.1），它使<strong>操作码长度随地址码减少而增加</strong>，不同地址数的指令具有不同长度的操作码，从而有效缩短指令字长。</p>
+<p><strong>【例】</strong>指令字长为 16 位，其中 4 位为基本操作码字段 OP，另有 3 个 4 位长的地址字段 \(A_1\)、\(A_2\) 和 \(A_3\)。若 4 位基本操作码全部用于三地址指令，则最多支持 16 条指令。实际安排如下：</p>
+<ol>
+<li><strong>三地址指令</strong>：4 位操作码 <code class="bin">0000</code>～<code class="bin">1110</code> 共 <strong>15 条</strong>，保留 <code class="bin">1111</code> 作为扩展操作码；</li>
+<li><strong>二地址指令</strong>：操作码为 <code class="bin">1111 0000</code>～<code class="bin">1111 1110</code>，共 <strong>15 条</strong>，保留 <code class="bin">1111 1111</code> 作为扩展操作码；</li>
+<li><strong>一地址指令</strong>：操作码为 <code class="bin">1111 1111 0000</code>～<code class="bin">1111 1111 1110</code>，共 <strong>15 条</strong>，保留 <code class="bin">1111 1111 1111</code> 作为扩展操作码；</li>
+<li><strong>零地址指令</strong>：操作码为 <code class="bin">1111 1111 1111 0000</code>～<code class="bin">1111 1111 1111 1111</code>，共 <strong>16 条</strong>。</li>
+</ol>
+<figure>
+<img src="../assets/ch4/fig-p162.png" alt="一种扩展操作码的安排方式" loading="lazy">
+<figcaption>图4.1 一种扩展操作码的安排方式（王道教材）</figcaption>
+</figure>
+<p>复算一下这个安排的总容量：\(15 + 15 + 15 + 16 = 61\) 条指令。前三级各让出一个「短码前缀」往下扩展，最后一级不再扩展、16 个编码用满——这正是「短操作码不能是长操作码前缀」在数数上的体现。</p>
+<p>除这种安排外，还有其他多种扩展方法。例如形成 <strong>15 条三地址指令、12 条二地址指令、63 条一地址指令和 16 条零地址指令，共 106 条指令</strong>，请读者自行分析。这里给出复算：三地址仍用 <code class="bin">0000</code>～<code class="bin">1110</code> 共 15 条；二地址用 <code class="bin">1111</code> 后接 <code class="bin">0000</code>～<code class="bin">1011</code> 共 \(2^4-4=12\) 条，留出 <code class="bin">1111 11xx</code> 中 4 个前缀；一地址用这 4 个前缀各扩展 16 种，得 \(4 \times 16 = 64\) 个编码，再保留 1 个作零地址前缀，即 \(64-1=63\) 条；零地址用最后 1 个前缀扩展满 16 条。合计 \(15+12+63+16=106\) 条。✓</p>
+<div class="callout warn">
+<span class="tag">易混</span>两种安排别背混：图 4.1 的安排是 <strong>15/15/15/16（共 61 条）</strong>，另一种常见扩展是 <strong>15/12/63/16（共 106 条）</strong>。数数时抓住一条主线——<strong>每一级都要「留一个编码当下级前缀」，只有最后一级用满</strong>；算完再按「各短码不能与长码前缀相同」检查一遍。
+</div>
+<p>在设计扩展操作码指令格式时，必须注意以下两点：</p>
+<ol>
+<li><strong>不允许短操作码成为长操作码的前缀</strong>，即短操作码不能与长操作码的前面部分相同；</li>
+<li>各指令的操作码<strong>一定不能重复</strong>。</li>
+</ol>
+<p>通常情况下，对使用频率较高的指令分配<strong>较短的操作码</strong>，对使用频率较低的指令分配较长的操作码，从而尽可能减少指令译码和分析的时间。</p>
+<div class="callout exam">
+<span class="tag">考点</span>扩展操作码的设计与分析（2017、2021、2022 真题）。常考两类题：① 给定各级指令条数，判断该方案<strong>是否可行</strong>（检查前缀不重叠、编码不重复）；② 给定方案求<strong>最多还能扩展多少条</strong>某类指令。步骤固定：从短码算到长码，每级先扣掉留给下级的 1 个（或多个）前缀。
+</div>
+
+<h3><span class="sec-id">4.1.5</span>指令的类型</h3>
+<p>设计指令系统时必须考虑应提供哪些操作类型。指令按功能可分为以下几种：</p>
+<h4>1. 数据传送指令</h4>
+<p>传送指令主要包括寄存器之间的传送（MOV）、从内存单元读取数据到 CPU 寄存器（LOAD）、从 CPU 寄存器写数据到内存单元（STORE）、进栈操作（PUSH）、出栈操作（POP）等。</p>
+<h4>2. 算术和逻辑运算指令</h4>
+<p>算术和逻辑运算指令主要有加（ADD）、减（SUB）、乘（MUL）、除（DIV）、加 1（INC）、减 1（DEC）、与（AND）、或（OR）、取反（NOT）、异或（XOR）等。</p>
+<h4>3. 移位操作指令</h4>
+<p>移位指令主要有算术移位、逻辑移位、循环移位等。</p>
+<h4>4. 程序控制转移指令</h4>
+<p>顺序控制指令主要有<strong>无条件转移（JMP）</strong>、<strong>条件转移（BRANCH）</strong>、<strong>调用（CALL）</strong>、<strong>返回（RET）</strong>、<strong>陷阱（TRAP）</strong>等。无条件转移指令在任何情况下都执行转移操作；而条件转移指令仅在特定条件满足时才执行转移操作，转移条件通常是某个标志位的值或多个标志位的组合。</p>
+<p><strong>调用指令与转移指令的区别</strong>在于：调用指令会<strong>保存下一条指令的地址（返回地址）</strong>，以便子程序执行结束后能返回到主程序继续执行；而转移指令则不返回。</p>
+<div class="callout exam">
+<span class="tag">考点</span>转移指令、调用和返回指令、条件转移指令的区分（2019 真题）。判断抓手两条：①<strong>要不要回来</strong>——CALL 保存返回地址、RET 回来，JMP 一去不回；②<strong>转不转看条件</strong>——JMP 无条件，BRANCH 看标志位。
+</div>
+<h4>5. 输入/输出指令</h4>
+<p>输入/输出指令用于完成 CPU 与外部设备交换数据或传送控制命令及状态信息。</p>
+<h4>6. CPU 控制指令</h4>
+<p>CPU 控制指令主要有停机、开中断、关中断、系统模式切换以及进入特殊处理程序等。这类指令只能在<strong>操作系统内核代码</strong>中使用，以防止用户误用对系统造成危害。</p>
+<div class="callout tip">
+<span class="tag">小结</span>本节主线：「ISA 定规矩 → 指令分两段（操作码 + 地址码）→ 地址码几个决定四种子（零/一/二/三地址，各配访存次数）→ 操作码定长好译码（\(2^n\) 条）、变长省字长（前缀不重叠）→ 按功能分六类（传送、算逻、移位、控制转移、输入输出、CPU 控制）」。
+</div>
+
+<div class="pager">
+  <a class="prev" href="index.html"><span class="dir">上一篇</span>第4章 导学</a>
+  <a class="next" href="s-42.html"><span class="dir">下一篇</span>4.2 指令的寻址方式</a>
+</div>
+</main>
+<footer class="site-footer"><div class="inner">
+  <p>本站为个人学习用途整理，内容与插图取自王道《计算机组成原理考研复习指导》，版权归原出版方所有，仅供交流，请勿商用。</p>
+  <p><a href="../index.html">← 返回首页</a> · <a href="quiz.html">本章习题</a></p>
+</div></footer>
+</body>
+</html>

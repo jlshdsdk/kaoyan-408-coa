@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>2.1 数制与编码 · 第2章 · 408计组带学</title>
+<link rel="stylesheet" href="../css/style.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body>
+<header class="site-header"><div class="inner">
+  <a class="site-title" href="../index.html">408 计算机组成原理带学</a>
+  <nav class="chapnav">
+    <a href="../index.html">首页</a>
+    <a href="index.html" class="cur">第2章</a>
+    <a href="quiz.html">本章习题</a>
+  </nav>
+</div></header>
+<main>
+<nav class="crumbs"><a href="../index.html">首页</a> / <a href="index.html">第2章 数据的表示和运算</a> / 2.1 数制与编码</nav>
+
+<h1>2.1 数制与编码</h1>
+
+<p>这一节解决「数在机器里怎么写」的问题：先规定进位计数制并把各种转换练熟，再用原码、反码、补码、移码四种编码把定点数装进固定字长，最后落到 C 语言整数类型在真实编译器里的截断与扩展行为。本节是选择题的高频产区：<strong>进制转换、补码的表示范围、C 语言类型转换的位模式</strong>都要做到又快又准。</p>
+
+<h3><span class="sec-id">2.1.1</span>进位计数制及其相互转换</h3>
+
+<h4>1. 为什么计算机用二进制</h4>
+<p>计算机系统内部的所有信息，均采用二进制进行编码。原因有三：</p>
+<ol>
+<li>二进制只有两个状态，只需使用具有两种稳定物理状态的器件即可表示一位，硬件实现成本低，可用高低电平稳定表示 0 和 1；</li>
+<li>二进制的 1 和 0 恰好对应逻辑值「真」与「假」，为计算机实现逻辑运算和程序中的条件判断提供了直接支持；</li>
+<li>二进制的运算规则极为简单，可通过基本的逻辑门电路高效实现各类算术与逻辑操作。</li>
+</ol>
+<div class="callout exam">
+<span class="tag">考点</span>采用二进制编码的原因（2019 真题）。三条原因要能完整背出：物理上两种稳定状态、逻辑上对应真假、运算规则简单易于门电路实现。
+</div>
+
+<h4>2. 进位计数制的要素</h4>
+<p>常用的进位计数制包括十进制、二进制、八进制和十六进制。<strong>基数</strong>指每个数位所能使用的不同数码的个数（如十进制的基数为 10，数码为 0～9）；<strong>位权</strong>是每一位「逢 r 进一」的尺度，第 \(i\) 位的位权为 \(r^i\)。一个 \(r\) 进制数 \(K_n K_{n-1}\cdots K_1 K_0 . K_{-1}\cdots K_{-m}\) 的值是各位数码与位权乘积之和：</p>
+$$K_n r^n + K_{n-1} r^{n-1} + \cdots + K_0 r^0 + K_{-1} r^{-1} + \cdots + K_{-m} r^{-m} = \sum_{i=n}^{-m} K_i r^i$$
+<p>式中 \(r\) 是基数，\(K_i\) 是第 \(i\) 位的数码，取值范围为 \(0, 1, \cdots, r-1\)。</p>
+<ul>
+<li><strong>二进制</strong>：基数为 2，数码为 0 和 1，计数「逢二进一」，第 \(i\) 位的位权为 \(2^i\)；</li>
+<li><strong>八进制</strong>：基数为 8，数码为 0～7，计数「逢八进一」。由于 \(8 = 2^3\)，每 3 位二进制数恰好对应 1 位八进制数，两种进制可方便地互相转换；</li>
+<li><strong>十六进制</strong>：基数为 16，数码为 0～9 和 A～F（A～F 分别代表 10～15），计数「逢十六进一」。由于 \(16 = 2^4\)，每 4 位二进制数对应 1 位十六进制数。</li>
+</ul>
+<p>书写时常用后缀字母标识进制：B 表示二进制数，O 表示八进制数，D 表示十进制数（通常省略），H 表示十六进制数；此外也常用前缀 0x 表示十六进制数。</p>
+
+<h4>3. 二进制数转换为八进制、十六进制数</h4>
+<p>转换时以<strong>小数点为界分别处理</strong>：<strong>整数部分</strong>从小数点向左，每 3 位（八进制）或每 4 位（十六进制）分为一组，若最左侧不足 3 位或 4 位，则在高位补 0；<strong>小数部分</strong>从小数点向右同样每 3 位或 4 位分为一组，若最右侧不足，则在低位补 0。分组完成后，将每组直接替换为对应的八进制或十六进制数码即可。</p>
+<p><strong>【例 2.1】</strong>将二进制数 <code class="bin">1111000010.01101</code> 转换为八进制数和十六进制数。</p>
+<p>解：转换为八进制时按 3 位分组——整数部分高位补 0 满足 3 位，得 <code class="bin">001|111|000|010</code>，即 1、7、0、2；小数部分低位补 0 满足 3 位，得 <code class="bin">011|010</code>，即 3、2：</p>
+$$\underbrace{001}_{1}\ \underbrace{111}_{7}\ \underbrace{000}_{0}\ \underbrace{010}_{2}\ .\ \underbrace{011}_{3}\ \underbrace{010}_{2} \Rightarrow (1702.32)_8$$
+<p>转换为十六进制时按 4 位分组——整数部分高位补 0 得 <code class="bin">0011|1100|0010</code>，即 3、C、2；小数部分低位补 0 得 <code class="bin">0110|1000</code>，即 6、8：</p>
+$$\underbrace{0011}_{3}\ \underbrace{1100}_{\mathrm{C}}\ \underbrace{0010}_{2}\ .\ \underbrace{0110}_{6}\ \underbrace{1000}_{8} \Rightarrow (3\mathrm{C}2.68)_{16}$$
+<p>反之，将八进制或十六进制数转换为二进制数，只需将每位数码分别替换为对应的 3 位或 4 位二进制数即可（必要时去掉整数最高位或小数最低位的 0）。通常先转换为二进制，再转为目标进制，这是最直接且不易出错的方式。</p>
+
+<h4>4. 任意进制数转换为十进制数</h4>
+<p>采用<strong>按权展开相加</strong>法：将各位数码与其对应位权（基数的幂次）相乘，再求和。例如 \((11011.1)_2 = 1 \times 2^4 + 1 \times 2^3 + 0 \times 2^2 + 1 \times 2^1 + 1 \times 2^0 + 1 \times 2^{-1} = 27.5\)。</p>
+
+<h4>5. 十进制数转换为任意进制数</h4>
+<p>对整数部分和小数部分<strong>分别处理</strong>：</p>
+<ol>
+<li><strong>整数部分使用除基取余法</strong>：不断除以目标进制的基数，记录余数，直至商为 0。<strong>最先得到的余数为最低位，最后得到的为最高位</strong>；</li>
+<li><strong>小数部分使用乘基取整法</strong>：不断乘以目标进制的基数，记录乘积的整数部分，直至小数部分为 0 或达到所需精度。<strong>最先得到的整数为最高位，最后得到的为最低位</strong>。</li>
+</ol>
+<p>最终将两部分转换结果拼接，即得到目标进制数。</p>
+<p><strong>【例 2.2】</strong>将十进制数 123.6875 转换为二进制数。</p>
+<p>解：<strong>整数部分（除 2 取余）</strong>：123 ÷ 2 = 61 余 1（最低位），61 ÷ 2 = 30 余 1，30 ÷ 2 = 15 余 0，15 ÷ 2 = 7 余 1，7 ÷ 2 = 3 余 1，3 ÷ 2 = 1 余 1，1 ÷ 2 = 0 余 1（最高位），故整数部分 \(123 = (1111011)_2\)。</p>
+<p><strong>小数部分（乘 2 取整）</strong>：0.6875 × 2 = 1.375，取整 1（最高位）；0.375 × 2 = 0.75，取整 0；0.75 × 2 = 1.5，取整 1；0.5 × 2 = 1.0，取整 1（最低位），故小数部分 \(0.6875 = (0.1011)_2\)。</p>
+<p>所以，\(123.6875 = (1111011.1011)_2\)。</p>
+<div class="callout warn">
+<span class="tag">注意</span>十进制小数与二进制小数（任意 \(r\) 进制小数）<strong>并非一一对应</strong>。一个十进制小数能精确转换为二进制小数，当且仅当它能表示成形如 \(k/2^n\) 的分数（\(k\)、\(n\) 为整数）。例如 \(0.3 = 3/10\)，分母 10 含因子 5，不是 2 的幂，因此<strong>无法</strong>用有限位二进制小数精确表示。反之，任何有限二进制小数都对应一个分母为 2 的幂的分数。这是浮点数运算产生舍入误差的根源，必须特别注意。
+</div>
+
+<h3><span class="sec-id">2.1.2</span>定点数的编码表示</h3>
+
+<h4>1. 真值与机器数</h4>
+<p>日常生活中用「+」「−」号表示正负（正号常省略），如 +15、−8，这类带符号的数称为<strong>真值</strong>。而计算机中表示的实际数值，数的符号与数值部分一同编码：通常用 <code class="bin">0</code> 表示正、<code class="bin">1</code> 表示负，这种符号数字化的表示形式称为<strong>机器数</strong>。例如机器数 <code class="bin">0.101</code> 表示真值 +0.101（这里的 0 仅用于分隔符号位与数值位）。</p>
+
+<h4>2. 机器数的定点表示</h4>
+<p>根据小数点位置是否固定，计算机中的数值分为<strong>定点表示</strong>和<strong>浮点表示</strong>（见 2.3 节）。定点表示用于表示<strong>定点小数</strong>和<strong>定点整数</strong>：</p>
+<ul>
+<li><strong>定点小数</strong>：表示纯小数，约定小数点位于符号位之后、数值部分最高位之前；</li>
+<li><strong>定点整数</strong>：表示纯整数，约定小数点位于数值部分最低位之后。</li>
+</ul>
+<figure>
+<img src="../assets/ch2/fig-p035.png" alt="定点小数与定点整数的表示格式" loading="lazy">
+<figcaption>图2.1 定点小数表示 / 图2.2 定点整数表示（王道教材）</figcaption>
+</figure>
+<p>事实上，机器内部<strong>并无真实的小数点</strong>，只是人为约定了小数点的位置。因此，在定点数的编码和运算中，无须区分这两类数，只需关心<strong>符号位和数值位</strong>即可。定点数的编码表示主要有四种：原码、补码、反码和移码。</p>
+
+<h4>3. 原码、补码、反码、移码</h4>
+
+<h5>（1）原码表示法</h5>
+<p>用<strong>机器数的最高位表示符号</strong>，其余各位表示数的绝对值。原码的定义如下（\(x\) 为真值，字长为 \(n+1\) 位）：</p>
+$$[x]_{原} = \begin{cases} 0,x, & 0 \le x < 2^n \\ 2^n - x = 2^n + |x|, & -2^n < x \le 0 \end{cases}$$
+<p>例如，若字长为 8 位，\(x_1 = +1110\)，\(x_2 = -1110\)，则其原码表示分别为 \([x_1]_{原} =\) <code class="bin">0,0001110</code>；\([x_2]_{原} = 2^7 + 1110 =\) <code class="bin">1,0001110</code>。</p>
+<p>对于 \(n+1\) 位原码整数，其表示范围为 \(-(2^n-1) \le x \le 2^n-1\)（<strong>关于原点对称</strong>）。</p>
+<div class="callout warn">
+<span class="tag">注意</span>零的原码表示有<strong>正零和负零两种形式</strong>：\([+0]_{原} =\) <code class="bin">0.0000000</code>，\([-0]_{原} =\) <code class="bin">1.0000000</code>。
+</div>
+<p>原码表示的优点：① 与真值的对应关系简单直观，转换简便；② 用原码实现乘除运算比较简便。缺点：① 表示不唯一，存在 ±0 两种编码；② 用原码实现加减运算比较复杂。</p>
+
+<h5>（2）补码表示法</h5>
+<p>补码表示法的<strong>加减运算均可通过加法器实现</strong>。正数的补码与原码相同，负数的补码等于模（\(n+1\) 位）与 \(|x|\) 之差。补码的定义为：</p>
+$$[x]_{补} = \begin{cases} 0,x, & 0 \le x < 2^n \\ 2^{n+1} + x = 2^{n+1} - |x|, & -2^n \le x < 0 \end{cases} \pmod{2^{n+1}}$$
+<p>等价地，无论正负，均有 \([x]_{补} = 2^{n+1} + x \ (-2^n \le x < 2^n,\ \bmod\ 2^{n+1})\)。</p>
+<p>例如，若字长为 8 位，\(x = +1010\)，则 \([x]_{补} =\) <code class="bin">0,0001010</code>；\(x = -1010\)，则 \([x]_{补} = 2^8 - 1010 =\) <code class="bin">1,1110110</code>。</p>
+<div class="callout exam">
+<span class="tag">考点</span>补码的表示范围（2010、2014、2022 真题）。对于 \(n+1\) 位补码整数，表示范围为 \(-2^n \le x \le 2^n - 1\)，<strong>比原码多表示一个负数，即 \(-2^n\)</strong>。几个特殊值的补码（\(n+1\) 位）：
+<ul>
+<li>\([+0]_{补} = [-0]_{补} = 0.00\cdots 0\)（全 0），<strong>零的补码表示是唯一的</strong>；</li>
+<li>\([-1]_{补} = 2^{n+1} - 1 = 1.11\cdots 1\)（全 1）；</li>
+<li>最大正整数：\([2^n - 1]_{补} = 0\,11\cdots 1\)（符号位 0，数值位全 1）；</li>
+<li>最小负整数：\([-2^n]_{补} = 1\,00\cdots 0\)（符号位 1，数值位全 0）。</li>
+</ul>
+</div>
+<p><strong>模运算（了解）</strong>：一个数与它除以「模」后得到的余数是等价的。设 \(A = B + K \times M\)（\(K\) 为整数），记为 \(A \equiv B \pmod M\)，则 \(B\) 是 \(A\) 除以 \(M\) 的余数。在补码运算中，\(A \equiv B \pmod M\) 时 \([A]_{补} = [B]_{补}\)；特别地，\([-B]_{补} = M - |B| \pmod M\)，故<strong>减去一个数等价于加上它的补数</strong>——补码正是借助加法运算实现减法运算，这是补码设计的核心思想。</p>
+
+<h5>（3）补码与真值的相互转换</h5>
+<div class="callout exam">
+<span class="tag">考点</span>补码和真值的互转（2020、2023 真题）。<strong>真值 → 补码</strong>：对于负数，符号位取 1，其余各位由其绝对值<strong>按位取反、末位加 1</strong> 得到；正数直接照写（与原码相同）。<strong>补码 → 真值</strong>：若符号位为 0，直接读作正数；若符号位为 1，真值为负数，其绝对值由补码的数值部分<strong>按位取反、末位加 1</strong> 得到。
+</div>
+
+<h5>（4）变形补码（双符号位补码）</h5>
+<p>为便于<strong>溢出检测</strong>，可采用双符号位的补码表示（又称变形补码）。双符号位 00 表示正数、11 表示负数。若总位数为 \(n+2\)（高位为符号位，其余为数值位），则变形补码定义为：</p>
+$$[x]_{变形补} = \begin{cases} 00,x, & 0 \le x < 2^n \\ 2^{n+2} + x = 2^{n+2} - |x|, & -2^n \le x < 0 \end{cases} \pmod{2^{n+2}}$$
+<p>双符号位中的高位符号位在判断「溢出」中发挥作用（详见 2.2.3 节）。</p>
+
+<h5>（5）反码表示法（了解即可）</h5>
+<p>反码可视为从原码转换为补码的中间表示形式。正数的反码与原码相同；负数的反码由其原码的数值部分<strong>按位取反</strong>（末位不加 1）得到。反码存在明显不足：① 零的表示不唯一（存在两种编码）；② 表示范围比相同字长的补码少一个最小负数（\(-2^n\)）。因此，反码在计算机中很少使用。</p>
+
+<h5>（6）移码表示法</h5>
+<p>移码主要用于表示<strong>浮点数的阶码</strong>，其核心思想是将真值 \(x\) 加上一个<strong>固定常量（偏置值）</strong>，实现整数整体右移。设字长为 \(n+1\) 位，偏置值取 \(2^n\)，则移码定义为：</p>
+$$[x]_{移} = 2^n + x, \quad -2^n \le x < 2^n$$
+<p>例如，若字长为 8 位，偏置值为 \(2^7\)，\(x = +10101\)，则 \([x]_{移} = 2^7 + 10101 =\) <code class="bin">1,0010101</code>；\(x = -10101\)，则 \([x]_{移} = 2^7 - 10101 =\) <code class="bin">0,1101011</code>。</p>
+<div class="callout warn">
+<span class="tag">注意</span>在 IEEE 754 标准的浮点数中，\(k\) 位阶码的偏置值取 \(2^{k-1} - 1\)，如 8 位阶码的偏置值为 127（详见 2.3.1 节），与上式中的 \(2^n\) 不同。
+</div>
+<p>移码（设字长 \(n+1\)，偏置值 \(2^n\)）的主要特点如下：</p>
+<ol>
+<li>零的表示唯一：\([+0]_{移} = [-0]_{移} = 2^n = 1\,00\cdots 0\)（\(n\) 个 0）；</li>
+<li>在相同字长时，移码与补码的数值位完全相同，<strong>仅符号位相反</strong>（将补码的最高位取反即得移码）；</li>
+<li>移码全 0 时，对应真值的最小值 \(-2^n\)；移码全 1 时，对应真值的最大值 \(2^n - 1\)；</li>
+<li><strong>移码保持真值的大小顺序</strong>：移码值越大，对应真值越大，便于阶码比较。</li>
+</ol>
+
+<h4>4. 四种编码表示的总结与对比</h4>
+<div class="callout exam">
+<span class="tag">考点</span>各种码制的特点（2015 真题）。① 正数的原码、反码、补码相同，移码则不同；② 原码与反码在数轴上关于原点对称，二者都存在 +0 与 −0 两种表示；③ 补码与移码的表示不对称，<strong>零的表示唯一</strong>，且比原码和反码<strong>多表示一个负数</strong>（\(-2^n\)）；④ 原码表示直观（但乘除运算简便），而负数的补码和反码不能像原码那样直观判断大小，不过在同为负数的前提下，补码或反码的数值部分越大，其真值也越大。
+</div>
+<p>下表给出相同位数下四种编码的整数表示范围对比（设含 1 位符号位、共 \(m\) 位）：</p>
+<table>
+<thead>
+<tr><th>编码方式</th><th>表示范围（\(m\) 位整数）</th><th>零的表示</th><th>对称性</th></tr>
+</thead>
+<tbody>
+<tr><td>原码</td><td>\(-(2^{m-1}-1) \sim 2^{m-1}-1\)</td><td>±0 两种</td><td>关于原点对称</td></tr>
+<tr><td>反码</td><td>\(-(2^{m-1}-1) \sim 2^{m-1}-1\)</td><td>±0 两种</td><td>关于原点对称</td></tr>
+<tr><td>补码</td><td>\(-2^{m-1} \sim 2^{m-1}-1\)</td><td>唯一（全 0）</td><td>不对称，多一个最小负数</td></tr>
+<tr><td>移码</td><td>\(-2^{m-1} \sim 2^{m-1}-1\)</td><td>唯一（\(10\cdots0\)）</td><td>不对称，保持大小顺序</td></tr>
+</tbody>
+</table>
+
+<h3><span class="sec-id">2.1.3</span>整数的表示</h3>
+
+<h4>1. 无符号整数的表示</h4>
+<p>当所有二进制位均用于表示数值（<strong>无符号位</strong>）时，该编码称为无符号整数，简称无符号数。此时<strong>数值隐含为非负整数</strong>，由于无须保留符号位，在相同字长下，无符号整数能表示的最大值大于有符号整数。例如，无符号整数可用于地址等非负场景，或用于确定不会产生负值的加减运算场景。</p>
+<p>例如，8 位无符号整数的最小值为 <code class="bin">0000 0000</code>（0），最大值为 <code class="bin">1111 1111</code>（\(2^8-1 = 255\)），表示范围为 0～255；而 8 位有符号数（补码表示）的最小值为 <code class="bin">1000 0000</code>（\(-2^7 = -128\)），最大值为 <code class="bin">0111 1111</code>（\(2^7-1 = 127\)），表示范围为 −128～127。</p>
+
+<h4>2. 有符号整数的表示</h4>
+<p>有符号整数通过在数值位前增设一位符号位（0 表示正、1 表示负）来表示正负。虽然原码、反码和补码均可用于表示有符号整数，但现代计算机<strong>统一采用补码</strong>，因其具有以下优势：</p>
+<ol>
+<li><strong>零的表示唯一</strong>（无 +0 与 −0 之分）；</li>
+<li><strong>符号位与数值位一同参与运算</strong>，使加减法统一为加法操作；</li>
+<li><strong>表示范围更大</strong>：比原码和反码多表示一个最小负数。</li>
+</ol>
+<p>因此，\(n\) 位有符号整数（补码）的表示范围为 \(-2^{n-1} \sim 2^{n-1}-1\)。</p>
+
+<h3><span class="sec-id">2.1.4</span>C 语言中的整数类型及类型转换</h3>
+
+<h4>1. C 语言中的整型数据类型</h4>
+<div class="callout exam">
+<span class="tag">考点</span>int 数据的表示范围（2017、2019、2024 真题）。
+</div>
+<p>C 语言提供了多种整型类型，具体长度依赖于编译器和目标平台。常见情况如下：</p>
+<ul>
+<li><strong>短整型</strong>：short（或 short int），通常为 16 位；</li>
+<li><strong>整型</strong>：int，通常为 32 位；</li>
+<li><strong>长整型</strong>：long（或 long int），在 32 位系统中为 32 位，在 64 位系统中通常为 64 位；</li>
+<li>在上述类型前加 unsigned 关键字，可定义对应的无符号类型（如 unsigned int、unsigned short 等）；若未显式指定 signed 或 unsigned，则默认为有符号类型；</li>
+<li><strong>字符型</strong>：char，通常为 8 位，是一种特殊的整数，通常可按无符号数解释。</li>
+</ul>
+<p>在现代系统中，所有有符号整数均以<strong>补码</strong>形式存储；无符号类型则将全部位用于表示非负数值。</p>
+
+<h4>2. 整型数据的类型转换</h4>
+<p>定点数在类型转换过程中，若涉及字长变化，则会触发两种基本操作：<strong>位截断</strong>与<strong>位扩展</strong>。</p>
+<p><strong>1）位截断</strong>：当长类型转换为短类型时，系统直接丢弃高位，仅保留低位部分。由于目标类型的表示范围较小，故可能会导致数值发生变化，且具有较强的隐蔽性（编译器通常不会报错或警告）。</p>
+<p><strong>2）位扩展</strong>：当短类型转换为长类型时，系统通过填充高位来保持数值语义不变。具体扩展的方式取决于源数据的符号性：</p>
+<ul>
+<li><strong>零扩展</strong>：用于无符号数，在高位补 0；</li>
+<li><strong>符号扩展</strong>：用于补码表示的有符号数，高位重复填充符号位。</li>
+</ul>
+<p>C 语言支持通过强制类型转换实现不同类型间的转换，其语法为 <code>TYPE b = (TYPE) a;</code>，转换结果是一个 TYPE 类型的值。根据源类型与目标类型的字长和符号性，可分为三种情形。</p>
+
+<h4>3. 整型类型的三种相互转换</h4>
+<div class="callout exam">
+<span class="tag">考点</span>整型类型的相互转换（2011、2016、2019、2024 真题）。
+</div>
+
+<h5>（1）长类型转换为短类型：位截断</h5>
+<p>转换规则：<strong>保留低位，丢弃高位</strong>。考虑如下代码片段（int 型为 32 位，short 型为 16 位）：</p>
+<pre><code>int x=165537, u=-34991;
+short y=(short)x, v=(short)u;
+printf("x=%d, y=%d\n", x, y);
+printf("u=%d, v=%d\n", u, v);</code></pre>
+<p>运行结果：</p>
+<pre><code>x=165537, y=-31071
+u=-34991, v=30545</code></pre>
+<p>其中 x、y、u、v 的十六进制表示分别为 0x000286A1、0x86A1、0xFFFF7751、0x7751。可见，当长类型转换为短类型时，系统直接截断高位、仅保留低位部分。由于目标类型的数值范围较小，这种位截断可能导致结果与原值在语义上不一致：由于 165537 超出了 16 位有符号整数的最大值 32767，截断后的低 16 位被解释为 −31071；而 −34991 的低 16 位 <code class="bin">0111 0111 0101 0001</code>（0x7751）的最高位为 0，被重新解释为正数 30545。此类转换不会触发任何异常或错误报告，具有很强的隐蔽性。</p>
+
+<h5>（2）相同字长的转换：仅改变解释方式</h5>
+<p>转换规则：<strong>位模式保持不变，仅重新解释其含义</strong>。考虑如下代码片段：</p>
+<pre><code>short x=-4321;
+unsigned short y=(unsigned short)x;
+printf("%d, %u\n", x, y);</code></pre>
+<p>运行结果：</p>
+<pre><code>x=-4321, y=61215</code></pre>
+<p>有符号数为负数时，无符号数只能表示非负数。从输出结果看，y 的值似乎与 x 毫无关联；但将二者转换为二进制形式后（见下表），可观察到：short 型强制转换为 unsigned short 型后，<strong>所有二进制位均保持不变</strong>，x 按补码规则解释、y 则按无符号规则解读。</p>
+<table>
+<thead>
+<tr><th>变量</th><th>值</th><th colspan="16">二进制位</th></tr>
+</thead>
+<tbody>
+<tr><td>x</td><td>−4321</td><td class="bin">1</td><td class="bin">1</td><td class="bin">1</td><td class="bin">0</td><td class="bin">1</td><td class="bin">1</td><td class="bin">1</td><td class="bin">1</td><td class="bin">0</td><td class="bin">0</td><td class="bin">0</td><td class="bin">1</td><td class="bin">1</td><td class="bin">1</td><td class="bin">1</td><td class="bin">1</td></tr>
+<tr><td>y</td><td>61215</td><td class="bin">1</td><td class="bin">1</td><td class="bin">1</td><td class="bin">0</td><td class="bin">1</td><td class="bin">1</td><td class="bin">1</td><td class="bin">1</td><td class="bin">0</td><td class="bin">0</td><td class="bin">0</td><td class="bin">1</td><td class="bin">1</td><td class="bin">1</td><td class="bin">1</td><td class="bin">1</td></tr>
+</tbody>
+</table>
+<p>这表明：相同长度的整型类型转换不改变位模式，<strong>仅改变对这些位的解释方式</strong>。</p>
+
+<h5>（3）短类型转换为长类型：位扩展</h5>
+<p>转换规则：若源数据为<strong>有符号数，则执行符号扩展</strong>；若源数据为<strong>无符号数，则执行零扩展</strong>。扩展后数值语义保持不变，例如 16 位补码 <code class="bin">1 000 0000 0000 0000</code>（−32768）符号扩展为 32 位后仍为 −32768。</p>
+<div class="callout warn">
+<span class="tag">易混</span>三种转换的后果要分清：<strong>位扩展不改变数值</strong>（补 0 或补符号位都是「扩写」）；<strong>相同字长互转不改变位模式、只改变解释</strong>（值可能变化）；<strong>位截断直接丢弃高位</strong>（值大概率变化，且无警告）。
+</div>
+
+<div class="pager">
+  <a class="prev" href="index.html"><span class="dir">上一篇</span>第2章 导学</a>
+  <a class="next" href="s-22.html"><span class="dir">下一篇</span>2.2 运算方法和运算电路</a>
+</div>
+</main>
+<footer class="site-footer"><div class="inner">
+  <p>本站为个人学习用途整理，内容与插图取自王道《计算机组成原理考研复习指导》，版权归原出版方所有，仅供交流，请勿商用。</p>
+  <p><a href="../index.html">← 返回首页</a> · <a href="quiz.html">本章习题</a></p>
+</div></footer>
+</body>
+</html>

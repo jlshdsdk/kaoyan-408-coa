@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>第6章 导学 · 总线 · 408计组带学</title>
+<link rel="stylesheet" href="../css/style.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body>
+<header class="site-header"><div class="inner">
+  <a class="site-title" href="../index.html">408 计算机组成原理带学</a>
+  <nav class="chapnav">
+    <a href="../index.html">首页</a>
+    <a href="index.html" class="cur">第6章</a>
+    <a href="quiz.html">本章习题</a>
+  </nav>
+</div></header>
+<main>
+<nav class="crumbs"><a href="../index.html">首页</a> / <a href="index.html">第6章 总线</a> / 本章导学</nav>
+
+<h1>第6章 总线</h1>
+
+<p>前面各章拆完了 CPU 和存储器，本章回答一个「部件之间怎么连线」的问题：总线是一组可供多个部件分时共享的公共信息传输线路。本章知识点较少，通常以选择题的形式出现，特别是<strong>总线的特点、性能指标（总线带宽的计算）、总线事务与定时方式</strong>；总线带宽的计算也可能结合其他章节出综合题。初学时先抓两条主线：一是「分时共享」决定了总线的一切规则（为什么要仲裁、为什么任一时刻只能一对主从设备通信），二是「带宽 = 宽度 × 工作频率」这条公式及其各种变形。</p>
+
+<div class="callout exam">
+<span class="tag">408考纲要求</span>
+<ul>
+<li><strong>总线的基本概念</strong>：总线的定义与基本特征（分时性、共享性），总线的分类。</li>
+<li><strong>总线的组成及性能指标</strong>：总线传输周期、总线时钟频率、总线工作频率、总线宽度、总线带宽、总线复用、总线寻址能力；总线的结构（单总线、南北桥、现代集成化结构）。</li>
+<li><strong>总线事务和定时</strong>：总线事务的概念与阶段，突发传输与非突发传输，串行传输与并行传输；同步、异步、半同步、分离式四种定时方式。</li>
+</ul>
+</div>
+
+<div class="callout ext">
+<span class="tag">大纲变动</span>教材中带 <strong>*</strong> 号的 6.1.2「常见的总线标准」（ISA、EISA、PCI、USB 等）已于 2021 年从统考考纲中删除（教材原注），本站保留为课外拓展，学有余力再看即可。
+</div>
+
+<h2>本章地图</h2>
+<div class="map-grid">
+  <div class="map-card">
+    <a class="sec-link" href="s-61.html">6.1 总线概述</a>
+    <div class="desc">总线的分时性与共享性，片内/系统/通信总线与数据、地址、控制三总线，带宽等性能指标的计算，从单总线到南北桥再到现代集成化的结构演进。</div>
+  </div>
+  <div class="map-card">
+    <a class="sec-link" href="s-62.html">6.2 总线事务和定时</a>
+    <div class="desc">总线事务的三个阶段，突发传输「一次地址、多次数据」，同步/异步/半同步/分离式四种定时方式与不互锁、半互锁、全互锁的握手辨析。</div>
+  </div>
+</div>
+
+<h2>复习提示：带着这两个问题学</h2>
+<p>教材在本章开头建议读者边学边思考以下问题，本章末尾给出参考答案（见下方「本章小结」）：</p>
+<ol>
+<li>引入总线结构有什么好处？</li>
+<li>引入总线结构会导致什么问题？如何解决？</li>
+</ol>
+
+<h2>本章小结</h2>
+<p>下表整理自教材本章小结，回答开篇的两个问题。</p>
+<table>
+<thead>
+<tr><th style="width:38%">问题</th><th>结论要点</th></tr>
+</thead>
+<tbody>
+<tr>
+<td>引入总线结构有什么好处？</td>
+<td>① 简化系统结构，便于设计与制造；② 大幅减少连线数量，利于布线、缩小体积，并提高可靠性；③ 统一接口标准，所有设备采用相似的总线接口，简化硬件设计；④ 支持模块化与灵活扩展，便于系统升级、配置和功能扩展；⑤ 简化软件编程，设备通过不同接口地址进行访问，驱动逻辑统一；⑥ 便于故障诊断、维护与成本控制。</td>
+</tr>
+<tr>
+<td>引入总线结构会导致什么问题？如何解决？</td>
+<td>引入总线后，多个设备需<strong>分时共享</strong>同一组信号线。当多个主设备同时请求使用总线时，将引发<strong>总线竞争</strong>，导致通信冲突。解决方法：系统需配置<strong>总线仲裁部件</strong>，以某种方式选择一个主设备获得总线控制权，只有获得总线控制权的设备才能开始数据传送。</td>
+</tr>
+</tbody>
+</table>
+
+<h2>常见问题和易混淆知识点</h2>
+
+<h3><span class="sec-id">问题 1</span>一条总线在同一时刻可以有多个主从设备进行通信吗？</h3>
+<p>不可以。在任一总线周期内，总线上只能有<strong>一个主设备</strong>控制总线，并选择<strong>一个从设备</strong>进行一对一通信，或向所有从设备广播（一对多）。由于总线是共享通路，若多对主从设备同时通信，则会导致数据冲突，破坏传输正确性。因此，同一时刻不能存在多对并发的主从通信。</p>
+<div class="callout warn">
+<span class="tag">易混</span>「多个部件可<strong>同时接收</strong>总线上的信息」（共享性）与「多个部件可同时<strong>发送</strong>」（×）是两回事：任一时刻只能有一个部件向总线发送信息，多个发送方必须分时使用总线；但挂接在总线上的其他部件可以同时监听、接收总线上的信息。
+</div>
+
+<div class="pager">
+  <a class="prev" href="../index.html"><span class="dir">上一篇</span>首页</a>
+  <a class="next" href="s-61.html"><span class="dir">下一篇</span>6.1 总线概述</a>
+</div>
+</main>
+<footer class="site-footer"><div class="inner">
+  <p>本站为个人学习用途整理，内容与插图取自王道《计算机组成原理考研复习指导》，版权归原出版方所有，仅供交流，请勿商用。</p>
+  <p><a href="../index.html">← 返回首页</a> · <a href="quiz.html">本章习题</a></p>
+</div></footer>
+</body>
+</html>

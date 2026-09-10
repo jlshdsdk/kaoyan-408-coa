@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>5.5 异常和中断机制 · 第5章 · 408计组带学</title>
+<link rel="stylesheet" href="../css/style.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body>
+<header class="site-header"><div class="inner">
+  <a class="site-title" href="../index.html">408 计算机组成原理带学</a>
+  <nav class="chapnav">
+    <a href="../index.html">首页</a>
+    <a href="index.html" class="cur">第5章</a>
+    <a href="quiz.html">本章习题</a>
+  </nav>
+</div></header>
+<main>
+<nav class="crumbs"><a href="../index.html">首页</a> / <a href="index.html">第5章 中央处理器</a> / 5.5 异常和中断机制</nav>
+
+<h1>5.5 异常和中断机制</h1>
+
+<p>现代计算机配备了完善的异常和中断处理系统：CPU 内部设有异常检测和响应逻辑，外部设备接口则包含中断请求和控制逻辑，操作系统内核实现了相应的异常/中断服务程序，这些硬件电路与软件程序紧密结合，共同完成异常和中断的处理过程。本节回答三个问题：异常和中断是什么、怎么分（5.5.1、5.5.2）、CPU 如何检测和响应（5.5.3）。</p>
+
+<h3><span class="sec-id">5.5.1</span>异常和中断的基本概念</h3>
+<div class="callout exam">
+<span class="tag">考点</span>异常和中断的基本概念（2015 真题）；异常出现的时机（2023 真题）。
+</div>
+<p><strong>异常</strong>（也称为内中断）是指 CPU 在执行指令过程中，由其内部检测到的同步事件，例如除零错误、非法操作码、页缺失等。这类事件由当前指令直接引发，具有<strong>确定性</strong>和<strong>可再现性</strong>。</p>
+<p><strong>中断</strong>（也称外中断）则是由外部设备（如 I/O 控制器）发起的异步事件，用于通知 CPU 外设状态发生变化（如数据传输完成）。中断的发生与当前指令无关，具有<strong>随机性</strong>。</p>
+<p>两者的处理流程大致如下：当 CPU 执行用户程序的第 \(i\) 条指令时，若该指令触发异常，CPU 通常会在其执行过程中或完成时立即响应；而外部中断则在第 \(i\) 条指令<strong>完整执行结束后</strong>才被检测（指令执行期间不会采样中断信号）。响应发生后，CPU 将当前程序现场保存，并转移至相应的服务程序。处理完成后，若事件可恢复，系统将<strong>重新执行第 \(i\) 条指令</strong>（例如缺页异常需在页面调入后重试访存操作），而中断则从<strong>第 \(i+1\) 条指令开始继续执行</strong>；若异常属于不可恢复的错误（如非法指令），操作系统将终止该用户进程。</p>
+<div class="callout warn">
+<span class="tag">易混</span>异常与中断的一线之隔：<strong>异常 = 内中断</strong>，与指令同步、由指令引发、可重现；<strong>中断 = 外中断</strong>，与指令异步、由外设发起、随机发生。异常在指令执行过程中或结束时响应，中断只在每条指令结束后检测。这也是为什么有些教材将它们统称为「中断」的原因——广义中断 = 内中断（异常）+ 外中断。
+</div>
+
+<h3><span class="sec-id">5.5.2</span>异常和中断的分类</h3>
+<h4>1. 异常的分类</h4>
+<p>异常是由 CPU <strong>内部</strong>产生的意外事件，可分为<strong>硬件故障中断</strong>和<strong>程序性异常</strong>。硬件故障中断是由硬件逻辑功能错误引起的，如存储器校验错、总线错误等；程序性异常也称软件中断，是指在 CPU 内部执行指令引起的异常事件，如除零、溢出、断点、单步跟踪、非法指令、栈溢出、地址越界、缺页等。按异常发生原因和返回方式的不同，可分为<strong>故障、自陷和终止</strong>。</p>
+<h5>（1）故障（Fault）</h5>
+<div class="callout exam">
+<span class="tag">考点</span>异常处理结束后重新执行该指令的点（2021 真题）。
+</div>
+<p><strong>故障</strong>是指在指令<strong>启动之后、执行完成之前</strong>被检测到的异常事件。CPU 在尚未提交该指令结果时即响应故障，通常尝试在处理后重新执行同一条指令。典型的故障包括：指令译码时遇到非法操作码、访存时发生缺页、执行除法指令时发现除数为零等。对于可恢复的故障（如缺页），操作系统在处理完毕后，将页面调入内存，然后返回并<strong>重新执行引发故障的指令</strong>；而对于不可恢复的故障（如非法指令、除零），无法继续运行，通常会终止当前进程。</p>
+<h5>（2）自陷（Trap）</h5>
+<div class="callout exam">
+<span class="tag">考点</span>自陷（2020 真题）。
+</div>
+<p><strong>自陷</strong>是一种由<strong>程序员预先安排</strong>、用于主动转入操作系统内核的同步事件，也称陷阱或陷入。与故障不同，陷阱是指令<strong>正常执行完毕之后</strong>才被触发的，因此 CPU 能够完整提交该指令的结果。典型应用包括：x86 计算机架构中的断点调试与单步跟踪机制、系统调用指令（如 syscall），以及 MIPS 架构中的条件自陷指令（如 teq）。「断点」以预设的「陷阱」指令（如断点指令）或特定控制标志（如单步跟踪标志）显式设置。当执行到此类指令时，CPU 会根据其类型自动转移至相应的处理程序。处理完后，CPU 总是<strong>从自陷指令的下一条指令</strong>继续执行。</p>
+<h5>（3）终止（Abort）</h5>
+<p><strong>终止</strong>是指在执行指令过程中发生严重的硬件故障（如控制器出错、存储器校验错、总线错误等），导致系统无法继续正常运行，程序因此<strong>被强制终止</strong>。此时，CPU 会转移到相应的异常服务程序，通常用于记录错误信息或重启系统。与故障和自陷不同，终止异常并非由某条特定指令明确引发，其发生具有不可预测性，往往反映底层硬件或系统状态的严重损坏。</p>
+<p>终止异常和外中断属于<strong>硬中断</strong>。</p>
+
+<h4>2. 中断的分类</h4>
+<div class="callout exam">
+<span class="tag">考点</span>中断和异常概念的判别（2009、2016、2020、2025 真题）。
+</div>
+<p><strong>中断</strong>是指由外部设备或事件发起的异步请求，典型中断源包括 I/O 设备（如键盘输入）、定时器（如周期性时钟中断）等。这些设备通过专用的中断请求信号线向 CPU 发出中断请求。CPU 在每条指令结束后检查中断请求线，若检测到有效请求，则进入中断响应周期。</p>
+<h5>（1）可屏蔽中断</h5>
+<p>此类中断通过可屏蔽中断请求线 <strong>INTR</strong> 发送。CPU 可通过中断控制器中的<strong>中断屏蔽寄存器</strong>选择性地屏蔽或允许特定中断源，被屏蔽的中断请求将不会传递至 CPU。</p>
+<h5>（2）不可屏蔽中断</h5>
+<p>此类中断通过专用的不可屏蔽中断请求线 <strong>NMI</strong> 发送，无法被软件屏蔽，用于处理高优先级事件，如电源掉电、内存校验错等。NMI 确保 CPU 能及时响应关键故障。</p>
+<p><strong>异常与中断</strong>在响应和处理机制上存在相似之处，但二者存在以下两个重要差异：</p>
+<ol>
+<li><strong>触发时机</strong>：异常（如缺页、除零等）由当前执行的指令直接引发，具有同步性；而中断由外部硬件异步触发，与任何特定指令无关，且不会在当前指令的执行过程中发生；</li>
+<li><strong>检测机制</strong>：异常由 CPU 内部逻辑在指令执行过程中自动检测或由软件显式触发；中断则依赖外部硬件通过中断请求线通知 CPU，再进一步确定中断源及其类型。</li>
+</ol>
+<p>此外，中断还可按其他维度分类：按服务程序入口地址的获取方式，分为<strong>向量中断</strong>（硬件直接提供中断入口地址）和<strong>软件查询</strong>（由处理器在响应中断后通过软件遍历确定中断源）；按是否允许嵌套，分为<strong>单重中断</strong>（服务期间禁止新中断）和<strong>多重中断</strong>（允许更高优先级中断嵌套）。</p>
+
+<h3><span class="sec-id">5.5.3</span>异常和中断响应过程</h3>
+<p>当 CPU 在执行指令过程中检测到异常，或在指令边界处检测到中断请求时，将启动异常或中断响应过程。该过程是从事件发生到转移至相应处理程序之间的<strong>硬件自动操作序列</strong>，主要包括<strong>关中断、保存断点和程序状态</strong>，以及<strong>识别事件类型并转移至处理程序</strong>三个阶段。</p>
+<h4>（1）关中断</h4>
+<p>为确保上下文保存的<strong>原子性</strong>，在响应异常或中断的初始阶段，CPU 会自动屏蔽可屏蔽中断（通常通过清零标志寄存器中的 IF 位）。IF = 0 表示关中断，IF = 1 表示开中断。需要注意的是，不可屏蔽中断和更高优先级异常仍可在此时段内生效，具体行为取决于具体硬件设计。</p>
+<h4>（2）保存断点和程序状态</h4>
+<p>为使处理完后能正确返回原程序，CPU 必须保存两类关键上下文信息：① <strong>断点（返回地址）</strong>，对于异常通常为当前指令地址，对于中断则为指令执行完毕后的下一条指令地址；② <strong>程序状态字（PSW）</strong>，包含条件码、中断允许标志、特权级等运算状态。这些信息通常被压入<strong>内核栈</strong>，既保障了上下文的安全性，又天然支持中断的嵌套与恢复等操作。</p>
+<h4>（3）识别事件类型并转移至处理程序</h4>
+<p>现代处理器普遍采用<strong>硬件向量机制</strong>（称为向量中断）来识别和响应异常与中断：每类事件都被分配唯一的类型号；系统初始化时，将对应服务程序的入口地址（称为<strong>中断向量</strong>）按类型号顺序填入<strong>中断向量表</strong>。当事件发生时，CPU 自动获取类型号，并以此作为索引直接访问向量表，获取目标地址并转移至相应处理程序，全程无须软件介入。</p>
+<p>相比之下，早期系统常采用<strong>软件轮询方式</strong>（称为非向量中断）：CPU 响应请求后转移至统一入口，操作系统需要依次读取各设备的状态寄存器，通过查询确定中断源。该方式依赖软件判断，效率较低，现代系统已极少使用。</p>
+<p>整个响应过程<strong>由硬件自动完成</strong>，具有高度原子性。响应结束后，CPU 开始执行对应服务程序的第一条指令。后续处理（如复制缺页页面、关闭中断、系统调用分发等）由操作系统内核的软件实现。因此，完整的异常与中断处理是软硬件紧密协同的结果。</p>
+<div class="callout warn">
+<span class="tag">易混</span>三类「返回点」是判断题的命门：<strong>故障</strong>——重试，返回引发故障的那条指令（缺页后重执行）；<strong>自陷</strong>——指令执行完后才触发，返回自陷指令的<strong>下一条</strong>；<strong>中断</strong>——断点是下一条指令地址（第 \(i+1\) 条）。再补一个易错点：断点对异常是「当前指令地址」、对中断是「下一条指令地址」，两者别写反。
+</div>
+<div class="callout ext">
+<span class="tag">拓展</span>自陷是一种内部异常，在 x86 计算机中，用于程序调试的「断点设置」功能是通过陷阱指令实现的：执行到自陷指令时，无须软件干预，由硬件自动调用操作系统内核程序进行处理。CPU 执行到陷阱指令后，会自动根据不同陷阱类型进行相应的处理，然后返回到陷阱指令的下一条指令执行。而系统调用（syscall）同样借助陷阱机制主动陷入内核——这就是「程序主动、指令安排」与「外设异步、随机触发」的本质区别。
+</div>
+
+<div class="pager">
+  <a class="prev" href="s-54.html"><span class="dir">上一篇</span>5.4 控制器的功能和工作原理</a>
+  <a class="next" href="s-56.html"><span class="dir">下一篇</span>5.6 指令流水线</a>
+</div>
+</main>
+<footer class="site-footer"><div class="inner">
+  <p>本站为个人学习用途整理，内容与插图取自王道《计算机组成原理考研复习指导》，版权归原出版方所有，仅供交流，请勿商用。</p>
+  <p><a href="../index.html">← 返回首页</a> · <a href="quiz.html">本章习题</a></p>
+</div></footer>
+</body>
+</html>

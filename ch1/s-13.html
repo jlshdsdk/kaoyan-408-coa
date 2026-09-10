@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>1.3 计算机的性能指标 · 第1章 · 408计组带学</title>
+<link rel="stylesheet" href="../css/style.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body>
+<header class="site-header"><div class="inner">
+  <a class="site-title" href="../index.html">408 计算机组成原理带学</a>
+  <nav class="chapnav">
+    <a href="../index.html">首页</a>
+    <a href="index.html" class="cur">第1章</a>
+    <a href="quiz.html">本章习题</a>
+  </nav>
+</div></header>
+<main>
+<nav class="crumbs"><a href="../index.html">首页</a> / <a href="index.html">第1章 计算机系统概述</a> / 1.3 计算机的性能指标</nav>
+
+<h1>1.3 计算机的性能指标</h1>
+
+<div class="callout exam">
+<span class="tag">考点</span>本节是第1章的计算题大本营。CPU执行时间的相关计算（2012、2013、2014、2017、2022、2023）、主频和时钟周期的转换计算（2013）、IPS 的相关计算（2023）、MIPS 相关的计算（2012、2013）、浮点运算指标的概念（2011、2021）反复命题。目标：三个公式（CPU执行时间、MIPS、FLOPS 换算）能默写、能互推。
+</div>
+
+<h3><span class="sec-id">1.3.1</span>计算机的主要性能指标</h3>
+
+<h4>1. 运算速度</h4>
+
+<h4>（1）吞吐量和响应时间</h4>
+<p><strong>吞吐量</strong>：指系统在<strong>单位时间内处理请求的数量</strong>。它受多个环节影响，包括信息输入内存的速度、CPU 取指令的速度、数据在内存中读写的速率，以及结果输出到外部设备的效率。由于主存储器在这些环节中扮演关键角色，其存取性能对系统吞吐量有显著影响。可以把系统想象成一条流水线餐厅：吞吐量就是「每小时能出多少份菜」，任何一个慢工位（内存）都会拖累总出餐量。</p>
+<p><strong>响应时间</strong>：指从用户发出请求到系统返回所需结果的<strong>总等待时间</strong>，通常包括 <strong>CPU 时间</strong>（程序实际运行时间）和<strong>等待时间</strong>（如磁盘访问、内存访问、I/O 操作等所花费的时间）。</p>
+<div class="callout exam">
+<span class="tag">考点</span>提高系统性能的综合措施（2010 真题）。方向：让单位时间处理的请求更多（吞吐量↑）、让单次请求等待更短（响应时间↓），二者常从不同角度描述同一件事。
+</div>
+
+<h4>（2）主频和 CPU 时钟周期</h4>
+<p><strong>CPU 时钟周期</strong>：机器内部主时钟脉冲的宽度，是 CPU 工作的<strong>最小时间单位</strong>。时钟脉冲由机器脉冲源产生，经整形和分频后形成。时钟周期通常以相邻状态单元间组合逻辑电路的最大延迟时间为基准确定；在流水线结构中，则以指令流水线的每个流水段的最大延迟时间为准。</p>
+<p><strong>主频（CPU 时钟频率）</strong>：机器内部主时钟的频率，即<strong>时钟周期的倒数</strong>，是衡量处理器速度的重要参数。对于<strong>同一个型号</strong>的计算机，主频越高，执行指令的每个步骤所需时间越短，运算速度越快。直观理解，主频表示<strong>每秒包含的时钟周期数</strong>。</p>
+$$T = \frac{1}{f}$$
+<p>其中 \(T\) 为 CPU 时钟周期，\(f\) 为主频，主频单位为赫兹（Hz），如 \(10\,\text{Hz}\) 表示每秒 10 个时钟周期。</p>
+
+<h4>（3）CPI（Cycles Per Instruction）</h4>
+<p>CPI 即<strong>执行一条指令所需的时钟周期数</strong>。不同指令所需的时钟周期数可能不同，因此对于一个程序或一台机器来说，其 CPI 是指该程序或该机器指令集中<strong>所有指令执行所需的平均时钟周期数</strong>，即<strong>平均 CPI</strong>：</p>
+$$\text{总时钟周期数} = \text{指令条数} \times \text{平均CPI}$$
+<div class="callout exam">
+<span class="tag">考点</span>IPS 的相关计算（2023 真题）。与 CPI 配对出现的是 <strong>IPS</strong>（Instructions Per Second），即<strong>每秒执行多少条指令</strong>：
+$$\text{IPS} = \frac{\text{主频}}{\text{平均CPI}}$$
+</div>
+
+<h4>（4）CPU 执行时间</h4>
+<p><strong>CPU 执行时间</strong>：指<strong>运行一个程序所花费的时间</strong>。</p>
+$$\text{CPU执行时间} = \frac{\text{CPU时钟周期数}}{\text{主频}} = \frac{\text{指令条数} \times \text{CPI}}{\text{主频}}$$
+<p>上式表明，CPU 性能（以执行时间衡量）取决于<strong>三个要素</strong>：<strong>指令条数、CPI 和主频</strong>，且三者之间存在制约关系。例如，采用复杂指令集（如 CISC）可能会减少程序所需的指令条数，但往往会导致 CPU 控制逻辑复杂，从而延长时钟周期、降低主频；反之，精简指令集（如 RISC）虽然可能增加程序所需的指令条数，但有助于缩短时钟周期、提高主频。</p>
+
+<div class="card">
+<h4>【例1.1】主频 / CPI / 执行时间综合计算</h4>
+<p>假定计算机 M1 和 M2 具有相同的指令集体系结构，M1 的主频为 <strong>2GHz</strong>，程序 P 在 M1 上的运行时间为 <strong>10s</strong>。M2 采用新技术可使主频大幅提升，但其平均 CPI 也增加到 M1 的 <strong>1.5 倍</strong>，则 M2 的主频至少提升到多少，才能使程序 P 在 M2 上的运行时间缩短为 <strong>6s</strong>？</p>
+<p><strong>解：</strong></p>
+<p>程序 P 在 M1 上的时钟周期数 = 指令条数 × 平均CPI = CPU执行时间 × 主频 = \(10\,\text{s} \times 2\,\text{GHz} = 2 \times 10^{10}\)。</p>
+<p>M2 的程序 CPI 为 M1 的 1.5 倍，因此程序 P 在 M2 上的时钟周期数 = \(1.5 \times 2 \times 10^{10} = 3 \times 10^{10}\)。</p>
+<p>要使程序 P 在 M2 上的运行时间缩短至 6s，则 M2 所需的主频至少为：</p>
+$$\frac{\text{程序P在M2上的时钟周期数}}{\text{CPU执行时间}} = \frac{3 \times 10^{10}}{6\,\text{s}} = 5\,\text{GHz}$$
+<p>由此可见，M2 的主频是 M1 的 2.5 倍，但其实际性能仅提升至 M1 的 1.67 倍。</p>
+</div>
+
+<div class="callout warn">
+<span class="tag">易混</span>例1.1 的最后一句话值得嚼一嚼：主频涨到 2.5 倍 ≠ 快 2.5 倍，因为 CPI 同时变大了。性能要永远用<strong>时间</strong>来比较，而不是只盯某一个指标——这正是导学页「主频高的 CPU 未必更快」的定量版本。
+</div>
+
+<h4>（5）MIPS（Million Instructions Per Second）</h4>
+<p>MIPS，即<strong>每秒执行的百万条指令数</strong>：</p>
+$$\text{MIPS} = \frac{\text{指令条数}}{\text{CPU执行时间} \times 10^6} = \frac{\text{主频}}{\text{CPI} \times 10^6}$$
+<p><strong>MIPS 用于不同机器间的性能比较存在明显缺陷</strong>：不同机器的指令集架构各异，指令的功能强度往往不等。例如，M1 中一条指令完成的操作在 M2 上可能需多条指令实现；同时，各机器的 CPI 与时钟周期也不同，导致同一条指令的实际执行时间差异显著。</p>
+
+<h4>（6）FLOPS（Floating-point Operations Per Second）</h4>
+<p>FLOPS，即<strong>每秒执行的浮点运算次数</strong>，常用于衡量科学计算等浮点密集型负载下的机器性能，按量级分为：</p>
+<table class="small">
+<thead>
+<tr><th>单位</th><th>全称</th><th>含义</th></tr>
+</thead>
+<tbody>
+<tr><td>MFLOPS</td><td>Million FLOPS</td><td>百万（\(10^6\)）次浮点运算/秒</td></tr>
+<tr><td>GFLOPS</td><td>Giga FLOPS</td><td>十亿（\(10^9\)）次浮点运算/秒</td></tr>
+<tr><td>TFLOPS</td><td>Tera FLOPS</td><td>万亿（\(10^{12}\)）次浮点运算/秒</td></tr>
+<tr><td>PFLOPS</td><td>Peta FLOPS</td><td>千万亿（\(10^{15}\)）次浮点运算/秒</td></tr>
+<tr><td>EFLOPS</td><td>Exa FLOPS</td><td>百亿亿（\(10^{18}\)）次浮点运算/秒</td></tr>
+<tr><td>ZFLOPS</td><td>Zetta FLOPS</td><td>十万亿亿（\(10^{21}\)）次浮点运算/秒</td></tr>
+</tbody>
+</table>
+<div class="callout warn">
+<span class="tag">注意</span>前缀的「底数」因场景而异：描述<strong>存储容量、文件大小</strong>等时，K、M、G、T 通常基于 2 的幂次（如 \(1\,\text{Kb} = 2^{10}\,\text{b}\)）；描述<strong>速率、频率</strong>等时，k、M、G、T 通常基于 10 的幂次（如 \(1\,\text{kb/s} = 10^{3}\,\text{b/s}\)）。习惯上前者用大写 K，后者用小写 k，但其他前缀（M、G 等）均为大写，具体含义需结合上下文判断。
+</div>
+
+<h4>2. 基准程序</h4>
+<p><strong>基准程序（Benchmarks）</strong>是一组专门用于性能测评的典型程序，旨在模拟真实应用场景下的负载，从而较为准确地反映系统在实际使用中的运行效率。通过在不同机器上运行相同的基准程序，并比较其执行时间，可以客观地评估和对比各系统的性能。</p>
+<p>但基准程序测评也有<strong>局限性</strong>：性能高低依赖于基准程序能否代表实际负载。厂商可能针对评测程序进行针对性优化，使某些代码段执行极快，却无法代表系统处理一般负载的能力，导致评测结果失真。因此，应结合具体应用领域选择合适的基准程序，并辅以多种评测手段综合判断（呼应导学页常见问题 4：单一基准程序跑得快，不能绝对等同整体性能好）。</p>
+
+<div class="pager">
+  <a class="prev" href="s-12.html"><span class="dir">上一篇</span>1.2 计算机系统层次结构</a>
+  <a class="next" href="quiz.html"><span class="dir">下一篇</span>本章习题</a>
+</div>
+</main>
+<footer class="site-footer"><div class="inner">
+  <p>本站为个人学习用途整理，内容与插图取自王道《计算机组成原理考研复习指导》，版权归原出版方所有，仅供交流，请勿商用。</p>
+  <p><a href="../index.html">← 返回首页</a> · <a href="quiz.html">本章习题</a></p>
+</div></footer>
+</body>
+</html>

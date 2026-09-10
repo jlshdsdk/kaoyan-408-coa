@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>3.4 外部存储器 · 第3章 · 408计组带学</title>
+<link rel="stylesheet" href="../css/style.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body>
+<header class="site-header"><div class="inner">
+  <a class="site-title" href="../index.html">408 计算机组成原理带学</a>
+  <nav class="chapnav">
+    <a href="../index.html">首页</a>
+    <a href="index.html" class="cur">第3章</a>
+    <a href="quiz.html">本章习题</a>
+  </nav>
+</div></header>
+<main>
+<nav class="crumbs"><a href="../index.html">首页</a> / <a href="index.html">第3章 存储系统</a> / 3.4 外部存储器</nav>
+
+<h1>3.4 外部存储器</h1>
+
+<p>外部存储器对应考纲「外部存储器」一条，两大件：<strong>磁盘存储器</strong>（3.4.1，机械、按柱面-盘面-扇区组织）与<strong>固态硬盘 SSD</strong>（3.4.2，闪存、按块-页组织）。本节是计算题粮仓——磁盘容量、存取时间、数据传输率、磁盘地址划分都有固定公式，SSD 的磨损均衡则是概念题热点。</p>
+
+<h3><span class="sec-id">3.4.1</span>磁盘存储器</h3>
+<p>磁盘存储器采用磁盘作为存储介质，具有以下优点：① 存储容量大，成本低；② 支持数据的重复写入和删除；③ 能长期保存信息，即使断电也能存档；④ 读取操作是非破坏性的，无须再生数据。缺点：存取速度较慢、机械结构复杂以及对工作环境要求较高。</p>
+
+<h4>1. 磁盘设备的组成</h4>
+<div class="callout exam">
+<span class="tag">考点</span>磁盘设备的组成（2019 真题）。磁盘存储器由<strong>磁盘驱动器、磁盘控制器和盘片</strong>组成。
+</div>
+<ul>
+<li><strong>磁盘驱动器</strong>：驱动磁盘旋转并通过磁头在盘面上执行读/写操作（见图 3.15）；</li>
+<li><strong>磁盘控制器</strong>：磁盘驱动器与主机之间的接口，负责接收并解析来自 CPU 的命令，向磁盘驱动器发送控制信号，同时监控其运行状态。</li>
+</ul>
+<figure>
+<img src="../assets/ch3/fig-p115.png" alt="磁盘驱动器示意图" loading="lazy">
+<figcaption>图3.15 磁盘驱动器示意图（王道教材）</figcaption>
+</figure>
+<p>磁盘的<strong>存储区域</strong>由多个记录面组成，每面包含若干同心磁道，每条磁道划分为若干扇区：</p>
+<ul>
+<li><strong>记录面</strong>：表示磁头数量，每个磁头负责一个记录面数据的读/写（记录面数 = 磁头数）；</li>
+<li><strong>柱面</strong>：所有记录面上<strong>相同编号的磁道</strong>构成一个柱面（柱面数 = 每个记录面的磁道数）；</li>
+<li><strong>扇区</strong>：每条磁道所包含的扇区数量。<strong>扇区是磁盘读/写的最小单位</strong>。相邻磁道和扇区之间用特定间隙隔开，以防止读/写冲突。扇区按固定圆心角度划分，导致从外到内道密度增加，磁盘的存储能力受限于<strong>最内圈磁道的最大记录密度</strong>。</li>
+</ul>
+<p>此外还有<strong>磁盘高速缓存（Disk Cache）</strong>：在内存中开辟一块区域，用于暂存待写入磁盘的数据。优点：磁盘以「簇」（由若干连续扇区组成）为单位进行写操作，缓存可减少频繁的小块写入；中间结果若在写回前被多次使用，可直接从缓存读取，提升效率。</p>
+
+<h4>2. 磁记录原理</h4>
+<p>当磁头和磁性记录介质发生相对运动时，通过<strong>电磁转换</strong>实现数据的读/写操作。写过程：按特定的编码方法，将二进制数据序列转换为磁层中对应的磁化翻转状态序列，以便读/写控制电路高效、可靠地完成写入与读出。</p>
+
+<h4>3. 磁盘的性能指标</h4>
+<p><strong>（1）记录密度</strong>：指单位面积上可存储的二进制数据量，通常以道密度、位密度和面密度表示——<strong>道密度</strong>是沿磁盘半径方向单位长度上的磁道数；<strong>位密度</strong>是单位磁道长度上记录的二进制位数；<strong>面密度</strong> = 道密度 × 位密度，反映单位面积的存储能力。</p>
+<p><strong>（2）磁盘的容量</strong>：分为非格式化容量和格式化容量。</p>
+<ul>
+<li><strong>非格式化容量</strong> = 记录面数 × 柱面数 × 每道磁化单元数（磁记录表面上可利用的磁化单元总数）；</li>
+<li><strong>格式化容量</strong> = 记录面数 × 柱面数 × 每道扇区数 × 每扇区字节数（按特定格式组织后实际可用的存储容量）。</li>
+</ul>
+<div class="callout exam">
+<span class="tag">考点</span>磁盘存储容量的计算（2013、2015、2022 真题）。<strong>非格式化容量 &gt; 格式化容量</strong>，差额用于保留扇区间隙、同步字段和格式开销。容量题先把「面 × 道 × 扇区 × 每扇区字节」四个量圈出来再代入。
+</div>
+<p><strong>（3）响应时间与存取时间</strong>：磁盘处理一次读/写请求的完整过程包括请求排队、控制信息解析以及三个物理操作：寻道、旋转等待和数据传输。因此总响应时间为</p>
+$$\text{响应时间} = \text{排队处理时间} + \text{寻道时间} + \text{旋转等待时间} + \text{数据传输时间}$$
+<p>其中，「<strong>寻道时间 + 旋转等待时间 + 数据传输时间</strong>」也称为<strong>存取时间</strong>，特指从磁头定位开始到数据传输完成的时间，是衡量磁盘性能的核心指标。</p>
+<ul>
+<li><strong>寻道时间</strong>：磁头移动到目标磁道所需时间。平均寻道时间通常取最大寻道时间的一半（从最外道到最内道时间的 1/2）；</li>
+<li><strong>旋转等待时间</strong>：目标扇区旋转至磁头下方所需时间。<strong>平均旋转等待时间等于磁盘旋转半周的时间</strong>；</li>
+<li><strong>数据传输时间</strong>：读取或写入一个扇区所需时间，取决于磁盘转速和数据密度。</li>
+</ul>
+<p><strong>（4）数据传输速率</strong>：指磁盘在单位时间内向主机传送的数据量（单位为 B/s）。若磁盘转速为 \(r\) 转/秒，每条磁道容量为 \(N\) 字节，则<strong>最大数据传输速率</strong>为</p>
+$$D_t = rN$$
+<div class="callout exam">
+<span class="tag">考点</span>磁盘存取时间的完整算例（教材习题解析口径）。磁盘转速 6000 转/分 = 100 转/秒，转一周用时 10ms，故<strong>平均旋转等待时间</strong>（半周）为 5ms；每条磁道 12 个扇区，扫过一个扇区用时 \(10/12 \approx 0.83\text{ms}\)（数据传输时间）；已知平均寻道时间 10.5ms，则磁盘平均存取时间 = 10.5 + 5 + 0.83 = <strong>16.33ms</strong>。注意寻道时间直接作为已知条件给出，不要再去「取半」。
+</div>
+
+<h4>4. 磁盘地址</h4>
+<div class="callout exam">
+<span class="tag">考点</span>磁盘地址结构的计算（2022 真题）。主机向磁盘控制器发送寻址信息，磁盘地址通常由三部分组成：<strong>柱面（磁道）号 + 盘面（磁头）号 + 扇区号</strong>。
+</div>
+<p>例如，磁盘有 16 个盘面，每个盘面有 256 个磁道，每个磁道划分为 16 个扇区，则每个扇区的地址可用 16 位二进制代码表示：柱面号占 8 位（\(256 = 2^8\)），盘面号占 4 位（\(16 = 2^4\)），扇区号占 4 位（\(16 = 2^4\)）。</p>
+
+<h4>5. 磁盘的工作过程</h4>
+<p>磁盘的主要操作包括<strong>寻址、读盘和写盘</strong>，每种操作对应一个控制字。磁盘工作时，首先读取控制字，然后执行相应控制字。由于磁盘是机械式部件，因此读/写操作为<strong>串行执行</strong>，不可并行。</p>
+
+<h4>6. 磁盘阵列（RAID）</h4>
+<div class="callout exam">
+<span class="tag">考点</span>RAID 的分级与特点（2013 真题）。RAID（独立冗余磁盘阵列）是指将多个独立的物理磁盘组合成一个<strong>逻辑磁盘</strong>，数据在多个物理盘上交叉分块存储并并行访问，从而获得更高的存储性能、可靠性与安全性。在 RAID1～RAID5 等方案中，当任意磁盘发生故障时，可拔出损坏磁盘并插入新盘，系统仍可恢复或维持数据完整性。
+</div>
+<ul>
+<li><strong>RAID0</strong>：无冗余、无校验的磁盘阵列。将连续的多个数据块交叉存放在不同物理磁盘的扇区上（条带化技术），利用多磁盘并行读/写，不仅扩展了磁盘容量，还显著提高了存取速度，但<strong>不具备容错能力</strong>；</li>
+<li><strong>RAID1</strong>：镜像磁盘阵列。两个磁盘同步执行读/写操作，互为镜像备份；一个磁盘故障时，可从另一磁盘完整读取数据，代价是<strong>有效容量减半</strong>（两盘仅当一盘使用）；</li>
+<li><strong>RAID2</strong>：采用海明码进行纠错的磁盘阵列；</li>
+<li><strong>RAID3</strong>：位交叉奇偶校验的磁盘阵列；</li>
+<li><strong>RAID4</strong>：块交叉奇偶校验的磁盘阵列；</li>
+<li><strong>RAID5</strong>：无独立校验的分块式奇偶校验磁盘阵列。</li>
+</ul>
+<p>总结：RAID 通过多磁盘<strong>并行工作</strong>提升数据传输速率，通过<strong>镜像</strong>提高可用性，通过<strong>校验</strong>提高容错能力。</p>
+
+<h3><span class="sec-id">3.4.2</span>固态硬盘</h3>
+
+<h4>1. 固态硬盘的特性</h4>
+<p>固态硬盘（SSD）是一种基于<strong>闪存技术</strong>的存储设备，存储介质与 U 盘类似，但容量更大、存取性能更优。一个 SSD 由一个或多个<strong>闪存芯片</strong>以及<strong>闪存翻译层</strong>组成（见图 3.16）：闪存芯片替代了传统磁盘中的机械驱动器；闪存翻译层负责将 CPU 发出的逻辑块读写请求翻译为对底层物理页的读/写控制信号——<strong>闪存翻译层相当于扮演了磁盘控制器的角色</strong>。</p>
+<figure>
+<img src="../assets/ch3/fig-p117.png" alt="固态硬盘（SSD）结构组成" loading="lazy">
+<figcaption>图3.16 固态硬盘（SSD）结构组成（王道教材）</figcaption>
+</figure>
+<p>一个闪存芯片由 \(B\) 个<strong>块</strong>组成，每个块包含 \(P\) 个<strong>页</strong>。通常，页的大小为 512B～4KB，每块包含 32～128 页，块的大小为 16KB～512KB。<strong>读/写操作以页为单位进行；擦除操作以块为单位进行</strong>——只有在整块数据擦除后，才能向其中的页写入新数据；一旦某块被擦除，其所有页均可重新写入一次。每个块的擦写次数有限，经过若干次重复擦写后，该块会因磨损而失效。</p>
+<p><strong>随机写入速度较慢</strong>，主要有两个原因：① 擦除操作耗时较长，通常比访问慢一个数量级；② 若需修改一个已包含有效数据的页，必须将该块中所有有效页复制到一个新的（已擦除的）块中，再执行对该页的写入。</p>
+<p>相较传统机械硬盘，SSD 由半导体器件构成，无机械运动部件，因此<strong>随机访问延迟极低</strong>，且无噪声、无振动、功耗更低、抗震性强、安全性更高。</p>
+
+<h4>2. 磨损均衡（Wear Leveling）</h4>
+<p>SSD 的主要缺点是闪存块的<strong>擦写寿命有限</strong>（通常仅几百至几千次）。若不加管理，读/写操作往往会集中在少数物理块上，导致这些区域迅速磨损——一旦这部分闪存损坏，整块 SSD 即告失效。这种磨损不均衡的情况，可能导致一块 256GB 的 SSD 仅仅因几千字节的闪存损坏而报废。为解决这一问题，SSD 引入了<strong>磨损均衡技术</strong>，主要分为两类：</p>
+<ol>
+<li><strong>动态磨损均衡</strong>：在写入数据时，优先选择<strong>累计擦写次数较少</strong>的空闲块，避免反复写入同一区域，从而将写入负载分散到更多物理块上；</li>
+<li><strong>静态磨损均衡</strong>：一种更高级的策略——即使没有新数据写入，控制器也会定期扫描并进行数据迁移，将磨损块中的有效数据迁移至低磨损块中，使高磨损块转为以读为主、低磨损块承担更多写入任务，进一步均衡整体磨损。</li>
+</ol>
+<div class="callout exam">
+<span class="tag">考点</span>磨损均衡的寿命算账。得益于磨损均衡，SSD 的使用寿命显著提升。例如一块 256GB 的 SSD，若其闪存的擦写寿命为 500 次，则理论总写入量可达 \(256\text{GB} \times 500 = 128000\text{GB} = 125\text{TB}\)（按 1024 进制换算），即使每天持续写入 10GB 数据，也需要三十多年才会耗尽寿命；而普通用户的日写入量通常远低于此值。
+</div>
+<div class="callout warn">
+<span class="tag">易混</span>磁盘 vs SSD 的组织单位完全不同：磁盘按「柱面/磁道/扇区」组织，扇区是最小读/写单位；SSD 按「块/页」组织，<strong>读/写以页为单位、擦除以块为单位</strong>。另外 U 盘（闪存）本质是只读存储器件的一种应用形态，属于非易失性半导体存储器，不要把它归为磁表面存储器。
+</div>
+
+<div class="pager">
+  <a class="prev" href="s-33.html"><span class="dir">上一篇</span>3.3 主存储器与CPU的连接</a>
+  <a class="next" href="s-35.html"><span class="dir">下一篇</span>3.5 高速缓冲存储器</a>
+</div>
+</main>
+<footer class="site-footer"><div class="inner">
+  <p>本站为个人学习用途整理，内容与插图取自王道《计算机组成原理考研复习指导》，版权归原出版方所有，仅供交流，请勿商用。</p>
+  <p><a href="../index.html">← 返回首页</a> · <a href="quiz.html">本章习题</a></p>
+</div></footer>
+</body>
+</html>

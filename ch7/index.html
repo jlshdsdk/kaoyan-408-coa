@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>第7章 导学 · 输入/输出系统 · 408计组带学</title>
+<link rel="stylesheet" href="../css/style.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body>
+<header class="site-header"><div class="inner">
+  <a class="site-title" href="../index.html">408 计算机组成原理带学</a>
+  <nav class="chapnav">
+    <a href="../index.html">首页</a>
+    <a href="index.html" class="cur">第7章</a>
+    <a href="quiz.html">本章习题</a>
+  </nav>
+</div></header>
+<main>
+<nav class="crumbs"><a href="../index.html">首页</a> / <a href="index.html">第7章 输入/输出系统</a> / 本章导学</nav>
+
+<h1>第7章 输入/输出系统</h1>
+
+<p>本章的主角是「主机与外设如何配合」：I/O 接口是主机与外设之间的交接界面，而 I/O 方式决定了 CPU 要以多大的代价完成数据传送。<strong>I/O 方式是本章的重点和难点</strong>，历年不但以选择题形式考查基本概念和原理，还可能以综合题形式考查各种 I/O 方式的效率计算——特别是程序查询方式的时间开销、中断方式的各种原理、特点与处理过程、中断屏蔽与多重中断、DMA 方式的特点与传送过程，以及 DMA 与中断方式的区别。学接口部分时抓住「功能—结构—类型—编址」这条线，学 I/O 方式时抓住「CPU 被打扰的程度越来越小」这条主线：查询（CPU 全程盯着）→ 中断（准备阶段并行、传送靠 CPU）→ DMA（传送也交给硬件）。</p>
+
+<div class="callout exam">
+<span class="tag">408考纲要求</span>
+<ul>
+<li><strong>（一）I/O 接口（I/O 控制器）</strong>：I/O 接口的功能和基本结构；I/O 端口及其编址。</li>
+<li><strong>（二）I/O 方式</strong>：
+  <ul>
+  <li>程序查询方式；</li>
+  <li>程序中断方式：中断的基本概念；中断响应过程；中断处理过程；多重中断和中断屏蔽的概念；</li>
+  <li>DMA 方式：DMA 控制器的组成；DMA 传送过程。</li>
+  </ul>
+</li>
+</ul>
+</div>
+<div class="callout ext">
+<span class="tag">说明</span>教材中的 *7.1（I/O 系统基本概念）自 2021 年起已从考纲中删除，本站保留为课外拓展，快速浏览建立背景即可。
+</div>
+
+<h2>复习提示：带着这两个问题学</h2>
+<p>教材在本章开头建议读者边学边思考以下问题，章末给出参考答案（见下方「本章小结」）：</p>
+<ol>
+<li>I/O 设备有哪些编址方式？各有何特点？</li>
+<li>CPU 响应中断应具备哪些条件？</li>
+</ol>
+
+<h2>本章地图</h2>
+<div class="map-grid">
+  <div class="map-card">
+    <a class="sec-link" href="s-71.html">*7.1 I/O系统基本概念<span class="badge-ext">课外拓展 · 大纲已删</span></a>
+    <div class="desc">I/O 硬件与 I/O 软件的分工，输入/输出、接口、外设等基本概念，常见外部设备一览：显示器性能参数与 VRAM 容量/带宽公式、三类打印机、磁表面/固态/光盘存储器。</div>
+  </div>
+  <div class="map-card">
+    <a class="sec-link" href="s-72.html">7.2 I/O接口</a>
+    <div class="desc">接口的五大功能，通用结构中的三类寄存器（数据缓冲/状态/控制）与 I/O 控制逻辑，接口的三种分类角度，端口与接口的区别，独立编址 vs 统一编址的优缺点及指令形式辨析。</div>
+  </div>
+  <div class="map-card">
+    <a class="sec-link" href="s-73.html">7.3 I/O方式</a>
+    <div class="desc">全章重头戏：程序查询（流程、独占/定时查询与时间开销计算）、程序中断（请求与判优、响应条件、隐指令、处理流程、多重中断与屏蔽字、中断嵌套）、DMA（三种访存方式、控制器组成、传送三阶段、与中断的对比），三道计算例题逐一复算。</div>
+  </div>
+</div>
+
+<h2>本章小结</h2>
+<p>下表整理自教材本章小结，回答开篇的两个思考题。</p>
+<table>
+<thead>
+<tr><th style="width:30%">问题</th><th>结论要点</th></tr>
+</thead>
+<tbody>
+<tr>
+<td>I/O 设备有哪些编址方式？各有何特点？</td>
+<td>I/O 设备的编址方式主要有<strong>统一编址</strong>和<strong>独立编址</strong>。<strong>统一编址</strong>是指将主存地址空间的一部分分配给 I/O 端口，可使用普通的访存指令直接访问 I/O 设备，编程简单；但会占用主存地址空间，减少可用主存容量。<strong>独立编址</strong>是指 I/O 端口地址空间与主存地址空间相互独立，I/O 端口不占用主存资源；但访问 I/O 设备需使用专用 I/O 指令（如 IN、OUT），增加了指令集的复杂性。</td>
+</tr>
+<tr>
+<td>CPU 响应中断需要哪些条件？</td>
+<td>① CPU 内部的中断允许触发器（开中断状态）处于开放状态；② 外设发出中断请求，且其接口中的中断请求触发器置为「1」，以维持中断请求信号；③ 外设接口中的中断允许触发器为「1」，才能将中断请求送达 CPU。当上述三个条件同时满足时，CPU 在当前指令执行结束后响应中断。</td>
+</tr>
+</tbody>
+</table>
+
+<h2>常见问题和易混淆知识点</h2>
+
+<h3><span class="sec-id">问题 1</span>在开中断情况下，CPU 检测到中断就一定会立即响应吗？</h3>
+<p>是的。在开中断状态下，CPU 总在每条指令执行结束时采样中断请求，一旦检测到中断请求，即表明该请求未被屏蔽且有效，CPU 必定会立即响应。</p>
+<p>需要说明的是：在单重中断系统中，进入中断服务程序后会自动关中断，此后即使有新的中断请求也无法被检测——但这与「开中断时检测到必响应」并不矛盾，因为前提（开中断）已被破坏；而在多重中断系统中，未被屏蔽的高优先级中断可以在低优先级中断服务程序执行期间被检测并响应。</p>
+<div class="callout warn">
+<span class="tag">易混</span>「检测不到」与「不响应」别搅在一起：关中断/被屏蔽 → 请求根本进不了判定环节；开中断且有有效请求 → 指令一执行完必响应。判断题说「开中断时 CPU 检测到中断请求却不予响应」必错；说「关中断后新请求无法被检测」则对。
+</div>
+
+<h3><span class="sec-id">问题 2</span>向量中断、中断向量、向量地址三个概念是什么关系？</h3>
+<p><strong>中断向量</strong>：指中断服务程序的入口地址。每个中断源对应一个唯一的中断服务程序，其入口地址即为该中断源的中断向量。系统通常将所有中断向量集中组织成一张<strong>中断向量表</strong>；也有系统在中断向量表中存放转向服务程序的转移指令（构成转移表）。</p>
+<p><strong>向量地址</strong>：指中断向量表（或转移表）中某一项的存储地址，即中断向量所在的内存单元地址。它通常由中断类型号（也称中断号）乘以表项长度计算得出，例如表项占 4 字节、中断类型号为 5，则向量地址为 \(5 \times 4 = 20\)（假设从 0 开始）。因此向量地址是 CPU 用于在中断向量表中定位中断向量的「索引位置」。</p>
+<p>当<strong>向量中断</strong>发生时，中断源（或中断控制器）向 CPU 提供中断类型号，CPU 据此生成向量地址，并从向量表中取出对应的中断向量（入口地址），直接转去执行相应的中断服务程序。</p>
+<div class="callout warn">
+<span class="tag">易混</span>三者链条记牢：<strong>中断类型号（编号）→ 向量地址（表中的位置 = 类型号 × 表项长度）→ 中断向量（表里存的内容 = 服务程序入口地址）</strong>。类型号是 CPU 从数据总线上拿到的，向量表在主存中，别把「向量」当成「地址」的同义词再反着用一遍。
+</div>
+
+<h3><span class="sec-id">问题 3</span>程序中断和调用子程序有何区别？</h3>
+<p>虽然程序中断和子程序调用都引起程序执行流程的转移，但二者在本质上存在显著差异，主要体现在四个方面：</p>
+<ol>
+<li><strong>触发时机</strong>：子程序调用由程序员通过 CALL 指令主动发起，发生时刻和位置是确定的；而中断由外部设备或内部事件随机触发，CPU 只在每条指令执行结束时采样中断请求，一旦条件满足便转入中断处理，具有明显的异步性和不可预测性。</li>
+<li><strong>服务关系</strong>：子程序调用完全为主程序服务，二者构成主从关系——主程序在需要时调用子程序，执行完毕后返回主程序继续运行；中断服务程序通常与主程序无直接关联，是为响应外部事件（如数据到达、定时器溢出等）而执行的独立任务，二者属于平行关系。</li>
+<li><strong>实现机制</strong>：子程序调用是纯软件行为，返回地址的保存无须专门硬件即可完成；而中断处理依赖软硬件协作，需借助中断请求线、中断控制器和优先级判优电路等硬件，才能完成中断请求的接收、判优、响应和断点保护等操作。</li>
+<li><strong>嵌套级别</strong>：子程序可多层嵌套，嵌套深度主要受限于系统栈空间；中断嵌套则受优先级机制约束——只有更高优先级的中断才能打断当前正在执行的中断服务程序。出于硬件复杂性和实时性考虑，实际系统中中断优先级通常较少，嵌套层次有限。</li>
+</ol>
+
+<div class="pager">
+  <a class="prev" href="../index.html"><span class="dir">上一篇</span>首页</a>
+  <a class="next" href="s-71.html"><span class="dir">下一篇</span>*7.1 I/O系统基本概念</a>
+</div>
+</main>
+<footer class="site-footer"><div class="inner">
+  <p>本站为个人学习用途整理，内容与插图取自王道《计算机组成原理考研复习指导》，版权归原出版方所有，仅供交流，请勿商用。</p>
+  <p><a href="../index.html">← 返回首页</a> · <a href="quiz.html">本章习题</a></p>
+</div></footer>
+</body>
+</html>

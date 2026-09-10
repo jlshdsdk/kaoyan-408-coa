@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>3.5 高速缓冲存储器 · 第3章 · 408计组带学</title>
+<link rel="stylesheet" href="../css/style.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body>
+<header class="site-header"><div class="inner">
+  <a class="site-title" href="../index.html">408 计算机组成原理带学</a>
+  <nav class="chapnav">
+    <a href="../index.html">首页</a>
+    <a href="index.html" class="cur">第3章</a>
+    <a href="quiz.html">本章习题</a>
+  </nav>
+</div></header>
+<main>
+<nav class="crumbs"><a href="../index.html">首页</a> / <a href="index.html">第3章 存储系统</a> / 3.5 高速缓冲存储器</nav>
+
+<h1>3.5 高速缓冲存储器</h1>
+
+<p>程序转移概率较高、数据分布较为离散，因此单纯依赖并行主存系统来提升主存效率是有限的。高速缓存（Cache）具有比主存更快的访问速度，在 CPU 与主存之间设置 Cache 可以显著提升存储系统的整体效率。<strong>Cache 由 SRAM 组成，通常集成在 CPU 内部</strong>。本节是全章分量最重的一节：局部性原理（3.5.1）、工作原理与命中率（3.5.2）、三种映射方式（3.5.3）、替换算法（3.5.4）、写策略（3.5.5）、容量计算（3.5.6）、分离与多级 Cache（3.5.7），综合题与选择题都从这里大量出题。</p>
+
+<h3><span class="sec-id">3.5.1</span>程序访问的局部性原理</h3>
+<p>Cache 的设计基于程序访问的局部性原理，包括<strong>时间局部性</strong>和<strong>空间局部性</strong>：</p>
+<ul>
+<li><strong>时间局部性</strong>：如果某条指令或数据项当前被访问，则在不久的将来很可能再次被访问。这源于程序中存在的循环、重复调用的子程序，以及对同一数据的多次操作；</li>
+<li><strong>空间局部性</strong>：如果某个存储单元被访问，则其相邻的存储单元在不久的将来也很可能被访问。这是因为指令通常顺序存放并被顺序执行，而数组（或数据块）也往往以连续块的形式存储。</li>
+</ul>
+<p>高速缓冲技术正是利用局部性原理，将程序当前活跃的部分数据暂存于容量小但速度极快的 Cache 中，使 CPU 的大多数访存操作直接在 Cache 中完成，从而显著提升程序执行效率。</p>
+<p><strong>【例 3.1】</strong>假设数组元素按行优先方式存放，考虑以下两个程序（设 \(M\) 和 \(N\) 为 2048，按字节编址，每个数组元素占 4 字节，指令和数据在主存中的存放情况如图 3.17 所示）：</p>
+<pre><code>程序 A:                            程序 B:
+int sumarrayrows(int a[M][N])      int sumarraycols(int a[M][N])
+{                                  {
+  int i, j, sum = 0;                 int i, j, sum = 0;
+  for (i = 0; i &lt; M; i++)            for (j = 0; j &lt; N; j++)
+    for (j = 0; j &lt; N; j++)            for (i = 0; i &lt; M; i++)
+      sum += a[i][j];                    sum += a[i][j];
+  return sum;                        return sum;
+}                                  }</code></pre>
+<p>1）对于数组 a 的访问，哪个程序的空间局部性更好？哪个时间局部性更好？<br>
+2）对于 for 循环体中的指令访问，局部性如何？</p>
+<p><strong>解：</strong></p>
+<p>1）程序 A 与程序 B 的<strong>空间局部性差异显著</strong>。程序 A 按行访问数组 a：\(a[0][0], a[0][1], \cdots, a[0][2047], a[1][0], a[1][1], \cdots, a[1][2047], \cdots\)，访问顺序与存放顺序一致，由于连续访问的元素位于相邻地址，<strong>空间局部性良好</strong>。程序 B 按列访问数组 a：\(a[0][0], a[1][0], \cdots, a[2047][0], a[0][1], a[1][1], \cdots, a[2047][1], \cdots\)，访问顺序与存放顺序不一致，每次访问间隔跨越 2048 个元素，即 8192 字节；若主存与 Cache 的交换单位小于 8KB，则每次访问几乎都落在不同的 Cache 行中，<strong>空间局部性极差</strong>。两个程序中，数组 a 的<strong>时间局部性均较差</strong>，因为每个数组元素仅被访问一次。</p>
+<p>2）对于 for 循环体中的指令访问，程序 A 与程序 B 的局部性表现相同。因为循环体中的指令在内存中连续存放、顺序执行，<strong>空间局部性良好</strong>；整个循环体执行 \(2048 \times 2048\) 次，<strong>时间局部性良好</strong>。</p>
+<p>综上，尽管程序 A 与程序 B 执行的结果完全相同，但由于内层循环顺序不同，导致对数组 a 访问的空间局部性存在巨大差异，进而造成实际执行效率的显著不同。</p>
+<figure>
+<img src="../assets/ch3/fig-p122.png" alt="指令和数据在主存的存放" loading="lazy">
+<figcaption>图3.17 指令和数据在主存的存放（王道教材）</figcaption>
+</figure>
+<div class="callout exam">
+<span class="tag">考点</span>分析指定代码的时空局部性（2017、2023 真题）；数组按行/列访问的命中率分析（2016、2020 真题）。判别套路：看<strong>访问顺序是否与存放顺序一致</strong>——一致则空间局部性好；看<strong>同一单元是否被反复访问</strong>——是则时间局部性好。行优先数组按行遍历快、按列遍历慢，原因就在这里。
+</div>
+
+<h3><span class="sec-id">3.5.2</span>Cache 的基本工作原理</h3>
+<p>为便于 Cache 与主存交换信息，<strong>Cache 和主存都被划分为大小相等的块</strong>，Cache 块也称 Cache 行，每块由若干字节组成，块的位数称为<strong>块长</strong>（也称行长）。因为 Cache 的容量小于主存的容量，所以 Cache 中的块数要远少于主存中的块数。Cache 中仅保存主存中<strong>最活跃</strong>的若干块的副本，可按照某种策略预测 CPU 在未来一段时间内将访问的数据，并将其装入 Cache。</p>
+
+<h4>1. Cache 的访问过程</h4>
+<p>图 3.18 所示为典型的 Cache 访问流程。CPU 执行程序时，每当需要从主存读取指令或读/写数据，<strong>首先访问 Cache</strong>：若所需信息已在 Cache 中（称为 <strong>Cache 命中</strong>），则直接从 Cache 读取，无须访问主存；若未命中（也称为<strong>缺失</strong>），则需从主存中将该块所在的整个主存块装入 Cache，并将该块写入一个 Cache 行（若 Cache 已满，则按替换算法选择替换块）。此后 CPU 从 Cache 中获取所需数据。整个过程（包括命中判断、块调入、替换等）必须在单条指令执行期间完成，<strong>完全由硬件实现</strong>，对程序员完全透明。</p>
+<figure>
+<img src="../assets/ch3/fig-p122_2.png" alt="典型的Cache访问流程" loading="lazy">
+<figcaption>图3.18 典型的Cache访问流程（王道教材）</figcaption>
+</figure>
+<p>上述访问流程是「先查 Cache、未命中再访主存」的串行方案；部分系统采用「并行访问」策略（同时查 Cache 和主存，若命中则中止主存访问），但考试中通常不涉及。</p>
+<div class="callout exam">
+<span class="tag">考点</span>Cache 命中对 CPU 执行时间影响的分析（2013、2015 真题）；Cache 命中率的分析与计算（2009、2025 真题）。核心公式见下，命题时常用「Cache 速度是主存 n 倍」「命中率为 h」这类条件。
+</div>
+
+<h4>2. Cache 的命中率分析</h4>
+<p>CPU 所需访问的信息已在 Cache 中的概率称为 <strong>Cache 命中率</strong>。设程序执行期间 Cache 命中次数为 \(N_c\)，访问主存的次数为 \(N_m\)（未命中次数），则命中率 \(H\) 定义为</p>
+$$H = \frac{N_c}{N_c + N_m}$$
+<p><strong>命中时</strong>：CPU 直接从 Cache 读取数据，耗时为命中时间 \(T_c\)（访问 Cache 的时间）。<strong>未命中时</strong>：先从主存读取包含目标数据的一个主存块放入 Cache，再将所需数据送至 CPU，总耗时为 \(T_m + T_c\)，其中 \(T_m\) 称为<strong>缺失损失</strong>（从主存调入一个块所需的时间）。因此，Cache-主存系统的平均访问时间 \(T\) 为</p>
+$$T = HT_c + (1-H)(T_m + T_c) = T_c + (1-H)T_m$$
+<p>等价地，也可写成：\(T\) = 命中时的访问时间 × 命中率 + 缺失时的访问时间 × 缺失率。</p>
+<p><strong>【例 3.2】</strong>假设 Cache 的速度是主存的 5 倍，且 Cache 的命中率为 95%，则采用 Cache 后，存储器性能提升多少（假设系统先访问 Cache，未命中时才访问主存）？</p>
+<p><strong>解：</strong>设 Cache 的存取时间为 \(t\)，则主存的存取时间为 \(5t\)。系统的平均访问时间 \(T\) 为</p>
+$$T = \text{命中时的访问时间} \times \text{命中率} + \text{缺失时的访问时间} \times \text{缺失率} = 0.95t + 0.05 \times (t + 5t) = 1.25t$$
+<p>或等价地：\(T\) = 命中时的访问时间 + 缺失率 × 缺失损失 = \(t + 0.05 \times 5t = 1.25t\)。可知，使用 Cache 后，存储器性能提升至原来的 \(5t/1.25t = 4\) 倍。</p>
+<div class="callout exam">
+<span class="tag">考点</span>Cache 缺失率对性能的影响（2012 真题）。两种写法必须都会：<strong>加权式</strong>（命中时间×命中率＋未命中总时间×缺失率）与<strong>加法式</strong>（命中时间＋缺失率×缺失损失）。复算一下例 3.2：\(0.95t + 0.05 \times 6t = 1.25t\)，两种写法结果一致。
+</div>
+<p>根据 Cache 的读、写流程可知，实现 Cache 时需解决以下关键问题：</p>
+<ol>
+<li><strong>数据查找</strong>：如何快速判断所需数据是否在 Cache 中；</li>
+<li><strong>地址映射</strong>：主存块如何存放在 Cache 中，以及如何将主存地址转换为 Cache 地址；</li>
+<li><strong>替换策略</strong>：当 Cache 已满时，采用何种策略选择被替换的 Cache 行；</li>
+<li><strong>写入策略</strong>：如何在保证主存与 Cache 数据一致性的前提下，尽可能提升写操作效率。</li>
+</ol>
+<div class="callout tip">
+<span class="tag">理解</span>这四个问题正好对应后面的三节：地址映射 → 3.5.3，替换策略 → 3.5.4，写入策略 → 3.5.5。带着问题往下读，结构就串起来了。
+</div>
+
+<h3><span class="sec-id">3.5.3</span>Cache 和主存的映射方式</h3>
+<p>由于 Cache 行远少于主存块数，为识别每个 Cache 行对应哪个主存块，需要为每行设置一个<strong>标记</strong>（记录其主存块编号），同时设置一位<strong>有效位</strong>，用于指示该行数据是否有效。系统启动或复位时，所有 Cache 行均无效；仅当主存块装入某 Cache 行后，其有效位才置为 1。<strong>地址映射</strong>是指将主存地址空间按一定规则映射到 Cache 地址空间，即决定主存块如何装入 Cache。常见的映射方式有三种：<strong>直接映射、组相联映射和全相联映射</strong>。</p>
+
+<h4>1. 直接映射</h4>
+<p>主存中的每一块<strong>只能装入 Cache 中的唯一指定位置</strong>；若该位置已有内容，则发生<strong>块冲突</strong>，原块被无条件替换（无须替换算法）。直接映射实现简单，但灵活性差——即使 Cache 中其他行空闲，也不能存放该主存块，因此块冲突概率最高，空间利用率最低。</p>
+<p>直接映射关系可表示为</p>
+$$\text{Cache 行号} = \text{主存块号} \bmod \text{Cache 总行数}$$
+<p>设 Cache 共有 \(2^c\) 行、主存共有 \(2^m\) 块，则主存的第 0 块、第 \(2^c\) 块、第 \(2^{c+1}\) 块……均映射到 Cache 的第 0 行；主存的第 1 块、第 \(2^c+1\) 块、第 \(2^{c+1}+1\) 块……均映射到 Cache 的第 1 行，以此类推。由此可见，<strong>主存块号的低 \(c\) 位即为对应的 Cache 行号</strong>。为标识来源，每个 Cache 行设置一个长度为 \(t = m - c\) 的标记，当某主存块调入 Cache 后，将其块号的高 \(t\) 位存入对应 Cache 行的标记字段中（见图 3.19）。</p>
+<figure>
+<img src="../assets/ch3/fig-p124.png" alt="Cache和主存之间的直接映射方式" loading="lazy">
+<figcaption>图3.19 Cache和主存之间的直接映射方式（王道教材）</figcaption>
+</figure>
+<p><strong>直接映射的地址结构</strong>如下：</p>
+<table class="small">
+<tbody>
+<tr><td>标记（\(t = m-c\) 位）</td><td>Cache 行号（\(c\) 位）</td><td>块内地址</td></tr>
+</tbody>
+</table>
+<p><strong>CPU 访存过程</strong>：根据访存地址中间的 \(c\) 位确定 Cache 行，将该 Cache 行中的标记与主存地址的高 \(t\) 位进行比较：若标记相等且有效位为 1，则 <strong>Cache 命中</strong>，根据地址低位的块内地址从该 Cache 行中读取数据；若标记不等或有效位为 0，则 <strong>Cache 未命中</strong>，CPU 需从主存中读取该地址所在的块，将其装入对应 Cache 行，置有效位为 1、更新标记为地址高 \(t\) 位，并将所需数据送至 CPU。</p>
+<div class="callout exam">
+<span class="tag">考点</span>直接映射的地址结构及映射关系的分析（2010、2011、2015 真题）。三段划分「标记 | 行号 | 块内地址」中：<strong>行号 = 主存块号 mod Cache 总行数</strong>，标记存的是主存块号「剩下的高位」。
+</div>
+
+<h4>2. 全相联映射</h4>
+<p>主存中的每一块<strong>可以装入 Cache 中的任意位置</strong>（见图 3.20）。每行的标记用于指出该行来自主存的哪一块，因此 CPU 访存时需要与<strong>所有</strong> Cache 行进行比较。</p>
+<p><strong>优点</strong>：① Cache 块冲突概率低，只有所有 Cache 行都被占用时才会发生冲突；② 空间利用率高；③ 命中率高。<strong>缺点</strong>：① 标记的比较速度较慢；② 实现成本较高，通常需要采用<strong>按内容寻址的相联存储器</strong>。</p>
+<figure>
+<img src="../assets/ch3/fig-p124_2.png" alt="Cache和主存之间的全相联映射方式" loading="lazy">
+<figcaption>图3.20 Cache和主存之间的全相联映射方式（王道教材）</figcaption>
+</figure>
+<p><strong>全相联映射的地址结构</strong>如下：</p>
+<table class="small">
+<tbody>
+<tr><td>标记（\(\log_2\)主存块数 位）</td><td>块内地址</td></tr>
+</tbody>
+</table>
+<p><strong>CPU 访存过程</strong>：首先将主存地址的高位标记（位数 = \(\log_2\)主存块数）与 Cache 各行的标记进行比较，若有一个相等且对应有效位为 1，则 Cache 命中，根据地址低位的块内地址从该 Cache 行中读出信息；若都不相等或有效位为 0，则 Cache 未命中，CPU 从主存中读取该地址所在块的信息，装入 Cache 的任意一个空闲行，置有效位为 1、设置标记，同时将所需数据送至 CPU。</p>
+<div class="callout exam">
+<span class="tag">考点</span>根据地址结构和比较器数量判断映射方式（2018 真题）。通常每个 Cache 行都设置一个<strong>比较器</strong>，比较器的位数等于<strong>标记字段的长度</strong>。全相联的查找过程是「按内容访问」的存取方式，属于相联存储器，时间开销和硬件开销都较大，不适合大容量 Cache。
+</div>
+
+<h4>3. 组相联映射</h4>
+<p>将 Cache 划分为 \(Q\) 个大小相等的<strong>组</strong>，每个主存块仅能映射到<strong>固定组中的任意一行</strong>，即<strong>组间采用直接映射，组内采用全相联映射</strong>（见图 3.21）。它是直接映射与全相联映射的一种折中方案：当 \(Q=1\)（整个 Cache 为一个组）时，退化为全相联映射；当 \(Q =\) Cache 总行数（每组仅 1 行）时，退化为直接映射。设每组包含 \(r\) 个 Cache 行，则称为 <strong>\(r\) 路组相联映射</strong>。路数 \(r\) 越大，组内可选位置越多，块冲突概率越低，但所需的比较器数量和控制逻辑也更加复杂；合理选择 \(r\)，可在硬件成本接近直接映射的同时，获得接近全相联的性能。</p>
+<figure>
+<img src="../assets/ch3/fig-p125.png" alt="Cache和主存之间的2路组相联映射方式" loading="lazy">
+<figcaption>图3.21 Cache和主存之间的2路组相联映射方式（王道教材）</figcaption>
+</figure>
+<p>组相联映射关系可表示为</p>
+$$\text{Cache 组号} = \text{主存块号} \bmod \text{Cache 组数}(Q)$$
+<p><strong>组相联映射的地址结构</strong>如下：</p>
+<table class="small">
+<tbody>
+<tr><td>标记</td><td>组号</td><td>块内地址</td></tr>
+</tbody>
+</table>
+<p><strong>CPU 访存过程</strong>：首先根据访存地址中间的组号确定目标 Cache 组，将该组内所有 Cache 行的标记与主存地址的高位标记并行比较：若有匹配且对应有效位为 1，则 Cache 命中，根据块内地址从该行读取数据；若所有行均不匹配或匹配行的有效位为 0，则 Cache 未命中，CPU 从主存读取该地址所在块，将其装入该组中任意一个空闲行（若无空闲行，则按替换算法选择一行），置有效位为 1、写入标记，并将所需数据送至 CPU。</p>
+<div class="callout exam">
+<span class="tag">考点</span>组相联映射的原理（2009、2016、2018～2020、2023 真题）；组相联映射的地址结构及映射关系的分析（2025 真题）；访存过程及 Cache 缺失处理过程（2020 真题）；比较器数量的计算（2022 真题）——直接映射中每行仅对应唯一的 Cache 行，只需 <strong>1 个比较器</strong>；而 \(r\) 路组相联需要在同一组的 \(r\) 个 Cache 行中并行比较，需要 <strong>\(r\) 个比较器</strong>。
+</div>
+<p>在 Cache 容量和主存块大小相同的条件下，三种映射方式的特性对比如下：</p>
+<table>
+<thead>
+<tr><th>对比项</th><th>直接映射</th><th>组相联映射</th><th>全相联映射</th></tr>
+</thead>
+<tbody>
+<tr><td>命中率</td><td>最低</td><td>介于两者之间</td><td>最高</td></tr>
+<tr><td>判断开销与所需时间</td><td>最小、最快</td><td>介于两者之间</td><td>最大、最慢</td></tr>
+<tr><td>标记位开销</td><td>最少</td><td>介于两者之间</td><td>最多</td></tr>
+</tbody>
+</table>
+<div class="callout warn">
+<span class="tag">易混</span>两个方向别记反：<strong>\(Q=1\) 退化为全相联、\(Q=\) 总行数退化为直接映射</strong>（组越少越自由）。\(r\) 路」的 \(r\) 是<strong>每组行数（路数）</strong>，组数 = Cache 总行数 ÷ \(r\)——「2 路组相联」是把 Cache 对半分成若干组、每组 2 行。
+</div>
+
+<h3><span class="sec-id">3.5.4</span>Cache 中主存块的替换算法</h3>
+<p>在采用<strong>全相联映射或组相联映射</strong>方式时，当向 Cache 传送一个新主存块而 Cache（或 Cache 组）已满，就需要使用替换算法挑选被替换的 Cache 行。而在<strong>直接映射</strong>中，每个主存块只能映射到唯一的 Cache 行，当该行已被占用时直接覆盖旧块，<strong>无须替换算法</strong>。常用的替换算法包括随机（RAND）、先进先出（FIFO）和最近最少使用（LRU）算法。</p>
+<ol>
+<li><strong>随机（RAND）算法</strong>：随机选择一个 Cache 行进行替换。实现简单，但未利用程序访问的局部性，命中率通常较低；</li>
+<li><strong>先进先出（FIFO）算法</strong>：替换最早载入的 Cache 行。实现较容易，但未考虑局部性原理——最早进入的块可能是当前热点数据，因此命中率不高；</li>
+<li><strong>最近最少使用（LRU）算法</strong>：基于程序访问的局部性原理，优先替换<strong>最近最久未被访问</strong>的 Cache 行。其平均命中率通常高于 FIFO，<strong>LRU 算法是考查重点</strong>。</li>
+</ol>
+<div class="callout exam">
+<span class="tag">考点</span>LRU 替换次数统计的计算（2018、2020 真题）；随机替换和 FIFO 算法的命中率分析（2012、2021 真题）。
+</div>
+<p><strong>LRU 的硬件实现</strong>：为每组 Cache 维护一组计数器（常称 LRU 替换位），用来记录各 Cache 行的访问间隔顺序。LRU 位的位数取决于组的路数：2 路组相联需 1 位 LRU 位，4 路组相联需 2 位 LRU 位。</p>
+<p><strong>【例】</strong>假定采用 4 路组相联，5 个主存块 {1, 2, 3, 4, 5} 映射到同一 Cache 组，访问序列为 {1, 2, 3, 4, 1, 2, 5, 1, 2, 3, 4, 5}，LRU 替换过程如图 3.22 所示。图中左边的数字表示对应 Cache 行的 LRU 计数值（反映最近访问时间顺序），右侧数字为主存块号。计数器的更新规则：</p>
+<ol>
+<li><strong>命中时</strong>：所命中行的计数器清零，比其低的计数器加 1，其余不变；</li>
+<li><strong>未命中且有空闲行时</strong>：新装入行的计数器置 0，其他非空行全加 1；</li>
+<li><strong>未命中且无空闲行时</strong>：替换计数值最大的行（本例中为 3），新装入行的计数器置 0，其余全加 1。</li>
+</ol>
+<figure>
+<img src="../assets/ch3/fig-p126.png" alt="LRU算法的替换过程示意图" loading="lazy">
+<figcaption>图3.22 LRU算法的替换过程示意图（王道教材）</figcaption>
+</figure>
+<p>当被频繁访问的主存块超过 Cache 组内的行数时，可能使缓存块失效。例如，若访问序列变为 {1, 2, 3, 4, 5, 1, 2, 3, 4, 5, …}，而 Cache 每组仅有 4 行，则每次访问第 5 个块都会驱逐下一个将被访问的块，导致命中率降为 0，这种现象称为<strong>抖动</strong>。</p>
+<ol start="4">
+<li><strong>最不经常使用（LFU）算法</strong>：替换一段时间内被<strong>访问次数最少</strong>的 Cache 行。每行设置一个计数器，新行装入时计数器初始化为 0，每次访问被访行的计数器加 1；替换时选择计数值最小的行。</li>
+</ol>
+<div class="callout warn">
+<span class="tag">易混</span>LFU 与 LRU 的思想不同：<strong>LRU 关注最近是否用过，LFU 关注总共用了多少次</strong>。FIFO 看的是「进来多早」，LRU 看的是「多久没用」，LFU 看的是「访问几次」——三者计数器的更新时机都不一样。LRU 计数值越大 = 越久未被访问 = 越先被替换。
+</div>
+
+<h3><span class="sec-id">3.5.5</span>Cache 的一致性问题</h3>
+<p>由于 Cache 中的内容是主存块的副本，当对 Cache 进行写操作时，必须采用适当的写策略以维持 Cache 与主存数据的一致性。根据写操作是否命中 Cache，可分为两类情况：<strong>写命中</strong>是指 CPU 要写入的主存地址所在的块当前已在 Cache 中；反之则为<strong>写未命中</strong>。</p>
+
+<h4>1. Cache 写命中的处理方法</h4>
+<h5>（1）全写法（直写法，Write Through）</h5>
+<p>当 CPU 对 Cache 写命中时，<strong>数据同时写入 Cache 和主存</strong>。由于主存始终与 Cache 保持同步，因此被替换的块可直接覆盖，无须写回。该方法实现简单，能保证主存数据的实时正确性，但缺点是<strong>每次写操作都需访问主存</strong>，降低了系统性能。</p>
+<p>为缓解直写法的性能开销，可在 Cache 与主存之间增设<strong>写缓冲（Write Buffer）</strong>，如图 3.23 所示：CPU 将数据同时写入 Cache 和写缓冲，由缓冲器异步将数据写入主存。写缓冲可缓解 CPU 与主存之间的速度差异，但在高频写场景下，写缓冲可能会<strong>溢出</strong>。</p>
+<figure>
+<img src="../assets/ch3/fig-p127.png" alt="在Cache和主存之间加一个写缓冲" loading="lazy">
+<figcaption>图3.23 在Cache和主存之间加一个写缓冲（王道教材）</figcaption>
+</figure>
+<h5>（2）回写法（Write Back）</h5>
+<p>当 CPU 对 Cache 写命中时，<strong>仅将数据写入 Cache，不立即写入主存</strong>，仅在该块被替换出 Cache 时才写回主存。这种方法减少了访存次数、提高了 Cache 效率，但存在数据不一致的风险。为避免不必要的写回操作，每个 Cache 行设置一个<strong>修改位</strong>（又称<strong>脏位</strong>）：若修改位为 1，表示该行数据已被修改，替换时<strong>必须写回主存</strong>；若修改位为 0，表示该行数据与主存一致，替换时可直接覆盖。</p>
+<div class="callout warn">
+<span class="tag">易混</span>直写 vs 写回：直写法<strong>无须脏位</strong>（主存始终同步、替换直接覆盖），回写法<strong>必须设置脏位</strong>（决定替换时是否写回）。「有没有脏位」「替换时覆不覆盖」是两法互相区分的判断题抓手。
+</div>
+
+<h4>2. Cache 写不命中的处理方法</h4>
+<h5>（1）写分配法（Write Allocate）</h5>
+<p>当发生写不命中时，先将数据写入主存对应的单元，然后<strong>将该主存块调入 Cache</strong> 的一个空闲行中。该方法利用了空间局部性原理，但每次写不命中都要将主存块加载到 Cache 中（通常与回写法搭配使用）。</p>
+<h5>（2）非写分配法（Not-Write-Allocate）</h5>
+<p>当发生写不命中时，直接将数据写入主存，<strong>不将该块调入 Cache</strong>（通常与直写法搭配使用）。</p>
+<div class="callout warn">
+<span class="tag">易混</span>写分配 vs 非写分配的判断标准只有一条：<strong>写不命中时，要不要把主存块调入 Cache</strong>。调入 = 写分配（配合回写法）；不调入 = 非写分配（配合直写法）。这组搭配关系在选择题里反复出现。
+</div>
+
+<h3><span class="sec-id">3.5.6</span>Cache 容量的计算举例</h3>
+<p>在计算 Cache 容量时，需要考虑 Cache 的数据部分和每行的标记信息，即</p>
+$$\text{Cache 总容量} = (\text{每行标记位数} + \text{每行数据位数}) \times \text{Cache 总行数}$$
+<p>每行的标记信息通常包括<strong>有效位、脏位和 LRU 替换位</strong>。其中，<strong>有效位和标记位是所有 Cache 行必须包含的</strong>；脏位仅在采用回写策略时存在；LRU 替换位仅在使用 LRU 算法时存在，其位数取决于组的路数（组内行数）。图 3.24 展示了不同映射方式下 Cache 各字段的组成与分布。</p>
+<figure>
+<img src="../assets/ch3/fig-p128.png" alt="不同映射方式下Cache各字段的组成与分布" loading="lazy">
+<figcaption>图3.24 不同映射方式下Cache各字段的组成与分布（王道教材）</figcaption>
+</figure>
+<div class="callout exam">
+<span class="tag">考点</span>Cache 标记信息的分析（2015、2021 真题）；标记位分析及总容量的计算（2010、2021 真题）。
+</div>
+<p><strong>【例 3.3】</strong>假设计算机的主存地址空间大小为 256MB，按字节编址，其数据 Cache 有 8 个 Cache 行，行长为 64B。请回答：</p>
+<p>1）若不考虑脏位和替换算法控制位，并采用直接映射方式，求该数据 Cache 的总容量；</p>
+<p>2）若采用直接映射方式，主存地址为 3200（十进制）的主存块对应的 Cache 行号是多少？若采用 2 路组相联映射，对应的 Cache 组号及可能存在的行号是多少？</p>
+<p>3）以直接映射方式为例，简述访存过程（设访存地址为 0123456H）。</p>
+<p><strong>解：</strong></p>
+<p>1）Cache 总容量 = 数据信息容量 + 标记信息容量（包括有效位和标记位）。本题不考虑脏位和替换算法控制位：主存地址位数为 28 位（主存地址空间为 256MB = \(2^{28}\)B）；块内地址位数为 6 位（行长 64B = \(2^6\)B）；Cache 行号为 3 位（Cache 有 8 行 = \(2^3\) 行）。标记信息位数 = 28 − 6 − 3 = 19 位，每行含 1 位有效位 + 19 位标记位 = 20 位标记信息；每行数据部分为 64B = 512 位。因此，Cache 总容量为 \(8 \times (512 + 1 + 19) = 8 \times 532 = 4256\) 位。</p>
+<p>2）主存地址 3200 所处的块号为 \(3200\text{B} / 64\text{B} = 50\)。在直接映射方式中，Cache 有 8 行，行号 = 50 mod 8 = 2，故对应的 Cache 行号为 2。在组相联映射方式中，组间采用直接映射，组号 = 50 mod 4 = 2（2 路组相联共 8/2 = 4 组），则可映射到第 2 组中的任意一行，对应的 Cache 行号为 4 或 5。</p>
+<p>3）在直接映射方式中，28 位主存地址划分为 19 位的标记位、3 位的行号、6 位的块内地址，即 0123456H = <code class="bin">0000 0001 0010 0011 0100 0101 0110</code> 中，<code class="bin">0000 0001 0010 0011 010</code> 为标记，<code class="bin">001</code> 为行号，<code class="bin">010110</code> 为块内地址。访存过程：根据行号 <code class="bin">001</code>（即 1 号行）访问 Cache 第 1 行，比较其标记与地址高 19 位，并检查有效位；若匹配且有效位为 1，则命中，按块内地址 <code class="bin">010110</code> 从该行中读取数据并送至 CPU；否则未命中，从主存读取该块，装入 Cache 第 1 行，更新标记为地址高 19 位，并置有效位为 1。<small>（注：教材原文此处先写「001 为块号」，又写「根据行号 010 访问」，001 与 010 自相矛盾，系原书排印瑕疵；按 0123456H 计算，块号 = 1193046/64 = 18641，行号 = 18641 mod 8 = 1，即行号 001、第 1 行，本页按此口径统一。）</small></p>
+<div class="callout tip">
+<span class="tag">思考</span>若 1）问中改用 2 路组相联映射方式，则 Cache 总容量是多少？提示——2 路组相联的组号占 2 位，标记位变为 28−6−2 = 20 位，每行标记信息 1+20 = 21 位；再结合主存与 Cache 的划分关系，推导 2 路组相联映射下的主存地址结构，并简述其访存过程。
+</div>
+
+<h3><span class="sec-id">3.5.7</span>Cache 的应用</h3>
+<h4>1. 分离 Cache</h4>
+<div class="callout exam">
+<span class="tag">考点</span>采用分离的指令与数据 Cache 的目的（2014 真题）。随着指令流水技术的发展，现代处理器通常将指令 Cache 和数据 Cache 分开设计，形成分离的 Cache 结构。统一 Cache 的优点是设计和实现相对简单，但在流水线执行中，取指部件和执行部件同时访问同一 Cache 容易产生结构性冲突；采用分离 Cache 结构，不仅可以消除这类冲突，还能针对指令和数据的不同局部性特征进行优化，从而提升整体性能。
+</div>
+<div class="callout tip">
+<span class="tag">写法拓展</span>分离 Cache 下，指令与数据的命中率可以分别统计（设指令 Cache 命中率为 \(h_i\)、数据 Cache 命中率为 \(h_d\)，取指访问占总访存的比为 \(g\)），平均访问时间按两类访问加权：
+$$T = g\,[T_c + (1-h_i)T_m] + (1-g)\,[T_c + (1-h_d)T_m]$$
+思路与 3.5.2 的平均访问时间公式完全一致，只是把「单一命中率」拆成「指令/数据两个命中率分别加权」。
+</div>
+<h4>2. 多级 Cache</h4>
+<p>现代计算机普遍采用<strong>多级 Cache 结构</strong>。以两级为例，按距离 CPU 的远近分别称为 L1 Cache 和 L2 Cache：L1 离 CPU 最近，速度最快、容量较小；L2 较远，速度较慢、容量较大。通常 L1 级会采用分离的指令 Cache 和数据 Cache 设计，其中 L1 数据 Cache 在写操作中采用<strong>写分配法</strong>（写不命中时加载一块）与<strong>回写法</strong>（命中时不立即写主存）相结合的策略。</p>
+<p>图 3.25 展示了一个典型的两级 Cache 系统。通常，L1 和 L2 Cache 均采用回写法。当 L1 发生写命中时，仅更新 L1；当 L1 的块被替换时，若为脏块，则写回 L2，L2 同理在替换时写回主存。由于 L2 Cache 的访问速度远高于主存，L1 无须在写命中时访问主存，仅需写本地 Cache 即可完成写操作，后续的脏块写回由 L2 高效承接，从而有效缓解因写操作导致的写缓冲饱和或溢出问题。</p>
+<figure>
+<img src="../assets/ch3/fig-p129.png" alt="一个含两级Cache的系统" loading="lazy">
+<figcaption>图3.25 一个含两级Cache的系统（王道教材）</figcaption>
+</figure>
+<div class="callout tip">
+<span class="tag">小结</span>本节一条主线：「往哪放（映射）→ 满了踢谁（替换）→ 写了怎么办（写策略）→ 多大代价（容量与平均访问时间）」。映射三式（行号/组号 = 块号 mod 行数/组数，全相联任意放）、LRU 三条计数器规则、直写/写回 × 写分配/非写分配的搭配、容量 = (标记+数据)×行数，这四块必须练到条件反射。
+</div>
+
+<div class="pager">
+  <a class="prev" href="s-34.html"><span class="dir">上一篇</span>3.4 外部存储器</a>
+  <a class="next" href="s-36.html"><span class="dir">下一篇</span>3.6 虚拟存储器</a>
+</div>
+</main>
+<footer class="site-footer"><div class="inner">
+  <p>本站为个人学习用途整理，内容与插图取自王道《计算机组成原理考研复习指导》，版权归原出版方所有，仅供交流，请勿商用。</p>
+  <p><a href="../index.html">← 返回首页</a> · <a href="quiz.html">本章习题</a></p>
+</div></footer>
+</body>
+</html>

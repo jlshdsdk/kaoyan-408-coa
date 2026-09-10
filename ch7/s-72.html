@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>7.2 I/O接口 · 第7章 · 408计组带学</title>
+<link rel="stylesheet" href="../css/style.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body>
+<header class="site-header"><div class="inner">
+  <a class="site-title" href="../index.html">408 计算机组成原理带学</a>
+  <nav class="chapnav">
+    <a href="../index.html">首页</a>
+    <a href="index.html" class="cur">第7章</a>
+    <a href="quiz.html">本章习题</a>
+  </nav>
+</div></header>
+<main>
+<nav class="crumbs"><a href="../index.html">首页</a> / <a href="index.html">第7章 输入/输出系统</a> / 7.2 I/O接口</nav>
+
+<h1>7.2 I/O接口</h1>
+
+<p>I/O 接口（也称 I/O 控制器）是主机与外部设备之间的交接界面，用于实现二者之间的信息交换。由于外设种类繁多，在工作方式、数据格式和工作速度等方面存在显著差异，接口正是为弥合这些异构性而设置的。本节按「功能 → 结构 → 类型 → 端口与编址」四步走，其中「接口 vs 端口」「独立编址 vs 统一编址」是选择题的常客。</p>
+
+<h3><span class="sec-id">7.2.1</span>I/O 接口的功能</h3>
+<p>I/O 接口的主要功能如下：</p>
+<ol>
+<li><strong>地址译码与设备选择</strong>：当 CPU 发出 I/O 操作请求时，会同时提供目标外设的地址码。接口对地址进行译码，产生设备选择信号，确保主机只与指定外设通信；</li>
+<li><strong>通信与联络</strong>：主机与外设的工作速度差异悬殊，接口通过握手信号或状态轮询机制，动态协调双方操作节奏，确保数据传输可靠有序；</li>
+<li><strong>数据缓冲</strong>：接口设有数据缓冲寄存器，用于暂存传输数据，避免因速度不匹配导致的数据丢失；</li>
+<li><strong>信号格式转换</strong>：主机与外设在电平、数据格式或信号类型上可能存在差异，接口需完成电平转换、串并/并串转换、模数/数模转换等，以实现物理兼容；</li>
+<li><strong>控制命令与状态信息传递</strong>：CPU 通过向接口的控制寄存器写入命令字（如「启动」）控制外设；外设通过状态寄存器反馈状态（如「就绪」）。当外设需要主动通知 CPU（如数据到达）时，接口可向 CPU 发出中断请求，由 CPU 适时响应处理。</li>
+</ol>
+<div class="callout exam">
+<span class="tag">考点</span>I/O 端口的定义与特性（2021 真题）；接口功能归属的辨析。五条功能各有对应部件：译码选择靠地址译码、缓冲靠数据缓冲寄存器、命令与状态靠控制/状态寄存器——功能与结构要能互相「对号入座」。
+</div>
+
+<h3><span class="sec-id">7.2.2</span>I/O 接口的基本结构</h3>
+<p>图 7.1 所示为 I/O 接口的通用结构。I/O 接口在主机侧通过 I/O 总线与 CPU 和内存相连，在设备侧通过接口电缆与外设相连。其内部主要包括三类寄存器：</p>
+<ul>
+<li><strong>数据缓冲寄存器</strong>：用于暂存 CPU 与外设之间传输的数据；</li>
+<li><strong>状态寄存器</strong>：用于记录接口及外设的当前状态，<strong>仅被 CPU 读取</strong>；</li>
+<li><strong>控制寄存器</strong>：用于保存 CPU 发给外设的控制命令，<strong>仅被 CPU 写入</strong>。</li>
+</ul>
+<p>由于状态寄存器只读、控制寄存器只写，二者的访问方向相反且访问时间错开，因此在某些设计中可<strong>复用同一端口地址</strong>，以读/写操作加以区分。</p>
+<figure>
+<img src="../assets/ch7/fig-p306.png" alt="一个I/O接口的通用结构" loading="lazy">
+<figcaption>图7.1 一个I/O接口的通用结构（王道教材）</figcaption>
+</figure>
+<p><strong>三类总线上各传什么</strong>要能张口就来：</p>
+<ul>
+<li><strong>数据线</strong>：传送读/写数据、状态信息、控制信息，以及中断类型号（向量中断中）；</li>
+<li><strong>地址线</strong>：传送访问 I/O 端口寄存器的端口地址；</li>
+<li><strong>控制线</strong>：传送读/写控制信号（用于区分寄存器访问方向），以及中断请求与响应信号、总线仲裁信号和设备握手信号。</li>
+</ul>
+<p><strong>I/O 控制逻辑</strong>的功能包括：① 对控制寄存器中的命令字进行译码，将生成的控制信号经外设界面控制逻辑送至外设；② 输出时，将数据缓冲寄存器的内容发送至外设；输入时，将外设数据写入数据缓冲寄存器；③ 实时采集外设状态，并更新至状态寄存器。</p>
+<div class="callout exam">
+<span class="tag">考点</span>I/O 端口与 CPU 交换的内容（2015 真题）；I/O 接口的数据线上传输的内容（2012 真题）。数据线是「大杂烩」——数据、状态、控制信息、中断类型号都走数据线；地址线只走端口地址。特别注意：中断<strong>请求/响应信号</strong>走控制线，而中断<strong>类型号</strong>由中断控制器经<strong>数据线</strong>提供给 CPU，用于定位中断向量表中的表项。
+</div>
+
+<h3><span class="sec-id">7.2.3</span>I/O 接口的类型</h3>
+<p>从不同角度，I/O 接口可分为以下类型：</p>
+<ol>
+<li><strong>按数据传送方式</strong>（外设与接口一侧）：可分为<strong>并行接口</strong>（一个字节或一个字的所有位同时传送）和<strong>串行接口</strong>（一位一位顺序传送），接口需完成相应的并串或串并格式转换；</li>
+<li><strong>按主机访问 I/O 设备的控制方式</strong>：可分为程序查询接口、中断接口和 DMA 接口等；</li>
+<li><strong>按功能灵活性</strong>：可分为可编程接口（通过编程修改接口功能）和不可编程接口。</li>
+</ol>
+<div class="callout tip">
+<span class="tag">理解</span>第 2 种分类与 7.3 的三种 I/O 方式一一对应——用什么方式传送，就要配什么样的接口。学完 7.3 回头看这张分类会豁然开朗。
+</div>
+
+<h3><span class="sec-id">7.2.4</span>I/O 端口及其编址</h3>
+<p><strong>I/O 端口</strong>是指 I/O 接口电路中<strong>可被 CPU 直接访问的寄存器</strong>，主要包括：<strong>数据端口</strong>（支持 CPU 读/写操作）、<strong>状态端口</strong>（仅支持读操作）和<strong>控制端口</strong>（仅支持写操作）。</p>
+<div class="callout warn">
+<span class="tag">易混</span>接口 vs 端口：这是两个不同概念——<strong>接口是部件整体</strong>（寄存器 + 译码与控制逻辑的总和），<strong>端口只是接口内可寻址的那些寄存器</strong>。一个接口内有多个端口，端口才有端口地址；接口里的译码电路、控制逻辑不是端口，不可寻址。判断题说「端口就是接口」必错。
+</div>
+<p>对上述寄存器的访问通过专用指令完成，这类指令称为 <strong>I/O 指令</strong>。在采用独立 I/O 地址空间的系统中（如 x86），I/O 指令通常为特权指令，仅限操作系统内核使用。为使 CPU 能够访问各个 I/O 端口，必须对端口进行编址，每个端口对应一个唯一的端口地址。常见的编址方式有两种：独立编址与统一编址。</p>
+
+<h4>1. 独立编址（I/O 映射方式）</h4>
+<p>独立编址为 I/O 端口<strong>建立一个独立于主存的地址空间</strong>，I/O 端口地址与内存地址在逻辑上完全分离，地址值可以相同，但由于属于不同地址空间，不会发生冲突。CPU 通过专用的 <strong>I/O 指令</strong>（如 x86 中的 IN 和 OUT）访问 I/O 端口，指令中的地址字段用于指定被编址的端口。</p>
+<ul>
+<li><strong>优点</strong>：I/O 端口数量远少于内存单元，所需地址线较少，译码电路简单，寻址速度快；使用专用 I/O 指令，使程序中 I/O 操作清晰可辨，便于阅读与测试；</li>
+<li><strong>缺点</strong>：I/O 指令功能有限，通常仅支持简单的数据传输，程序设计灵活性较差；CPU 需同时提供存储器读/写和 I/O 读/写两组控制信号，增加了控制逻辑的复杂性。</li>
+</ul>
+
+<h4>2. 统一编址（存储器映射方式）</h4>
+<p>统一编址将主存地址空间<strong>分配一部分给 I/O 端口</strong>，使 I/O 端口与内存单元共享同一地址空间。通过<strong>地址范围</strong>即可区分访问目标（如把地址段映射到 I/O 设备），因此无须专用 I/O 指令，CPU 使用通用的<strong>访存指令</strong>（如加载和存储指令）即可访问 I/O 端口。</p>
+<ul>
+<li><strong>优点</strong>：无须专用 I/O 指令，编程更灵活；I/O 端口可获得较大的编址空间；I/O 访问的保护机制可由虚拟存储管理系统统一实现，无须额外硬件支持；</li>
+<li><strong>缺点</strong>：I/O 端口占用主存地址空间，减少了系统可用内存容量；由于需根据完整地址判断是否为 I/O 地址，译码电路复杂，可能降低译码速度。</li>
+</ul>
+<table class="small">
+<thead>
+<tr><th>对比项</th><th>独立编址</th><th>统一编址</th></tr>
+</thead>
+<tbody>
+<tr><td>地址空间</td><td>独立于主存，地址值可与主存相同而不冲突</td><td>占用主存地址空间的一部分</td></tr>
+<tr><td>访问指令</td><td>专用 I/O 指令（IN、OUT）</td><td>通用访存指令（加载/存储等）</td></tr>
+<tr><td>区分依据</td><td>指令类型（I/O 指令 vs 访存指令）+ 不同空间</td><td>地址范围（落在端口区段即为 I/O）</td></tr>
+<tr><td>译码与速度</td><td>地址线少、译码简单、寻址快</td><td>需比对完整地址、译码复杂、可能较慢</td></tr>
+<tr><td>对主存的影响</td><td>不占用主存容量</td><td>减少了系统可用内存容量</td></tr>
+<tr><td>CPU 控制信号</td><td>需存储器读/写 + I/O 读/写两组</td><td>与访存共用一组</td></tr>
+<tr><td>程序可读性</td><td>I/O 操作清晰可辨，便于阅读测试</td><td>I/O 与访存指令混用，不易分辨</td></tr>
+<tr><td>保护机制</td><td>I/O 指令通常为特权指令，限内核使用</td><td>可由虚拟存储管理系统统一实现</td></tr>
+</tbody>
+</table>
+<div class="callout warn">
+<span class="tag">易混</span>指令形式辨析三连：<strong>①</strong> 统一编址下没有专用 I/O 指令，任何访存指令都能碰到 I/O 端口，区分存储单元和 I/O 端口靠<strong>不同的地址码（地址范围）</strong>，不是靠不同的控制线或数据线；<strong>②</strong> 独立编址下必须用 IN/OUT，且地址字段给出的是端口地址，CPU 不能用访存指令访问 I/O 端口；<strong>③</strong> 「地址值相同」在独立编址下互不冲突（不同空间），在统一编址下同一地址只会对应一个目标（不同区段）。
+</div>
+<div class="callout exam">
+<span class="tag">考点</span>I/O 端口的定义及相关特性（2014 真题）；I/O 端口的特性（2017 真题）。判别抓手：题干出现 IN/OUT → 独立编址；题干说「用 MOV/LDR 等访存指令直接读写设备寄存器」→ 统一编址（存储器映射）。再配合「数据端口可读可写、状态端口只读、控制端口只写」这条特性，相关选择题基本通吃。
+</div>
+<div class="callout tip">
+<span class="tag">小结</span>本节一条主线：一个接口（三类寄存器 + I/O 控制逻辑）→ 里面可寻址的寄存器叫端口 → 端口必须编址 → 两种编址方式各有取舍。下一节 7.3 中 CPU 对接口的一切读/写，都是通过这些端口完成的。
+</div>
+
+<div class="pager">
+  <a class="prev" href="s-71.html"><span class="dir">上一篇</span>*7.1 I/O系统基本概念</a>
+  <a class="next" href="s-73.html"><span class="dir">下一篇</span>7.3 I/O方式</a>
+</div>
+</main>
+<footer class="site-footer"><div class="inner">
+  <p>本站为个人学习用途整理，内容与插图取自王道《计算机组成原理考研复习指导》，版权归原出版方所有，仅供交流，请勿商用。</p>
+  <p><a href="../index.html">← 返回首页</a> · <a href="quiz.html">本章习题</a></p>
+</div></footer>
+</body>
+</html>

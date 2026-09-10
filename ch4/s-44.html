@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>4.4 CISC 和 RISC 的基本概念 · 第4章 · 408计组带学</title>
+<link rel="stylesheet" href="../css/style.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body>
+<header class="site-header"><div class="inner">
+  <a class="site-title" href="../index.html">408 计算机组成原理带学</a>
+  <nav class="chapnav">
+    <a href="../index.html">首页</a>
+    <a href="index.html" class="cur">第4章</a>
+    <a href="quiz.html">本章习题</a>
+  </nav>
+</div></header>
+<main>
+<nav class="crumbs"><a href="../index.html">首页</a> / <a href="index.html">第4章 指令系统</a> / 4.4 CISC 和 RISC 的基本概念</nav>
+
+<h1>4.4 CISC 和 RISC 的基本概念</h1>
+
+<p>指令系统朝着两个截然不同的方向发展：一是通过<strong>增强原有指令的功能，引入更复杂的指令</strong>，将复杂功能固化到硬件中，这类机器称为<strong>复杂指令系统计算机（CISC）</strong>，典型代表包括采用 x86 架构的处理器；二是通过<strong>简化指令系统</strong>、<strong>简化指令功能</strong>，以提高执行效率，这类<strong>精简指令系统计算机（RISC）</strong>的典型代表包括 ARM、MIPS 等架构的处理器。</p>
+
+<h3><span class="sec-id">4.4.1</span>复杂指令系统计算机（CISC）</h3>
+<p>随着集成电路技术的发展，软件开发成本不断上升，促使设计者在指令系统中加入<strong>更多、更复杂的指令</strong>，以适应多样化的应用需求，从而形成了 CISC 架构。</p>
+<div class="callout exam">
+<span class="tag">考点</span>CISC 的特点（2017 真题）。
+</div>
+<p>CISC 的主要特点如下：</p>
+<ol>
+<li>指令系统庞杂，指令数量通常<strong>超过 200 条</strong>；</li>
+<li>指令<strong>长度不固定</strong>，指令格式和寻址方式种类繁多；</li>
+<li><strong>多数指令均可直接访问内存</strong>；</li>
+<li>各类指令的<strong>使用频率差异显著</strong>；</li>
+<li>各类指令<strong>执行时间相差较大</strong>，大多数指令需多个时钟周期才能完成；</li>
+<li>控制器多采用<strong>微程序控制</strong>，部分复杂指令难以用硬连线实现；</li>
+<li><strong>难以通过编译器优化</strong>生成高效的目标代码。</li>
+</ol>
+<p>如此庞大的指令系统，对设计提出了极高要求，导致研制周期变得很长。后续研究发现，一味追求指令系统的复杂和完善并非提升性能的有效途径。对传统 CISC 指令系统的统计分析表明，各种指令的使用频率相差悬殊：<strong>约 80% 的程序执行仅依赖于 20% 的简单指令</strong>，而其余 80% 的复杂指令使用频率较低。基于这一现象，设计者开始调整策略：保留高频使用的简单指令，并通过它们的组合实现不常用的复杂指令功能——由此催生了 RISC 架构。</p>
+
+<h3><span class="sec-id">4.4.2</span>精简指令系统计算机（RISC）</h3>
+<p>RISC 的核心思想是<strong>简化指令系统</strong>，强调「<strong>寄存器-寄存器</strong>」操作，并力求<strong>指令格式统一</strong>。</p>
+<div class="callout exam">
+<span class="tag">考点</span>RISC 的特点（2009、2025 真题）。
+</div>
+<p>RISC 的主要特点如下：</p>
+<ol>
+<li>仅选取<strong>使用频率最高的简单指令</strong>，复杂功能由多条简单指令组合实现；</li>
+<li>指令<strong>长度固定</strong>，指令格式和寻址方式种类较少；</li>
+<li>仅 <strong>LOAD/STORE 指令（取数/存数）可访问内存</strong>，其余运算均在寄存器之间进行；</li>
+<li>CPU 中配备<strong>大量通用寄存器</strong>；</li>
+<li>普遍采用<strong>指令流水线</strong>技术，绝大多数指令可在一个时钟周期内完成；</li>
+<li>以<strong>硬布线控制</strong>为主，极少或完全不用微程序控制器；</li>
+<li>高度依赖<strong>编译器优化</strong>，以提升程序执行效率。</li>
+</ol>
+<p>此外，在指令系统兼容性方面，CISC 架构通常<strong>支持向后兼容</strong>，即新机型包含旧机型的全部指令并加以扩展；而 RISC 由于大幅简化指令集、改变指令格式，通常<strong>无法与老机型兼容</strong>。</p>
+<p>历史上，RISC 因其高效性和前瞻性被视为未来的发展方向。然而，在实际中，x86 架构凭借庞大的软件生态占据主流。早期多数处理器基于 CISC 设计，纯 RISC 系统难以满足兼容性需求。此外，现代 CISC 处理器已融合大量 RISC 思想，使得两者在性能上的差距日益缩小。与此同时，CISC 能提供更丰富的指令功能，这是许多程序设计所需要的。</p>
+<div class="callout warn">
+<span class="tag">易混</span>CISC/RISC 辨析三条高频判断题：<strong>① 采用流水线的机器不一定是 RISC</strong>（CISC 也可通过一定方式实现流水线，只是 RISC 必须实现）；<strong>② RISC 一定采用流水线技术</strong>，这是由其指令特点决定的，而 CISC 则无此强制要求；<strong>③ RISC 无法与老机型兼容</strong>，向后兼容是 CISC 的特征。别把「CISC 有的特点」想当然安到 RISC 头上。
+</div>
+
+<h3><span class="sec-id">4.4.3</span>CISC 和 RISC 的比较</h3>
+<p>与 CISC 相比，RISC 的优势主要体现在以下几个方面：</p>
+<ol>
+<li><strong>更高效地利用芯片面积</strong>：CISC 采用微程序控制器，其控制存储器占 CPU 芯片面积的 50% 以上；而 RISC 采用硬布线控制，逻辑电路仅约占 10%，节省了宝贵的芯片资源；</li>
+<li><strong>更高的运算速度</strong>：RISC 指令数少、格式统一、寻址方式简单，配合大量通用寄存器和流水线技术，使大多数指令可在单个周期内完成，显著提升执行效率；</li>
+<li><strong>更易设计与维护</strong>：RISC 指令系统结构简单、设计周期短；逻辑清晰、出错概率低，便于调试和验证，从而提高了系统可靠性；</li>
+<li><strong>更利于编译优化</strong>：由于指令类型和寻址方式有限，编译器更容易选择最优指令序列、调整指令调度，生成高效的目标代码。</li>
+</ol>
+<p>CISC 与 RISC 的对比如表 4.3 所示。</p>
+<table>
+<thead>
+<tr><th style="width:24%">对比项目</th><th>CISC</th><th>RISC</th></tr>
+</thead>
+<tbody>
+<tr><td>指令系统</td><td>复杂、庞大</td><td>简单、精简</td></tr>
+<tr><td>指令数目</td><td>一般大于 200 条</td><td>一般小于 100 条</td></tr>
+<tr><td>指令字长</td><td>不固定</td><td>定长</td></tr>
+<tr><td>可访存指令</td><td>不加限制</td><td>只有 LOAD/STORE 指令</td></tr>
+<tr><td>各类指令执行时间</td><td>相差较大</td><td>绝大多数在一个周期内完成</td></tr>
+<tr><td>各种指令使用频度</td><td>相差很大</td><td>都比较常用</td></tr>
+<tr><td>通用寄存器数量</td><td>较少</td><td>多</td></tr>
+<tr><td>目标代码</td><td>难以用优化编译生成高效的目标代码程序</td><td>采用优化的编译程序，生成代码较为高效</td></tr>
+<tr><td>控制方式</td><td>绝大多数为微程序控制</td><td>绝大多数为组合逻辑控制</td></tr>
+<tr><td>指令流水线</td><td>可以通过一定方式实现</td><td>必须实现</td></tr>
+</tbody>
+</table>
+<div class="callout tip">
+<span class="tag">小结</span>对比表按「指令（多/杂/长）→ 访存（随便访/只能 LOAD-STORE）→ 执行（慢/快一个周期）→ 寄存器（少/多）→ 控制（微程序/硬布线）→ 流水线（可有/必须有）」的链路背，CISC 与 RISC 每一项几乎都站在对立面，抓住 LOAD/STORE 和流水线两条「硬标准」即可应付绝大多数判断题。
+</div>
+
+<div class="pager">
+  <a class="prev" href="s-43.html"><span class="dir">上一篇</span>4.3 程序的机器级代码表示</a>
+  <a class="next" href="quiz.html"><span class="dir">下一篇</span>本章习题</a>
+</div>
+</main>
+<footer class="site-footer"><div class="inner">
+  <p>本站为个人学习用途整理，内容与插图取自王道《计算机组成原理考研复习指导》，版权归原出版方所有，仅供交流，请勿商用。</p>
+  <p><a href="../index.html">← 返回首页</a> · <a href="quiz.html">本章习题</a></p>
+</div></footer>
+</body>
+</html>

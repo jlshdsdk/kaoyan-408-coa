@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>5.7 多处理器的基本概念 · 第5章 · 408计组带学</title>
+<link rel="stylesheet" href="../css/style.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body>
+<header class="site-header"><div class="inner">
+  <a class="site-title" href="../index.html">408 计算机组成原理带学</a>
+  <nav class="chapnav">
+    <a href="../index.html">首页</a>
+    <a href="index.html" class="cur">第5章</a>
+    <a href="quiz.html">本章习题</a>
+  </nav>
+</div></header>
+<main>
+<nav class="crumbs"><a href="../index.html">首页</a> / <a href="index.html">第5章 中央处理器</a> / 5.7 多处理器的基本概念</nav>
+
+<h1>5.7 多处理器的基本概念</h1>
+
+<p>流水线榨的是单条指令流的并行潜力，而多处理器、多线程、多核则是从体系结构层面继续「加并行」。本节概念题为主：按指令流/数据流的 Flynn 四分类（5.7.1）、硬件多线程的三种实现方式（5.7.2）、多核的基本概念（5.7.3）、共享内存多处理器与 UMA/NUMA（5.7.4）。记忆的重点是「谁在哪个维度并行」。</p>
+
+<h3><span class="sec-id">5.7.1</span>SISD、SIMD、MIMD 的基本概念</h3>
+<div class="callout exam">
+<span class="tag">考点</span>多处理器的基本概念（2022 真题）。
+</div>
+<p>根据指令流和数据流的数量，计算机体系结构可分为四类：<strong>SISD、SIMD、MISD 和 MIMD</strong>。常规的单处理器属于 SISD，而常规的多处理器属于 MIMD。</p>
+<h4>1. 单指令流单数据流（SISD）结构</h4>
+<p>SISD 是传统串行计算机的结构，通常包含<strong>一个处理器和一个存储器</strong>。处理器在任一时刻仅执行一条指令，并按指令流指定的顺序依次执行。为提升性能，部分 SISD 计算机采用指令流水线技术、设置多个功能部件，并以多模块交叉方式组织存储器。</p>
+<h4>2. 单指令流多数据流（SIMD）结构</h4>
+<p>SIMD 采用<strong>数据级并行</strong>，由一个指令控制单元和多个处理单元组成。所有处理单元<strong>同时执行同一条指令</strong>，但各自拥有独立的寄存器，因而可以操作不同的数据。例如，在处理数组的 for 循环时，一条 SIMD 指令可以在 16 个 ALU 中并行运算 16 对数据，仅需一次运算时间即可完成。然而，在处理包含条件分支（如 if、switch 或 case 语句）的代码时，SIMD 效率显著降低，因为各处理单元需要根据不同的数据执行不同的操作，难以保持同步。</p>
+<p><strong>向量处理器</strong>是 SIMD 的典型实现之一，它通过专用指令直接操作一维数组（向量）：将数据从存储加载到向量寄存器，以流水化方式批量处理，再将结果写回。该结构在数值模拟等规则计算场景中具有显著的性能优势。</p>
+<h4>3. 多指令流单数据流（MISD）结构</h4>
+<p>MISD 指<strong>多条指令同时处理同一数据流</strong>。尽管在理论上存在，但在通用计算机中极为罕见，几乎没有实际应用。</p>
+<h4>4. 多指令流多数据流（MIMD）结构</h4>
+<p>MIMD 同时有<strong>多条指令流、分别处理多个不同的数据流</strong>，是目前主流的并行计算模型。MIMD 可分为两类：</p>
+<ol>
+<li><strong>多计算机系统</strong>：每个节点拥有私有存储器和独立的地址空间，无法通过普通访存指令直接访问其他节点的内存，需依赖<strong>消息传递</strong>进行通信，也称<strong>消息传递 MIMD</strong>；</li>
+<li><strong>多处理器系统</strong>：通常指共享存储多处理器系统（见 5.7.4 节），具备<strong>统一的共享物理地址空间</strong>，所有处理器可通过普通的访存指令访问系统中的任意存储单元，也称<strong>共享存储 MIMD</strong>。</li>
+</ol>
+<p>总体而言，SIMD 属于<strong>数据并行</strong>，适用于规则、同构的数据处理；而 MIMD 支持<strong>线程级或任务级并行</strong>，并行程度更高，适用范围更广。</p>
+
+<h3><span class="sec-id">5.7.2</span>硬件多线程的基本概念</h3>
+<p>在传统 CPU 中，线程切换涉及保存和恢复寄存器上下文等操作，频繁切换将引入显著性能开销。为减少这一开销，硬件多线程技术应运而生。支持该技术的处理器为每个线程配备<strong>独立的通用寄存器组、程序计数器（PC）等关键状态寄存器</strong>。线程切换时，只需激活对应线程的寄存器组，无须将上下文写入或从内存读出，从而大幅降低切换延迟。</p>
+<p>硬件多线程主要有三种实现方式：<strong>细粒度多线程、粗粒度多线程和同时多线程（SMT）</strong>。</p>
+<h4>1. 细粒度多线程</h4>
+<p>处理器在<strong>每个时钟周期切换线程</strong>，交替执行不同线程的指令。由于各线程彼此独立，其指令可在连续周期中交错执行，有效提升功能部件的利用率。例如，在时钟周期 \(i\) 执行线程 A 的指令，在周期 \(i+1\) 执行线程 B 的指令。</p>
+<h4>2. 粗粒度多线程</h4>
+<p>处理器连续执行同一线程的指令序列，仅当该线程因<strong>高延迟事件</strong>（如 Cache 缺失）导致流水线阻塞时，才切换到另一线程。此时需<strong>清空被阻塞的流水线</strong>，并为新线程重新填充流水线，因此切换开销大于细粒度多线程。</p>
+<p>上述两种方式均在任一时刻仅执行一个线程的指令，<strong>不支持真正的指令级并行</strong>，其核心目标是通过线程切换隐藏长延迟操作，提升资源利用率。</p>
+<h4>3. 同时多线程（SMT）</h4>
+<p>SMT 在<strong>单个时钟周期内同时发射并执行来自多个不同线程的多条指令</strong>，既利用了<strong>指令级并行</strong>，又实现了<strong>线程级并行</strong>。它通常构建在支持超标量和乱序执行的现代微架构之上，通过共享执行单元、缓存等硬件资源，在维持高单线程性能的同时，显著提升整体吞吐率。</p>
+<p>图 5.27 给出了三种硬件多线程实现方式的调度示例。</p>
+<figure>
+<img src="../assets/ch5/fig-p280.png" alt="三种硬件多线程实现方式的调度示例" loading="lazy">
+<figcaption>图5.27 三种硬件多线程实现方式的调度示例（王道教材）</figcaption>
+</figure>
+<table class="small">
+<caption style="caption-side:top;font-size:.9rem;color:var(--fg-soft)">图5.27 的三种调度方式对比（依教材示例整理）</caption>
+<thead>
+<tr><th>方式</th><th>调度示例（按时钟）</th></tr>
+</thead>
+<tbody>
+<tr><td>细粒度多线程</td><td>时钟 i 发射线程 A 的指令 \(j\)、\(j+1\)，时钟 \(i+1\) 发射线程 B 的指令 \(k\)、\(k+1\)……每个周期轮流切换线程</td></tr>
+<tr><td>粗粒度多线程</td><td>时钟 i 发射线程 A 的指令 \(j\)、\(j+1\)；时钟 \(i+1\) 发射 A 的指令 \(j+2\)、\(j+3\) 时发现 Cache 缺失；时钟 \(i+2\) 线程调度，从 A 切换到 B（清空流水线）；时钟 \(i+3\) 发射线程 B 的指令 \(k\)、\(k+1\)；时钟 \(i+4\) 发射 B 的指令 \(k+2\)、\(k+3\)</td></tr>
+<tr><td>同时多线程（SMT）</td><td>时钟 i 同时发射线程 A 的指令 \(j\)、\(j+1\) 和线程 B 的指令 \(k\)、\(k+1\)；时钟 \(i+1\) 同时发射 A 的 \(j+2\)、B 的 \(k+2\) 和线程 C 的 \(m\)；时钟 \(i+2\) 发射 A 的 \(j+3\)、C 的 \(m+1\)、\(m+2\)</td></tr>
+</tbody>
+</table>
+<p>Intel 处理器中的<strong>超线程（Hyper-Threading）</strong>技术是 SMT 的典型代表。它在一个物理内核中维护<strong>两套完整的线程状态部件</strong>（包括寄存器组、程序计数器等），而高速缓存、ALU 等执行资源则由两个逻辑核心共享，从而在单核上实现接近双核的并发处理能力（实际提升 10%～30%）。</p>
+<div class="callout warn">
+<span class="tag">易混</span>三种多线程的判别点是「<strong>何时切换、切换代价、并行粒度</strong>」：细粒度——每周期切换、代价小（寄存器组直接换用）、无指令级并行；粗粒度——遇长延迟事件才切换、代价大（要清空流水线重填）、同样无指令级并行；SMT——同一周期发射多个线程的指令、既指令级并行又线程级并行。<strong>超线程 = SMT ≠ 双核</strong>：超线程是逻辑核心共享执行资源，双核是两个物理核心。
+</div>
+
+<h3><span class="sec-id">5.7.3</span>多核处理器的基本概念</h3>
+<p><strong>多核处理器（Multi-core Processor）</strong>是指将多个独立的处理单元集成到单个 CPU 芯片中，每个处理单元称为一个<strong>核（core）</strong>，也称片上多处理器。每个核通常配备私有的 L1 Cache（有时还包括 L2），而多个核则共享更高层级的 Cache（如 L3）；所有核通过互连网络共享主存储器。</p>
+<p>图 5.28 展示了一种简化的双核结构，其中每个核只拥有私有的一级 Cache，不存在任何共享缓存层级。</p>
+<figure>
+<img src="../assets/ch5/fig-p281.png" alt="不共享缓存（Cache）的双核CPU结构" loading="lazy">
+<figcaption>图5.28 不共享缓存（Cache）的双核CPU结构（王道教材）</figcaption>
+</figure>
+<p>在多核系统中，要充分发挥硬件的并行计算能力，必须采用多线程（或多进程）模型，确保每个核心运行时可拥有独立的线程。与单核系统中的多线程不同，多核架构支持多线程在<strong>物理上同时执行</strong>：每个核独立运行一个线程，实现真正的并行处理。而单核系统若采用细粒度或粗粒度多线程，其多个线程以时间交错方式执行，任一时刻仅有一个线程处于运行状态；但若支持同时多线程（SMT），则可在单个核上并发执行来自不同线程的多条指令。</p>
+<p>下述通过一个直观的例子说明其概念。假设需将四块石头滚到马路对面，滚动每块石头需 1 分钟。<strong>串行处理器（单核）</strong>逐一滚动，共需 4 分钟；<strong>双核处理器</strong>相当于两名工人，每人负责两块石头，耗时 2 分钟；<strong>向量处理器</strong>则如使用一根长杆同时推动四块石头，虽然全局动作相同，也仅需 1 分钟。在这个例子中，多核处理器通过<strong>增加处理单元数量</strong>实现任务级并行，而向量处理器则通过<strong>单指令作用于多数据</strong>实现数据并行。</p>
+
+<h3><span class="sec-id">5.7.4</span>共享内存多处理器的基本概念</h3>
+<p>具有<strong>单一统一物理地址空间</strong>的多处理器系统称为共享内存多处理器（Shared Memory multi-Processor，<strong>SMP</strong>）。在 SMP 系统中，所有 CPU 均可通过常规的访存指令访问内存中的任意位置，并通过该内存变量实现进程间通信。需要注意的是，尽管物理地址空间是统一的，各 CPU 仍可在各自的虚拟地址空间中运行程序，操作系统负责将虚拟地址映射到统一的物理地址空间。</p>
+<p>SMP 系统根据内存访问特性的不同可分为两类：</p>
+<ul>
+<li><strong>统一存储访问（UMA）多处理器</strong>：所有 CPU 访问任意内存单元的延迟基本相同，与发起请求的 CPU 及目标地址无关；</li>
+<li><strong>非统一存储访问（NUMA）多处理器</strong>：内存访问延迟取决于请求 CPU 与目标内存的物理位置关系。通常，主存被划分为多个区域，分别连接到不同的 CPU。</li>
+</ul>
+<p>早期的计算机系统普遍采用北桥架构：内存控制器集成于北桥芯片中，CPU 通过前端总线（FSB）连接北桥访问内存。随着多核与多处理器技术的发展，多个 CPU 对前端总线的争用使其成为系统性瓶颈。为突破这一限制，NUMA 架构应运而生：内存控制器集成到各个 CPU 内部，每个 CPU 直接连接一部分物理内存（称为<strong>本地内存</strong>）；各 CPU 之间通过高速互连总线（如 Intel 的 QPI）相互连接，可访问其他 CPU 的<strong>远程内存</strong>。在 NUMA 架构下，访问本地内存的延迟显著低于访问远程内存，因此操作系统对数据布局的调度较为敏感。</p>
+<p>由于多个 CPU 可能同时访问同一共享变量，必须引入同步机制以确保操作的原子性与数据一致性。若可能读到「一半」——一个 CPU 更新过程中的中间值，导致结果错误。常用方法是对共享变量使用<strong>互斥锁</strong>：任一时刻仅允许一个 CPU 持有该锁，其他 CPU 必须等待其释放后访问。</p>
+<p>第 3 章讨论的 Cache 一致性主要针对单处理器系统中 Cache 与主存的数据同步。而在 SMP 系统中，多个 CPU 的 Cache 可能同时缓存同一物理内存块的数据，因此其 <strong>Cache 一致性要求更为严格</strong>：任一时刻，所有 CPU 对该块的 Cache 副本必须保持一致。这一目标通常由<strong>硬件一致性协议</strong>保障，通过及时传播写操作或无效化其他 CPU 中的副本，维护全局数据一致性。</p>
+<div class="callout warn">
+<span class="tag">易混</span>几组概念别搅在一起：<strong>多计算机 vs 多处理器</strong>——前者消息传递、各自独立地址空间，后者共享统一物理地址空间；<strong>UMA vs NUMA</strong>——访问任意内存延迟是否与 CPU 位置有关；<strong>多核 vs 超线程</strong>——物理多核真并行 vs 单核两套线程状态部件（SMT）；<strong>数据并行 vs 任务级并行</strong>——SIMD/向量是前者（数据并行，「一条指令管多份数据」），MIMD/多核是后者（任务级/线程级并行，「多个核各跑各的线程」）。
+</div>
+<div class="callout ext">
+<span class="tag">拓展</span>双核与超线程的异同常以选择题出现：两者都能同时执行两个运算流，但<strong>双核</strong>是在一个封装（芯片）内集成两个运算核心（若两颗 CPU 只是装在同一块主板上而无芯片级集成，则属多处理器），<strong>超线程</strong>是单核内为每个线程配备独立状态、共享执行资源的 SMT 技术。Flynn 分类法下，多核与常规多处理器一律归 MIMD；SIMD 对应向量处理机、阵列处理机等数据并行场合。
+</div>
+
+<div class="pager">
+  <a class="prev" href="s-56.html"><span class="dir">上一篇</span>5.6 指令流水线</a>
+  <a class="next" href="quiz.html"><span class="dir">下一篇</span>本章习题</a>
+</div>
+</main>
+<footer class="site-footer"><div class="inner">
+  <p>本站为个人学习用途整理，内容与插图取自王道《计算机组成原理考研复习指导》，版权归原出版方所有，仅供交流，请勿商用。</p>
+  <p><a href="../index.html">← 返回首页</a> · <a href="quiz.html">本章习题</a></p>
+</div></footer>
+</body>
+</html>

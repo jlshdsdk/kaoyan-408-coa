@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>第4章 导学 · 指令系统 · 408计组带学</title>
+<link rel="stylesheet" href="../css/style.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body>
+<header class="site-header"><div class="inner">
+  <a class="site-title" href="../index.html">408 计算机组成原理带学</a>
+  <nav class="chapnav">
+    <a href="../index.html">首页</a>
+    <a href="index.html" class="cur">第4章</a>
+    <a href="quiz.html">本章习题</a>
+  </nav>
+</div></header>
+<main>
+<nav class="crumbs"><a href="../index.html">首页</a> / <a href="index.html">第4章 指令系统</a> / 本章导学</nav>
+
+<h1>第4章 指令系统</h1>
+
+<p>指令系统是表征一台计算机性能的重要因素。本章要求掌握各种寻址方式的特点及有效地址的计算，三种偏移寻址（相对寻址、基址寻址和变址寻址）的地址计算方法，以及 CISC 与 RISC 的特点与区别。2022 大纲新增机器级相关内容，而机器级代码问题在历年真题中多次出现，需要熟练汇编代码的能力。本章知识点既可能直接用于解答有关指令的综合题，也可能结合其他章节出综合题。指令格式、机器指令、寻址方式与 CPU 指令执行过程密切相关，需重点掌握。</p>
+
+<div class="callout exam">
+<span class="tag">408考纲要求</span>
+<ul>
+<li><strong>（一）指令格式的基本概念</strong></li>
+<li><strong>（二）指令格式</strong></li>
+<li><strong>（三）寻址方式</strong></li>
+<li><strong>（四）数据的对齐和大/小端存放方式</strong>①</li>
+<li><strong>（五）CISC 和 RISC 的基本概念</strong></li>
+<li><strong>（六）高级语言程序与机器级代码之间的对应</strong>②：编译器、汇编器与链接器的基本概念②；选择结构语句的机器级表示；循环结构语句的机器级表示；过程（函数）调用对应的机器级表示。</li>
+</ul>
+</div>
+<p style="font-size:0.9em">① 本考点在第 2 章的 2.3 节中介绍。② 本考点在第 1 章的 1.2 节中介绍。</p>
+
+<h2>复习提示：带着这三个问题学</h2>
+<p>教材在本章开头建议读者边学边思考以下问题，章末给出参考答案（见下方「本章小结」）：</p>
+<ol>
+<li>什么是指令？什么是指令系统？为什么要引入指令系统？</li>
+<li>一般来说，指令由哪些部分组成？各部分的作用是什么？</li>
+<li>对一个指令系统而言，寻址方式或多或少会带来什么影响？</li>
+</ol>
+
+<h2>本章地图</h2>
+<div class="map-grid">
+  <div class="map-card">
+    <a class="sec-link" href="s-41.html">4.1 指令系统</a>
+    <div class="desc">ISA 完整定义软硬件接口；指令 = 操作码 + 地址码，按地址码个数分零/一/二/三地址（各配访存次数）；定长操作码 \(2^n\) 条的算法与扩展操作码「前缀不重叠」的条数计算（15/15/15/16 与 15+12+63+16=106）；按功能分六类指令。</div>
+  </div>
+  <div class="map-card">
+    <a class="sec-link" href="s-42.html">4.2 指令的寻址方式</a>
+    <div class="desc">指令寻址（顺序 / 跳跃）与数据寻址；形式地址 A 与有效地址 EA；十种数据寻址逐一拆解——隐含、立即、直接、间接、寄存器、寄存器间接、相对、基址、变址、堆栈，每种配有效地址公式、优缺点与典型例；表 4.1 汇总访存次数。</div>
+  </div>
+  <div class="map-card">
+    <a class="sec-link" href="s-43.html">4.3 程序的机器级代码表示</a>
+    <div class="desc">x86 八个通用寄存器与常用汇编（mov/push/pop、add/sub、imul/idiv、逻辑与移位、jmp/j×/cmp/test、call/ret）；AT&amp;T 与 Intel 格式差异；选择、循环（do-while / while / for）如何翻成 cmp + 条件转移；过程调用的栈帧、caller/callee 保存寄存器约定。</div>
+  </div>
+  <div class="map-card">
+    <a class="sec-link" href="s-44.html">4.4 CISC 和 RISC 的基本概念</a>
+    <div class="desc">两条发展路线：CISC 增强指令功能（x86），RISC 简化指令系统（ARM、MIPS）；各自 7 条特点；表 4.3 十项对比（指令数目、字长、可访存指令、控制方式、流水线等）与「80%/20%」统计规律。</div>
+  </div>
+</div>
+
+<h2>本章小结</h2>
+<p>下表整理自教材本章小结，回答开篇的三个思考题。</p>
+<table>
+<thead>
+<tr><th style="width:34%">问题</th><th>结论要点</th></tr>
+</thead>
+<tbody>
+<tr>
+<td>什么是指令？什么是指令系统？为什么要引入指令系统？</td>
+<td>指令是控制计算机完成某种基本操作的命令。一台计算机所能执行的全部机器指令的集合，称为该机的指令系统。引入指令系统具有双重意义：<strong>对软件层面</strong>，它为程序员提供了统一的硬件操作接口，无须直接操作物理元件与二进制编码，显著提升了编程效率；<strong>对硬件层面</strong>，指令系统的格式、功能和寻址能力直接决定了处理器的架构设计、性能潜力和适用领域。</td>
+</tr>
+<tr>
+<td>一般来说，指令由哪些部分组成？各部分的作用是什么？</td>
+<td>一条典型指令由<strong>操作码</strong>和<strong>地址码</strong>两部分构成：操作码指明指令的功能类型（如加法、转移、加载等），是 CPU 识别和执行指令的核心依据；地址码提供操作所需的源操作数、目的操作数、运算结果的保存地址、程序转移的目标地址或子程序的入口地址等。通过操作码与地址码的组合，指令能够精确描述一次完整的运算或控制操作。</td>
+</tr>
+<tr>
+<td>对一个指令系统而言，寻址方式或多或少会带来什么影响？</td>
+<td>寻址方式的设置需权衡<strong>编程灵活性与硬件效率</strong>。寻址方式丰富（如立即数、寄存器、直接、间接、变址、相对等）可使程序编写简洁高效，便于表达复杂的数据访问模式，但会增加指令译码逻辑的复杂度，不利于流水线设计，并可能增大控制单元面积。寻址方式过少虽能简化硬件、提升执行速度，却会限制编程表达能力，迫使程序员用多条指令模拟复杂访问，降低代码效率。</td>
+</tr>
+</tbody>
+</table>
+
+<h2>常见问题和易混淆知识点</h2>
+
+<h3><span class="sec-id">问题 1</span>简述各种寻址方式的特点和适用情况</h3>
+<ul>
+<li><strong>立即寻址</strong>：操作数直接嵌入指令中，无须访存，常用于赋初值或常量；</li>
+<li><strong>直接寻址</strong>：指令中给出操作数的内存地址，访存一次，适用于固定地址访问；</li>
+<li><strong>间接寻址</strong>：指令给出地址的地址，需两次访存，扩大了寻址范围，易于完成子程序返回；</li>
+<li><strong>寄存器寻址</strong>：操作数在寄存器中，指令短、速度快，适合高速运算；</li>
+<li><strong>寄存器间接寻址</strong>：寄存器存放操作数地址，兼具灵活性与较大寻址范围；</li>
+<li><strong>基址寻址</strong>：EA = 基址寄存器 + 偏移量，基址由系统设定，适用于多道程序的地址重定位；</li>
+<li><strong>变址寻址</strong>：EA = 变址寄存器 + 偏移量，变址寄存器由用户控制，适合数组遍历和循环；</li>
+<li><strong>相对寻址</strong>：EA = PC + 偏移量，主要用于转移指令。</li>
+</ul>
+<div class="callout warn">
+<span class="tag">易混</span>基址寻址和变址寻址的形式相同，都是 EA = 寄存器内容 + 偏移量，但<strong>基址寄存器由操作系统管理</strong>（面向系统，用于多道程序地址重定位），<strong>变址寄存器由用户控制</strong>（面向用户，用于数组遍历和循环）——谁的内容可变、归谁管，正好相反。
+</div>
+
+<h3><span class="sec-id">问题 2</span>一个操作数在内存可能占多个字节，怎样在指令中给出操作数的地址？</h3>
+<p>现代计算机普遍采用<strong>字节编址</strong>，即每个内存单元存储 1 字节（8 位）。当操作数为多字节数据（如 int 占 4 字节、double 占 8 字节）时，指令仅给出该操作数的<strong>起始地址（第一个字节的地址）</strong>，CPU 根据操作数类型自动读取连续的多个字节。</p>
+
+<h3><span class="sec-id">问题 3</span>采用 LOAD/STORE 型指令有什么特点？</h3>
+<p>LOAD/STORE 是 RISC 指令系统的核心设计原则之一，其主要特点包括：</p>
+<ul>
+<li><strong>访存与计算分离</strong>：只有 LOAD（从内存读入寄存器）和 STORE（从寄存器写入内存）指令能访问主存，所有运算指令（如加、减、移位）仅操作寄存器中的数据；</li>
+<li><strong>指令格式规整</strong>：由于寄存器编号位数远少于内存地址，通过固定字段分配，可实现定长指令，极大简化译码逻辑；</li>
+<li><strong>利于流水线执行</strong>：统一的指令长度和访存边界，使取指、译码、执行等阶段易于并行化；</li>
+<li><strong>潜在缺点</strong>：频繁的数据搬运可能导致程序中 LOAD/STORE 指令比例较高，增加指令条数；但现代编译器优化和高速缓存机制可有效缓解此问题。</li>
+</ul>
+
+<div class="pager">
+  <a class="prev" href="../index.html"><span class="dir">上一篇</span>首页</a>
+  <a class="next" href="s-41.html"><span class="dir">下一篇</span>4.1 指令系统</a>
+</div>
+</main>
+<footer class="site-footer"><div class="inner">
+  <p>本站为个人学习用途整理，内容与插图取自王道《计算机组成原理考研复习指导》，版权归原出版方所有，仅供交流，请勿商用。</p>
+  <p><a href="../index.html">← 返回首页</a> · <a href="quiz.html">本章习题</a></p>
+</div></footer>
+</body>
+</html>

@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>3.2 主存储器 · 第3章 · 408计组带学</title>
+<link rel="stylesheet" href="../css/style.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body>
+<header class="site-header"><div class="inner">
+  <a class="site-title" href="../index.html">408 计算机组成原理带学</a>
+  <nav class="chapnav">
+    <a href="../index.html">首页</a>
+    <a href="index.html" class="cur">第3章</a>
+    <a href="quiz.html">本章习题</a>
+  </nav>
+</div></header>
+<main>
+<nav class="crumbs"><a href="../index.html">首页</a> / <a href="index.html">第3章 存储系统</a> / 3.2 主存储器</nav>
+
+<h1>3.2 主存储器</h1>
+
+<p>这一节拆开主存看三类器件：半导体随机存取存储器（SRAM 用触发器、DRAM 用电容，3.2.1）、非易失性存储器（ROM 家族与 Flash，3.2.2）、以及靠多模块并行来提速的多模块存储器（3.2.3）。主线一句话：<strong>主存主要采用 DRAM，Cache 使用 SRAM</strong>；SRAM/DRAM 对比、DRAM 的刷新与地址复用、低位交叉流水存取时间是本节的三大考点。</p>
+
+<h3><span class="sec-id">3.2.1</span>半导体随机存取存储器</h3>
+<p>随机存取存储器（RAM）分为<strong>静态 RAM（SRAM）</strong>和<strong>动态 RAM（DRAM）</strong>，二者均为<strong>易失性存储器</strong>。现代计算机中，主存主要采用 DRAM，而 Cache 使用 SRAM。</p>
+
+<h4>1. SRAM 的工作原理</h4>
+<p>把若干个存储元构成一个存储单元，若干存储单元的集合构成存储体。SRAM 的存储元基于<strong>双稳态触发器</strong>（六晶体管 MOS），利用电路的两个稳定状态分别表示二进制 0 和 1。其特点是读出为<strong>非破坏性读出</strong>，无须再生。SRAM 的存取速度快，但集成度低、功耗较大、成本高，通常用于高速缓冲存储器。</p>
+
+<h4>2. DRAM 的工作原理</h4>
+<p>与 SRAM 不同，DRAM 利用<strong>栅极电容上存储的电荷</strong>来记录信息：有电荷表示 1，无电荷表示 0。其基本单元由一个晶体管和一个电容器构成，结构简单，因此集成度远高于 SRAM。</p>
+<div class="callout exam">
+<span class="tag">考点</span>DRAM 的特点（2015 真题）。DRAM 具有<strong>位价低、功耗小、容量大</strong>等优势，但也有明显局限：存取速度较慢；电荷会因漏电而逐渐消失，必须<strong>定时刷新</strong>以维持数据；且读出过程为<strong>破坏性读出</strong>，需在读取后立即再生。因此 DRAM 被广泛用于大容量主存系统，在成本、容量和性能之间取得平衡。
+</div>
+
+<h4>3. 存储芯片的组成</h4>
+<p>如图 3.5 所示，存储芯片由存储体、I/O 读/写电路、地址译码器和控制电路等部分组成：</p>
+<ol>
+<li><strong>存储体（存储矩阵）</strong>：存储单元的集合，通过行选择线（X）和列选择线（Y）来选中目标单元，位于同行同列交叉点上的多个位（位平面数）被同时读/写；</li>
+<li><strong>地址译码器</strong>：将输入地址转换为对应输出线上的高电平信号，以驱动相应的读/写电路。译码方式有两种——<strong>单译码法</strong>（一维译码）仅用一个行译码器，同一行中所有存储元的字线相连构成一个字，可同时读/写，缺点是选择线数量过多；<strong>双译码法</strong>（二维译码）将地址译码器分为 X（行）和 Y（列）两个部分，通过行与列的交叉点唯一确定一个存储单元，是目前 DRAM 芯片普遍采用的译码结构；</li>
+<li><strong>I/O 电路</strong>：用于控制被选中存储单元的读/写，具有放大信号的作用；</li>
+<li><strong>片选控制线</strong>：单个存储芯片容量有限，需将多个芯片组合扩展。访问某个存储单元时，必须「选中」该单元所在的芯片而其他芯片不被选中，因此需要片选控制信号（经片选控制线传输）；</li>
+<li><strong>读/写控制线</strong>：根据 CPU 发出的读/写命令，通过读/写控制线选中单元执行相应操作。</li>
+</ol>
+<figure>
+<img src="../assets/ch3/fig-p095.png" alt="存储芯片结构图" loading="lazy">
+<figcaption>图3.5 存储芯片结构图（王道教材）</figcaption>
+</figure>
+
+<h4>4. DRAM 芯片的关键技术</h4>
+
+<h5>（1）地址引脚复用技术</h5>
+<p>DRAM 芯片容量较大，所需地址线数较多。为减少芯片地址引脚数量，通常采用<strong>地址引脚复用技术</strong>：<strong>行地址和列地址通过相同的引脚分两次先后输入</strong>（在行选通信号 RAS 与列选通信号 CAS 的控制下），从而使地址引脚数量减少一半。图 3.6 给出了一个 4M×4 位 DRAM 芯片的逻辑结构：该芯片只有 11 个地址引脚（\(\mathrm{A}_0 \sim \mathrm{A}_{10}\)），内部存储阵列采用三维结构，总容量为 2048×2048×4 位，即 4M×4 位；行地址和列地址各需 11 位，共 4 个位平面，在任意行列交叉点上 4 个位平面的存储单元同时被读/写（数据端 4 个引脚，一次同时读/写 4 位数据）。</p>
+<figure>
+<img src="../assets/ch3/fig-p095_2.png" alt="一个4M×4位DRAM芯片的逻辑结构图" loading="lazy">
+<figcaption>图3.6 一个4M×4位DRAM芯片的逻辑结构图（王道教材）</figcaption>
+</figure>
+<div class="callout warn">
+<span class="tag">易混</span>「地址复用」与「刷新」都围着行列转，但目的完全不同：<strong>复用</strong>是行、列地址共用同一组引脚、分两次先后传送（为了省引脚）；<strong>刷新</strong>按行进行、只需给出行地址（为了保数据）。两件事别在选择题里对号入座。
+</div>
+
+<h5>（2）刷新机制与阵列设计优化</h5>
+<p>DRAM 芯片需要定期刷新以维持所有信息。刷新时，仅需向芯片提供<strong>行地址</strong>和行选通信号，即可选中某一行的所有存储单元并执行读操作。由于 DRAM 采用破坏性读出，每次读取后必须立即再生：读出为 0 则将电容完全放电，读出为 1 则重新充电。对于图 3.6 所示的 2048×2048×4 位存储阵列，只需进行 2048 次「按行刷新」即可完成全芯片刷新（刷新无须列地址）。芯片内部的刷新计数器可自动产生刷新行地址，<strong>刷新周期</strong>定义为对某一特定行完成一次刷新后，到下一次对该行再次刷新的时间间隔。</p>
+<div class="callout exam">
+<span class="tag">考点</span>DRAM 行列划分优化（2018 真题）。设 DRAM 芯片存储容量为 \(2^n\) 位，存储阵列的行数为 \(r\)、列数为 \(c\)，则 \(2^n = r \times c\)，且 \(n = \log_2 r + \log_2 c\)（行地址占 \(\log_2 r\) 位、列地址占 \(\log_2 c\) 位）。由于 DRAM 采用地址引脚复用技术，为最小化地址引脚数，应使 \(r\) 与 \(c\) 尽可能接近；又因为 DRAM 按行刷新、行数越少刷新开销越低，所以通常将阵列设计为<strong>行数略小于或等于列数的近似正方形结构</strong>。
+</div>
+
+<h5>（3）突发传输与行缓冲</h5>
+<p>图 3.7 展示了一个 DRAM 芯片的简化示意，容量为 16×8 位，存储阵列为 4 行×4 列。由于采用地址引脚复用技术，仅需 2 根地址线，分时传送 2 位行地址和 2 位列地址；每个存储单元包含 8 位数据，需要 8 根数据线。芯片内部设有一个<strong>行缓冲器</strong>（通常由 SRAM 实现），用于缓存被选中行中的所有数据，其容量等于一行中所有存储单元的数据总量，即<strong>列数×每个存储单元的位数</strong>（如 4 列×8 位 = 32 位）。当某一行被选中后，该行数据一次性加载到行缓冲器中，后续可在每个时钟周期连续输出一个存储单元的数据（8 位），从而支持<strong>突发传输</strong>——在寻址阶段提供首地址，随后连续读取多个相邻存储单元的数据，显著提升有效带宽。</p>
+<figure>
+<img src="../assets/ch3/fig-p096.png" alt="一个DRAM芯片的简化示意图" loading="lazy">
+<figcaption>图3.7 一个DRAM芯片的简化示意图（王道教材）</figcaption>
+</figure>
+
+<h4>5. 同步 DRAM（SDRAM）</h4>
+<p>目前更广泛使用的是<strong>同步 DRAM（SDRAM）</strong>。与传统的异步 DRAM 不同，SDRAM 的数据读/写操作与时钟同步，能够在 CPU 主存总线周期内完成数据传输，在连续访问同一行（页）内的数据时可实现突发传输，显著减少甚至消除等待状态。异步 DRAM 中，CPU 发出地址和控制信号后必须等待一段不确定的延迟才能获得数据或完成写入，期间 CPU 不断轮询存储器的状态信号，无法执行其他任务；而 SDRAM 在系统时钟驱动下工作，CPU 发出地址和控制信号后，在预设的若干时钟周期后返回数据或完成写入，<strong>CPU 无须等待</strong>，可在延迟期间执行其他指令，显著提升系统性能。</p>
+
+<h4>6. SRAM 和 DRAM 的比较</h4>
+<table>
+<thead>
+<tr><th>特点</th><th>SRAM</th><th>DRAM</th></tr>
+</thead>
+<tbody>
+<tr><td>存储信息</td><td>触发器</td><td>电容</td></tr>
+<tr><td>破坏性读出</td><td>非</td><td>是</td></tr>
+<tr><td>需要刷新</td><td>不要</td><td>需要</td></tr>
+<tr><td>送行列地址</td><td>同时送</td><td>分两次送（复用）</td></tr>
+<tr><td>运行速度</td><td>快</td><td>慢</td></tr>
+<tr><td>集成度</td><td>低</td><td>高</td></tr>
+<tr><td>存储成本（位价）</td><td>高</td><td>低</td></tr>
+<tr><td>主要用途</td><td>高速缓存</td><td>主机内存</td></tr>
+</tbody>
+</table>
+
+<h3><span class="sec-id">3.2.2</span>非易失性存储器</h3>
+
+<h4>1. 只读存储器（ROM）的特点</h4>
+<div class="callout exam">
+<span class="tag">考点</span>RAM 与 ROM 的区别（2010 真题）。RAM 与 ROM 均<strong>支持随机访问</strong>，但 ROM 属于非易失性存储器，具有两个显著优点：① 结构简单、位密度高于可读/写存储器；② 断电后数据不丢失，可靠性高。
+</div>
+<p>根据制造工艺和可编程性，ROM 可分为<strong>掩模式 ROM（MROM）</strong>、<strong>一次可编程 ROM（PROM）</strong>和<strong>可擦除可编程 ROM（EPROM）</strong>等类型：MROM 由厂商固化，用户不可更改；PROM 允许用户进行一次编程；EPROM 虽支持多次编程，但每次擦除需紫外线照射整片芯片，且擦写次数有限、写入速度慢，难以满足高频随机读/写的需求，因此<strong>无法替代 RAM</strong>。</p>
+<div class="callout warn">
+<span class="tag">易混</span>ROM 三兄弟的「可改写程度」逐级增强：MROM 不可改 → PROM 仅一次 → EPROM 可多次但代价大（紫外线整片擦、次数有限、写入慢）。选择题问「为什么 ROM 不能取代 RAM」，答「写入不便/写入速度慢、不能高频随机写」即可。
+</div>
+
+<h4>2. Flash 存储器</h4>
+<div class="callout exam">
+<span class="tag">考点</span>Flash 存储器的特点（2012 真题）。计算机中许多固定信息需长期保存在非易失性存储器中，如系统启动所需的 BIOS。早期 BIOS 固化在 MROM 或 EPROM 中无法更新；现代主板普遍采用 Flash 存储器存储 BIOS，用户可通过厂商提供的工具在线升级。
+</div>
+<p>Flash 存储器（也称<strong>闪存</strong>）是一种在 EPROM 基础上发展而来的非易失性存储器，兼具 ROM 与 RAM 的部分优点：<strong>断电后信息可长期保存；支持电擦除与在线重写</strong>，无须紫外线照射等特殊设备。其读取速度接近 RAM，但<strong>写入速度较慢，读写性能不对称</strong>。</p>
+
+<h4>3. 固态硬盘（Solid State Drive, SSD）</h4>
+<p>固态硬盘是基于 Flash 存储器构建的存储设备，由<strong>控制单元</strong>和<strong>存储单元</strong>（Flash 存储器芯片阵列）组成。它继承了 Flash 存储器的重要特性：非易失性、无机械部件、读取速度快。相较传统硬盘，SSD 具有读写速度更快、功耗低、抗震性强等优势，缺点是价格较高，且写入寿命受限于 Flash 存储器的擦写次数（详见 3.4.2 节）。</p>
+
+<h3><span class="sec-id">3.2.3</span>多模块存储器</h3>
+<p>为提升存储器吞吐率，可采用多体并行技术——通过多个结构完全相同的存储模块并行工作来提高存储器的吞吐率。由于 CPU 的速度远高于存储器，若能在一个存取周期内连续获取多条指令或多个数据字，便可更充分利用 CPU 资源。根据模块地址方式的不同，多模块存储器可分为<strong>连续编址</strong>和<strong>交叉编址</strong>两种结构。</p>
+
+<h4>1. 连续编址方式</h4>
+<p><strong>高位地址为模块号（体号），低位地址为模块内地址（体内地址）</strong>。如图 3.8 所示，存储器具有 4 个模块 \(\mathrm{M}_0 \sim \mathrm{M}_3\)，每个模块有 \(n\) 个单元，各模块的地址范围依次为 \(0 \sim n-1\)、\(n \sim 2n-1\)、\(2n \sim 3n-1\)、\(3n \sim 4n-1\)。</p>
+<figure>
+<img src="../assets/ch3/fig-p098.png" alt="连续编址多体并行存储器" loading="lazy">
+<figcaption>图3.8 连续编址多体并行存储器（王道教材）</figcaption>
+</figure>
+<p>在连续编址方式下，低位体内地址总是被送到由高位体号确定的模块内进行寻址。访问一个连续主存块时，总是先在一个模块内访问，直到该模块访问完才转到下一个模块。由于 CPU 按顺序访问存储模块，各模块<strong>不能并行访问</strong>，因此无法提高存储器的吞吐率。</p>
+<div class="callout tip">
+<span class="tag">理解</span>连续编址=「高体号、低体内」，模块内地址连续、仍按顺序串行存取，本质上是把一个大存储器切成几块顺序使用——它没有并行度，记住这一点就能和下面的低位交叉划清界限。
+</div>
+
+<h4>2. 交叉编址（低位交叉）方式</h4>
+<p><strong>低位地址用作模块号（体号），高位地址用作模块内地址</strong>。设有 \(m\) 个模块，每个模块 \(k\) 个存储单元，则模块号由单元地址对 \(m\) 取模决定，即<strong>模块号 = 单元地址 mod \(m\)</strong>。如图 3.9 所示，单元 \(0, m, \cdots, (k-1)m\) 位于模块 \(\mathrm{M}_0\)；单元 \(1, m+1, \cdots, (k-1)m+1\) 位于模块 \(\mathrm{M}_1\)，以此类推。</p>
+<figure>
+<img src="../assets/ch3/fig-p098_2.png" alt="交叉编址的多体并行存储器" loading="lazy">
+<figcaption>图3.9 交叉编址的多体并行存储器（王道教材）</figcaption>
+</figure>
+<p>在交叉编址方式下，连续地址的数据被依次分布到不同模块中，程序或数据块在物理上是「<strong>交叉存放</strong>」的。采用此方式的多体存储器称为多体交叉存储器，通过多个结构完全相同的存储模块并行工作，能够在访问连续地址时显著提高存储器的吞吐率。交叉存储器可以采用<strong>轮流启动</strong>或<strong>同时启动</strong>两种方式。</p>
+<div class="callout exam">
+<span class="tag">考点</span>交叉存储器中数据存放方式（2017 真题）。判断某地址位于哪个模块：用<strong>单元地址 mod 模块数</strong>；反过来，地址 \(i\) 的体号就是 \(i \bmod m\)，体内地址就是 \(i \div m\) 的商。连续地址轮流落进不同模块，这是「交叉存放」的本质。
+</div>
+
+<h5>（1）轮流启动方式</h5>
+<p>若每个模块一次读/写的位数正好等于数据总线位数，模块的存取周期为 \(T\)，总线周期为 \(r\)，则为实现轮流启动方式，存储器交叉模块数应满足：</p>
+$$m = T/r$$
+<div class="callout exam">
+<span class="tag">考点</span>交叉存储器存取时间和带宽的计算（2012、2013 真题）。按每隔 \(1/m\) 个存取周期（即每隔 \(r\)）轮流启动各模块，则每隔 \(1/m\) 个存取周期就可读/写一个数据，存取速度提高 \(m\) 倍。图 3.10 展示了 4 体低位交叉轮流启动的存取时间示意。交叉存储器要求模块数大于等于 \(m\)，以保证启动某模块经过 \(mr\) 的时间后再次启动该模块时，其上次的存取操作已经完成（保证流水线不断）。这样，连续读取 \(m\) 个字所需的时间为
+$$t_1 = T + (m-1)r$$
+而顺序方式连续读取 \(m\) 个字所需的时间为 \(t_2 = mT\)，可见交叉存储器的带宽大大提高。
+</div>
+<figure>
+<img src="../assets/ch3/fig-p099.png" alt="低位交叉流水存取时间示意图" loading="lazy">
+<figcaption>图3.10 低位交叉流水存取时间示意图（王道教材）</figcaption>
+</figure>
+<p><strong>算一算</strong>（教材习题口径）：设存取周期 \(T = 200\text{ns}\)、四体交叉，则每隔 \(1/4\) 个存取周期即 50ns 读出操作一个字；连续读取 4 个字 \(t_1 = 200 + 3 \times 50 = 350\text{ns}\)（顺序方式为 \(4 \times 200 = 800\text{ns}\)）。若数据字长为 32 位，数据传输率为 32 位/50ns = 640Mb/s，即 80MB/s。</p>
+<div class="callout exam">
+<span class="tag">考点</span>交叉存储器中访存冲突的分析（2015 真题）。在理想情况下，\(m\) 体交叉存储器每隔 \(1/m\) 个存取周期可读/写一个数据；若相邻的 \(m\) 次访问的访存地址出现在<strong>同一个模块</strong>内，则会发生访存冲突，此时需延迟发生冲突的访问请求。
+</div>
+
+<h5>（2）同时启动方式</h5>
+<p>当<strong>所有存储模块一次并行读/写的总位数等于存储数据总线总宽度</strong>时，可采用同时启动方式。例如，使用 8 个 DRAM 芯片构成一个 128MB 内存条：每个 DRAM 芯片内部有 4096×4096×8 位的存储阵列（行地址与列地址各 12 位），含 8 个位平面。CPU 发出的主存地址被拆分为行地址和列地址，分时送入 DRAM 芯片的行、列地址译码器；此方式下每个芯片每次传输 8 位，8 个芯片同步工作，可一次性提供 64 位数据，匹配 64 位总线宽度。</p>
+<p>需要留意的是，此方式需按<strong>连续 8 字节对齐</strong>的地址进行访问：一次并行访问只能从块起始地址对齐的块（第 0～7、8～15、…字节）中读出数据。若访问一个 int 型（4 字节）数据时起始地址未对齐（如地址 5，占用第 5～8 字节），横跨两个访问块，则需两次访存；若地址按 4 字节对齐（4 的倍数），则一次即可完成。<strong>这正是内存访问要求数据对齐的根本原因</strong>。</p>
+
+<div class="callout ext">
+<span class="tag">拓展</span>除了多模块并行，还有一种提高主存吞吐率的思路是<strong>双端口存储器</strong>：同一个存储器提供两个相互独立的端口，允许两个部件同时访存；但两个端口同时访问同一单元（同时写、或一读一写）时会产生冲突，需要冲突仲裁。408 大纲仅要求多模块存储器，双端口了解概念即可。
+</div>
+
+<div class="callout tip">
+<span class="tag">小结</span>本节三组对比别丢分：SRAM（触发器、快、贵、做 Cache）vs DRAM（电容、慢、便宜、做主存）；刷新（按行、只给行地址、无须列地址）vs 地址复用（行列共用引脚、分两次送）；连续编址（高体号、串行、无法提速）vs 低位交叉（低体号、流水、\(t_1 = T+(m-1)r\)）。
+</div>
+
+<div class="pager">
+  <a class="prev" href="s-31.html"><span class="dir">上一篇</span>3.1 存储器概述</a>
+  <a class="next" href="s-33.html"><span class="dir">下一篇</span>3.3 主存储器与CPU的连接</a>
+</div>
+</main>
+<footer class="site-footer"><div class="inner">
+  <p>本站为个人学习用途整理，内容与插图取自王道《计算机组成原理考研复习指导》，版权归原出版方所有，仅供交流，请勿商用。</p>
+  <p><a href="../index.html">← 返回首页</a> · <a href="quiz.html">本章习题</a></p>
+</div></footer>
+</body>
+</html>

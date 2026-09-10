@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>第2章 导学 · 数据的表示和运算 · 408计组带学</title>
+<link rel="stylesheet" href="../css/style.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body>
+<header class="site-header"><div class="inner">
+  <a class="site-title" href="../index.html">408 计算机组成原理带学</a>
+  <nav class="chapnav">
+    <a href="../index.html">首页</a>
+    <a href="index.html" class="cur">第2章</a>
+    <a href="quiz.html">本章习题</a>
+  </nav>
+</div></header>
+<main>
+<nav class="crumbs"><a href="../index.html">首页</a> / <a href="index.html">第2章 数据的表示和运算</a> / 本章导学</nav>
+
+<h1>第2章 数据的表示和运算</h1>
+
+<p>本章内容较为繁杂，是全书<strong>公式密度最大</strong>的一章：计算机采用二进制表示数据，其表示与运算机制不同于日常使用的十进制。理解本章有助于掌握一套准确的规范，从历年连续考查 C 语言中 unsigned、short、int、long、float、double 等基本数据类型的表示范围、运算规则、溢出判断，以及类型转换、IEEE 754 浮点数的表示、特点与加减运算来看，本章均为考查重点，需要牢固掌握。好消息是：这些内容在 408 中几乎全部以<strong>选择题</strong>形式出现，拼的是熟练度和细心，把每个公式亲手演算几遍即可拿下。</p>
+
+<div class="callout exam">
+<span class="tag">408考纲要求</span>
+<ul>
+<li><strong>（一）数制与编码</strong>：进位计数制及其相互转换；定点数的编码表示。</li>
+<li><strong>（二）运算方法和运算电路</strong>：基本运算部件——加法器、算术逻辑单元（ALU）；加减运算——补码加减运算、标志位的生成；乘除运算——乘除运算的基本原理、乘法电路和除法电路的基本结构。</li>
+<li><strong>（三）整数的表示与运算</strong>：无符号整数的表示和运算；有符号整数的表示和运算。</li>
+<li><strong>（四）浮点数的表示与运算</strong>：浮点数的表示；IEEE 754 标准；浮点数的加减运算。</li>
+</ul>
+</div>
+
+<div class="callout ext">
+<span class="tag">大纲变动</span>教材中「原码一位乘法」「补码一位乘法（Booth 算法）」「除法的详细迭代流程」等传统手算乘除内容，考纲已<strong>降低要求</strong>——仅要求掌握乘除运算的基本原理、乘法电路和除法电路的基本结构。本站将相关手算细节标注为「选学·大纲已降低要求」，理解思想即可，不必背诵逐位流程。
+</div>
+
+<h2>本章地图</h2>
+<div class="map-grid">
+  <div class="map-card">
+    <a class="sec-link" href="s-21.html">2.1 数制与编码</a>
+    <div class="desc">进位计数制及其相互转换，原码、反码、补码、移码四种编码与表示范围，C 语言整型数据的截断与扩展。</div>
+  </div>
+  <div class="map-card">
+    <a class="sec-link" href="s-22.html">2.2 运算方法和运算电路</a>
+    <div class="desc">全加器与 ALU 怎么搭，补码加减怎么做、溢出怎么判，标志位 ZF/OF/SF/CF 如何比较大小，乘除电路的基本结构。</div>
+  </div>
+  <div class="map-card">
+    <a class="sec-link" href="s-23.html">2.3 浮点数的表示与运算</a>
+    <div class="desc">IEEE 754 的格式与特殊值，十进制 ↔ 浮点十六进制互转，浮点加减五步：对阶、尾数加减、规格化、舍入、溢出判断。</div>
+  </div>
+</div>
+
+<h2>复习提示：带着这四个问题学</h2>
+<p>教材在本章开头建议读者边学边思考以下问题，本章末尾给出参考答案（见下方「本章小结」）：</p>
+<ol>
+<li>在计算机中，为什么要使用二进制来表示数据？</li>
+<li>计算机在字长足够的情况下能够精确地表示每个数吗？若不能，请举例说明。</li>
+<li>字长相同时，浮点数和定点数的表示范围与精度有什么区别？</li>
+<li>用移码表示浮点数的阶码有什么好处？</li>
+</ol>
+
+<h2>本章小结</h2>
+<p>下表整理自教材本章小结，回答开篇的四个问题。</p>
+<table>
+<thead>
+<tr><th style="width:38%">问题</th><th>结论要点</th></tr>
+</thead>
+<tbody>
+<tr>
+<td>在计算机中，为什么要使用二进制来表示数据？</td>
+<td>原因有三：① 二进制只有两种状态，只需使用具有两种稳定物理状态的器件即可表示一位，硬件实现成本低；② 二进制的 1 和 0 恰好对应逻辑值「真」与「假」，为逻辑运算和条件判断提供直接支持；③ 运算规则极为简单，可通过基本逻辑门电路高效实现各类算术与逻辑操作。注意：十进制等进制也可借助编码进入机器（如 BCD 码），但物理存储层面一切数据都是二进制比特序列。</td>
+</tr>
+<tr>
+<td>计算机在字长足够的情况下能够精确地表示每个数吗？</td>
+<td><strong>能：只要其数值在字长可表示的范围内，即可精确表示每个整数</strong>。但对于小数（实数），由于采用二进制表示，只能精确表示形如若干个 \(1/2^k\)（\(k\) 为正整数）之和的有理数。许多十进制有限小数在二进制下是无限循环小数，无法用有限位精确表示。例如，\(0.1 = (0.0001100110011\cdots)_2\)。因此，用十进制长度有限的字长下，这类数值也只能被近似表示。</td>
+</tr>
+<tr>
+<td>字长相同时，浮点数和定点数的表示范围与精度有什么区别？</td>
+<td>在相同字长下，浮点数与定点数存在「<strong>范围 vs 精度</strong>」的权衡：<strong>表示范围</strong>——浮点数通过阶码可表示极大或极小的数值，远大于定点数；<strong>表示精度</strong>——定点数将所有位用于数值本身，具有恒定且较高的相对精度，而浮点数需分配部分位给阶码，导致尾数位数减少、有效精度降低，且精度随数值增大而下降。因此，浮点数以牺牲精度换取更大的表示范围，定点数则以固定精度为代价限制其数值范围。</td>
+</tr>
+<tr>
+<td>用移码表示浮点数的阶码有什么好处？</td>
+<td>IEEE 754 标准采用移码表示阶码，主要优势：① <strong>便于阶码比较</strong>：浮点数加减运算时需要比较两个数的阶码大小，移码保持了真值的大小顺序，比较更方便；② <strong>支持特殊性值的统一编码</strong>：阶码全 0，当尾数也为 0 时表示 ±0，尾数非零时表示非规格化数（用于渐进下溢）；阶码全 1，保留特殊用途——尾数为 0 时表示 ±∞，尾数非零时表示 NaN（如 0/0、∞−∞ 等无效运算结果）。</td>
+</tr>
+</tbody>
+</table>
+
+<h2>常见问题和易混淆知识点</h2>
+
+<h3><span class="sec-id">问题 1</span>如何表示一个数值数据？计算机中的数值数据都是二进制吗？</h3>
+<p>在计算机内部，数值数据主要有两种表示方式：① <strong>二进制数值表示</strong>：包括无符号数（如地址）、有符号数（通常用补码表示）和浮点数；② <strong>二进制编码的十进制数</strong>（BCD 码）：用 4 位二进制编码一位十进制数。需要强调的是，<strong>所有数据在物理存储上都是二进制比特序列</strong>，区别仅在于解释规则。BCD 并非真正的「十进制表示」，而是按十进制语义解释的二进制编码。</p>
+
+<h3><span class="sec-id">问题 2</span>什么称为无符号整数的「溢出」？</h3>
+<p>对于 \(n\) 位无符号整数，其表示范围为 0 到 \(2^n - 1\)。当运算结果大于或等于 \(2^n\) 时，硬件仅保留低 \(n\) 位（结果对 \(2^n\) 取模），舍弃高位，导致截断后的值不等于真实结果，这种现象称为<strong>无符号溢出</strong>。在运算器中，通常通过<strong>进位标志（CF）</strong>来检测无符号溢出。</p>
+
+<h3><span class="sec-id">问题 3</span>对于位数相同的定点数和浮点数，可表示的浮点数个数比定点数多吗？</h3>
+<p>不是。\(n\) 位编码最多表示 \(2^n\) 个不同比特模式。定点数（如 \(n\) 位补码）通常能表示 \(2^n\) 个互异的有效数值；浮点数中，部分编码用于表示 ±0、±∞ 和 NaN 等特殊值，实际可表示的有效实数个数<strong>少于 \(2^n\)</strong>。因此，在相同位数下，<strong>定点数通常能表示更多有效数值</strong>。</p>
+
+<h3><span class="sec-id">问题 4</span>现代计算机中是否要求原码加减运算？如何实现？</h3>
+<p>现代计算机一般<strong>不实现原码加减运算</strong>。尽管 IEEE 754 浮点数的尾数采用原码表示，但<strong>尾数本身是无符号的</strong>，符号由独立的符号位表示。在加减运算时，硬件根据操作数符号和运算类型，将尾数作为无符号整数送入通用运算器（如 ALU）进行加减运算，结果符号位由控制逻辑生成。因此，<strong>浮点尾数运算本质上是无符号整数运算</strong>，无须原码加减机制。</p>
+
+<div class="callout warn">
+<span class="tag">易混</span>本章三组高频易混点，复习时对照 2.1～2.3 各节：<strong>① 原码/反码/补码的转换</strong>——正数三种码相同；负数「原码取反加一得补码」（反码是中间态），符号位一律不变，补码表示范围比原码多一个最小负数；<strong>② 溢出判别</strong>——单符号位看「同号相加结果异号」，一位符号位看 \(C_n \oplus C_{n-1}\)，双符号位看两位是否相异；<strong>③ 浮点对阶</strong>——永远「小阶向大阶看齐」（尾数右移只丢低位，左移丢高位不可挽回）。
+</div>
+
+<div class="pager">
+  <a class="prev" href="../index.html"><span class="dir">上一篇</span>首页</a>
+  <a class="next" href="s-21.html"><span class="dir">下一篇</span>2.1 数制与编码</a>
+</div>
+</main>
+<footer class="site-footer"><div class="inner">
+  <p>本站为个人学习用途整理，内容与插图取自王道《计算机组成原理考研复习指导》，版权归原出版方所有，仅供交流，请勿商用。</p>
+  <p><a href="../index.html">← 返回首页</a> · <a href="quiz.html">本章习题</a></p>
+</div></footer>
+</body>
+</html>

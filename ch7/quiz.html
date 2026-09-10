@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>第7章 习题精选 · 408计组带学</title>
+<link rel="stylesheet" href="../css/style.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body>
+<header class="site-header"><div class="inner">
+  <a class="site-title" href="../index.html">408 计算机组成原理带学</a>
+  <nav class="chapnav">
+    <a href="../index.html">首页</a>
+    <a href="index.html" class="cur">第7章</a>
+    <a href="quiz.html">本章习题</a>
+  </nav>
+</div></header>
+<main>
+<nav class="crumbs"><a href="../index.html">首页</a> / <a href="index.html">第7章 输入/输出系统</a> / 本章习题</nav>
+
+<h1>第7章 习题精选</h1>
+
+<div class="callout exam">
+<span class="tag">考情</span>本章是最后一章，几乎每年稳定出 2～3 道选择题 + 1 道综合大题。选择题高频考点：<strong>I/O 接口与 I/O 端口的辨析</strong>、<strong>统一编址 vs 独立编址</strong>（靠什么区分、用什么指令）、<strong>中断判优 / 响应条件 / 中断隐指令 / 屏蔽字与处理次序</strong>、<strong>DMA 三种传送方式（停止 CPU 访存、周期挪用、交替访问）与控制器组成</strong>、以及<strong>中断与 DMA 的机制对比</strong>。综合题几乎只考一类：<strong>三种 I/O 方式的时间开销计算</strong>（2009/2011/2012/2014/2016/2018/2019/2022 年真题反复命题），套路固定——先算“每秒多少次请求”，再乘“每次多少个时钟周期”，最后除以“每秒总周期数 = 主频”，务必把这条主线练到条件反射。
+</div>
+
+<p>本页共 33 题：选择题 24 道（第 1～2 题出自 7.1 I/O 系统基本概念，第 3～8 题出自 7.2 I/O 接口，第 9～24 题出自 7.3 I/O 方式），综合题 9 道（第 25～31 题对应做题本综合第 2、5～7、9～11 题，第 32～33 题为补收的做题本综合第 1、8 题；做题本综合题共 11 道，仅第 3、4 题因素材缺页未收录）。收录 2009/2010/2011/2012/2014/2016/2017/2018/2019/2020/2021/2022/2025 年统考真题共 15 道（其中综合题 5 道）。题干【 】内为做题本出处；选择题答案均已与《选择题【答案速查】》网格逐题核对。</p>
+
+<h2 class="q-section-title">一、选择题（第1～24题）</h2>
+
+<div class="q-item">
+  <p><span class="q-no">第1题</span>【7.1·P293】在微型机系统中，I/O 设备通过（　）与主板的系统总线相连接。</p>
+  <ol class="options">
+    <li>DMA 控制器</li>
+    <li>设备控制器</li>
+    <li>中断控制器</li>
+    <li>I/O 端口</li>
+  </ol>
+  <details class="ans"><summary>答案与解析</summary><div class="ans-body">
+    <p><span class="ans-letter">答案：B</span></p>
+    <p>I/O 设备不能直接挂在系统总线上，必须通过<strong>设备控制器</strong>（即 I/O 接口/适配卡的典型形态）与总线相连，由它完成信号格式转换、数据缓冲、状态检测与设备控制。A、C 中的 DMA 控制器、中断控制器是为 CPU 分担传送控制或中断管理的部件，不是所有设备接入总线的通用通路；D 的 I/O 端口只是接口内部可被 CPU 访问的寄存器，不是“连接部件”本身。</p>
+  </div></details>
+</div>
+
+<div class="q-item">
+  <p><span class="q-no">第2题</span>【7.1·P293·2010 统考真题】假定一台计算机的显示存储器用 DRAM 芯片实现，若要求显示分辨率为 1600×1200，颜色深度为 24 位，帧频为 85Hz，显存总带宽的 50% 用来刷新屏幕，则需要的显存总带宽至少约为（　）</p>
+  <ol class="options">
+    <li>245Mb/s</li>
+    <li>979Mb/s</li>
+    <li>1958Mb/s</li>
+    <li>7834Mb/s</li>
+  </ol>
+  <details class="ans"><summary>答案与解析</summary><div class="ans-body">
+    <p><span class="ans-letter">答案：D</span></p>
+    <p>① 刷新一屏所需数据量 = \(1600 \times 1200 \times 24\,\text{bit} = 4.608\times10^{7}\,\text{bit} = 46.08\,\text{Mb}\)；<br>
+    ② 每秒刷新 85 帧，刷新占用带宽 = \(46.08\,\text{Mb} \times 85 = 3916.8\,\text{Mb/s}\)；<br>
+    ③ 刷新只占总带宽的 50%，故显存总带宽 ≥ \(3916.8 \div 50\% = 7833.6\,\text{Mb/s} \approx 7834\,\text{Mb/s}\)，选 D。</p>
+  </div></details>
+</div>
+
+<div class="q-item">
+  <p><span class="q-no">第3题</span>【7.2·P297】在统一编址的方式下，区分存储单元和 I/O 设备是靠（　）</p>
+  <ol class="options">
+    <li>不同的地址码</li>
+    <li>不同的地址线</li>
+    <li>不同的控制线</li>
+    <li>不同的数据线</li>
+  </ol>
+  <details class="ans"><summary>答案与解析</summary><div class="ans-body">
+    <p><span class="ans-letter">答案：A</span></p>
+    <p>统一编址把 I/O 端口与主存单元放进<strong>同一个地址空间</strong>，两者地位等同：给端口和主存划分<strong>互不相同的地址码段</strong>，CPU 访问某个地址时，落在主存段就是访存、落在端口段就是访问 I/O 设备，故选 A。地址线、数据线、控制线对两类访问完全公用，B、C、D 均错。（对比：独立编址是两个独立地址空间 + 专门的 I/O 指令，靠指令操作码区分。）</p>
+  </div></details>
+</div>
+
+<div class="q-item">
+  <p><span class="q-no">第4题</span>【7.2·P297】下列关于 I/O 端口和接口的说法中，正确的是（　）</p>
+  <ol class="options">
+    <li>在统一编址方式下，对主存单元和 I/O 端口的存储保护措施是独立的</li>
+    <li>在统一编址方式下，主存单元和 I/O 设备是靠不同的地址线来区分的</li>
+    <li>在独立编址方式下，主存单元和 I/O 设备是靠不同的地址线来区分的</li>
+    <li>在独立编址方式下，CPU 需要设置专门的输入/输出指令访问 I/O 端口</li>
+  </ol>
+  <details class="ans"><summary>答案与解析</summary><div class="ans-body">
+    <p><span class="ans-letter">答案：D</span></p>
+    <p>独立编址为 I/O 端口另设一个与主存无关的地址空间，端口地址可能与主存地址重号，只能<strong>靠指令类型（操作码）区分</strong>访问对象，因此必须设置专门的 IN/OUT 指令，D 正确。A 错，统一编址下端口被当作普通存储单元对待，使用与主存<strong>同一套</strong>寻址与保护机制；B、C 均错——区分靠的是<strong>地址码/指令</strong>，地址线本身是公用的，两种编址方式都不存在“另一套地址线”。</p>
+  </div></details>
+</div>
+
+<div class="q-item">
+  <p><span class="q-no">第5题</span>【7.2·P298·2012 统考真题】下列选项中，在 I/O 总线的数据线上传输的信息包括（　）<br>I. I/O 接口中的命令字　　II. I/O 接口中的状态字　　III. 中断类型号</p>
+  <ol class="options">
+    <li>仅 I、II</li>
+    <li>仅 I、III</li>
+    <li>仅 II、III</li>
+    <li>I、II、III</li>
+  </ol>
+  <details class="ans"><summary>答案与解析</summary><div class="ans-body">
+    <p><span class="ans-letter">答案：D</span></p>
+    <p>I/O 总线的数据线负责传送除地址外的一切数据类信息：CPU 向接口命令寄存器写入的<strong>命令字</strong>（I）、CPU 从状态寄存器读出的<strong>状态字</strong>（II）都经数据线往返；中断响应周期中，中断控制器还经数据线把<strong>中断类型号</strong>（III）送交 CPU。三类全走数据线，选 D。（地址码走地址线，握手与时序控制走控制线，不要混。）</p>
+  </div></details>
+</div>
+
+<div class="q-item">
+  <p><span class="q-no">第6题</span>【7.2·P298·2014 统考真题】下列有关 I/O 接口的叙述中，错误的是（　）</p>
+  <ol class="options">
+    <li>状态端口和控制端口可以合用同一个寄存器</li>
+    <li>I/O 接口中 CPU 可访问的寄存器称为 I/O 端口</li>
+    <li>采用独立编址方式时，I/O 端口地址和主存地址可能相同</li>
+    <li>采用统一编址方式时，CPU 不能用访存指令访问 I/O 端口</li>
+  </ol>
+  <details class="ans"><summary>答案与解析</summary><div class="ans-body">
+    <p><span class="ans-letter">答案：D</span></p>
+    <p>统一编址的本质恰恰就是<strong>用访存指令（如 MOV、LOAD/STORE）访问 I/O 端口</strong>——端口本来就是地址空间的一部分，D 说反了，选 D。A 正确：读操作取状态、写操作送控制命令，一个寄存器按读/写方向两用即可；B 正确，这正是 I/O 端口的定义；C 正确：独立编址的两个地址空间互不相关，编号可以重叠，同一个地址值既可能是主存地址又可能是端口地址。</p>
+  </div></details>
+</div>
+
+<div class="q-item">
+  <p><span class="q-no">第7题</span>【7.2·P298·2017 统考真题】I/O 指令实现的数据传送通常发生在（　）</p>
+  <ol class="options">
+    <li>I/O 设备和 I/O 端口之间</li>
+    <li>通用寄存器和 I/O 设备之间</li>
+    <li>I/O 端口和 I/O 端口之间</li>
+    <li>通用寄存器和 I/O 端口之间</li>
+  </ol>
+  <details class="ans"><summary>答案与解析</summary><div class="ans-body">
+    <p><span class="ans-letter">答案：D</span></p>
+    <p>如 <code>IN AX, PORT</code> / <code>OUT PORT, AX</code>：I/O 指令在 CPU 的<strong>通用寄存器</strong>与接口中的<strong>I/O 端口</strong>（数据缓冲寄存器）之间交换数据，选 D。外设与端口之间的传送由设备侧硬件完成，CPU 指令“看不见”外设本身，A、B 错；端口对端口之间没有这种传送形态，C 错。</p>
+  </div></details>
+</div>
+
+<div class="q-item">
+  <p><span class="q-no">第8题</span>【7.2·P298·2021 统考真题】下列选项中，不属于 I/O 接口的是（　）</p>
+  <ol class="options">
+    <li>磁盘驱动器</li>
+    <li>打印机适配器</li>
+    <li>网络控制器</li>
+    <li>可编程中断控制器</li>
+  </ol>
+  <details class="ans"><summary>答案与解析</summary><div class="ans-body">
+    <p><span class="ans-letter">答案：A</span></p>
+    <p>I/O 接口（I/O 控制器）的功能是接收主机发来的 I/O 控制信号，并实现主机与外部设备之间的信息交换——<strong>打印机适配器、网络控制器（网卡）、可编程中断控制器</strong>都属于此类：前两者分别代主机管理打印机和网络通信，可编程中断控制器则汇集各中断源的请求、判优并向 CPU 转交中断类型号，它们都是插在主机与外设之间、供 CPU 访问的接口/控制器（B、C、D）。而<strong>磁盘驱动器由磁头、盘片和磁盘读/写电路等组成，就是平常所说的磁盘本身</strong>，它是被接口驱动的外部设备本体，而不是接口，故选 A。</p>
+  </div></details>
+</div>
+
+<div class="q-item">
+  <p><span class="q-no">第9题</span>【7.3·P317】设置中断排队判优逻辑的目的是（　）</p>
+  <ol class="options">
+    <li>产生中断源编码</li>
+    <li>使同时提出的请求中的优先级别最高者得到及时响应</li>
+    <li>使 CPU 能方便地转入中断服务子程序</li>
+    <li>提高中断响应速度</li>
+  </ol>
+  <details class="ans"><summary>答案与解析</summary><div class="ans-body">
+    <p><span class="ans-letter">答案：B</span></p>
+    <p>多个中断源<strong>同时</strong>请求时必须按优先级排队，判优逻辑从中选出当前<strong>优先级最高者</strong>先行响应，避免竞争冲突，B 正确。A 是中断源编码（向量编码）环节的事；C 是由中断向量/向量地址机制解决的；D 错，判优逻辑只是保证“高者优先”，并不能让响应这个动作本身变快。</p>
+  </div></details>
+</div>
+
+<div class="q-item">
+  <p><span class="q-no">第10题</span>【7.3·P317】以下关于中断的说法中，错误的是（　）</p>
+  <ol class="options">
+    <li>中断服务程序一般是操作系统模块</li>
+    <li>中断向量方法可提高中断源的识别速度</li>
+    <li>中断向量地址是中断服务程序的入口地址</li>
+    <li>重叠处理中断的现象称为中断嵌套</li>
+  </ol>
+  <details class="ans"><summary>答案与解析</summary><div class="ans-body">
+    <p><span class="ans-letter">答案：C</span></p>
+    <p>C 混淆了两个概念：<strong>向量地址是中断向量表中表项的地址</strong>，其中存放的内容才是中断服务程序的入口地址——向量地址是“入口地址的地址”，选 C。A 正确，服务程序通常由操作系统提供并管理；B 正确，向量法由类型号直接查表得到入口，比软件逐一查询识别快得多；D 正确，CPU 正在处理某中断时又转去响应处理新的中断，重叠处理即中断嵌套。</p>
+  </div></details>
+</div>
+
+<div class="q-item">
+  <p><span class="q-no">第11题</span>【7.3·P318】中断响应是在（　）</p>
+  <ol class="options">
+    <li>一条指令执行开始</li>
+    <li>一条指令执行中间</li>
+    <li>一条指令执行之末</li>
+    <li>一条指令执行的任何时刻</li>
+  </ol>
+  <details class="ans"><summary>答案与解析</summary><div class="ans-body">
+    <p><span class="ans-letter">答案：C</span></p>
+    <p>CPU 在<strong>每条指令执行周期之末</strong>统一采样各中断源的中断请求信号（外中断）。若允许在指令执行中间响应，当前指令会半途而废，断点（下条指令地址）无法正确保存、现场自相矛盾。因此外中断响应固定安排在指令执行之末（且需开中断、无 DMA 等更紧急请求）。</p>
+  </div></details>
+</div>
+
+<div class="q-item">
+  <p><span class="q-no">第12题</span>【7.3·P318】某计算机有 4 级中断，优先级从高到低为 1→2→3→4。若将优先级顺序修改，改后 1 级中断的屏蔽字为 1101，2 级中断的屏蔽字为 0100，3 级中断的屏蔽字为 1111，4 级中断的屏蔽字为 0101，则修改后的优先顺序从高到低为（　）</p>
+  <ol class="options">
+    <li>1→2→3→4</li>
+    <li>3→1→4→2</li>
+    <li>1→3→4→2</li>
+    <li>2→1→3→4</li>
+  </ol>
+  <details class="ans"><summary>答案与解析</summary><div class="ans-body">
+    <p><span class="ans-letter">答案：B</span></p>
+    <p>屏蔽字各<strong>位从左到右依次对应 1、2、3、4 级</strong>，某位为 1 表示屏蔽该级请求，为 0 表示开放（允许它打断本级的执行）：</p>
+    <table>
+      <thead><tr><th>中断源</th><th>屏蔽字（对应1、2、3、4级）</th><th>屏蔽的级别</th><th>开放（可打断它）的级别</th></tr></thead>
+      <tbody>
+        <tr><td>1 级</td><td>1101</td><td>1、2、4</td><td>3</td></tr>
+        <tr><td>2 级</td><td>0100</td><td>2</td><td>1、3、4</td></tr>
+        <tr><td>3 级</td><td>1111</td><td>1、2、3、4</td><td>无（谁也打不断它）</td></tr>
+        <tr><td>4 级</td><td>0101</td><td>2、4</td><td>1、3</td></tr>
+      </tbody>
+    </table>
+    <p>由“开放的级别 > 本级”逐条推导：① 3 级屏蔽所有源 → 3 最高；② 1 级只对 3 开放 → 3 &gt; 1；③ 4 级对 1、3 开放 → 1 &gt; 4、3 &gt; 4；④ 2 级对所有人都开放 → 2 最低。合并得 <strong>3→1→4→2</strong>，选 B。</p>
+    <p>快捷验算：屏蔽字中“1”越多，处理优先级越高。各级“1”的个数：3 级 4 个、1 级 3 个、4 级 2 个、2 级 1 个，按个数降序即 3→1→4→2，与逐条推导一致。</p>
+    <figure>
+      <img src="../assets/ch7/fig-p336.png" alt="多重中断时 CPU 的执行轨迹" loading="lazy">
+      <figcaption>多重中断时 CPU 的执行轨迹：1、2、3、4 同时请求中断，按处理优先级 3→1→4→2 嵌套执行</figcaption>
+    </figure>
+  </div></details>
+</div>
+
+<div class="q-item">
+  <p><span class="q-no">第13题</span>【7.3·P318】在中断响应周期中，CPU 主要完成的工作是（　）</p>
+  <ol class="options">
+    <li>关中断，保护断点，发中断响应信号并形成向量地址</li>
+    <li>开中断，保护断点，发中断响应信号并形成向量地址</li>
+    <li>关中断，执行中断服务程序</li>
+    <li>开中断，执行中断服务程序</li>
+  </ol>
+  <details class="ans"><summary>答案与解析</summary><div class="ans-body">
+    <p><span class="ans-letter">答案：A</span></p>
+    <p>中断响应周期由硬件（<strong>中断隐指令</strong>）完成三件事：① <strong>关中断</strong>——防止保存断点的过程又被新请求打断；② <strong>保护断点</strong>——把 PC 压栈或存入指定单元；③ <strong>发中断响应信号并形成向量地址</strong>——为转入服务程序铺路。C、D 中的“执行中断服务程序”属于随后的中断处理阶段（由程序完成），不在响应周期内；响应阶段应是关中断而非开中断（开中断通常在服务程序末尾），B、D 错。</p>
+  </div></details>
+</div>
+
+<div class="q-item">
+  <p><span class="q-no">第14题</span>【7.3·P319】设置中断屏蔽标志可以改变（　）</p>
+  <ol class="options">
+    <li>多个中断源的中断请求优先级</li>
+    <li>CPU 对多个中断请求响应的优先次序</li>
+    <li>多个中断服务程序开始执行的顺序</li>
+    <li>多个中断服务程序执行完的次序</li>
+  </ol>
+  <details class="ans"><summary>答案与解析</summary><div class="ans-body">
+    <p><span class="ans-letter">答案：D</span></p>
+    <p>响应优先级由硬件排队电路固定决定，屏蔽字<strong>改不动</strong>它，所以 A、B 都错；多个服务程序<strong>开始</strong>执行的顺序由响应次序决定（同时请求时谁优先谁先进入），C 也改不了。屏蔽字的作用是：把某些级别的请求“挡在门外”，使处理优先级高的服务程序<strong>先执行完</strong>——它改变的只是各服务程序执行完（结束）的先后次序，即处理次序，选 D。可与第 12 题对照体会。</p>
+  </div></details>
+</div>
+
+<div class="q-item">
+  <p><span class="q-no">第15题</span>【7.3·P319】在各种 I/O 方式中，中断方式的特点是（　），DMA 方式的特点是（　）</p>
+  <ol class="options">
+    <li>CPU 与外设串行工作，传送与主程序串行工作</li>
+    <li>CPU 与外设并行工作，传送与主程序串行工作</li>
+    <li>CPU 与外设串行工作，传送与主程序并行工作</li>
+    <li>CPU 与外设并行工作，传送与主程序并行工作</li>
+  </ol>
+  <details class="ans"><summary>答案与解析</summary><div class="ans-body">
+    <p><span class="ans-letter">答案：B（中断方式）、D（DMA 方式）</span></p>
+    <p><strong>中断方式</strong>：外设准备数据的同时 CPU 继续执行主程序，二者<strong>并行</strong>；但数据的传送要等中断响应后由 CPU 执行中断服务程序完成，这段时间传送与主程序<strong>串行</strong>（CPU 被打断），选 B。<strong>DMA 方式</strong>：数据传送由 DMA 控制器申请总线后硬件直送（如周期挪用），CPU 只做预处理和后处理，传送可与主程序<strong>并行</strong>，选 D。</p>
+  </div></details>
+</div>
+
+<div class="q-item">
+  <p><span class="q-no">第16题</span>【7.3·P319】下列关于程序查询方式及其工作过程的叙述中，正确的是（　）</p>
+  <ol class="options">
+    <li>按启动查询方式的不同，可分为软件查询方式和硬件查询方式</li>
+    <li>CPU 主要负责启动外设和查询其状态，不参与数据传送</li>
+    <li>每完成一次数据传送后，会修改主存地址和计数值</li>
+    <li>CPU 需一直查询外设的状态，直到外设准备就绪时才可去执行其他程序</li>
+  </ol>
+  <details class="ans"><summary>答案与解析</summary><div class="ans-body">
+    <p><span class="ans-letter">答案：C</span></p>
+    <p>程序查询的一轮循环是：读状态端口 → 未就绪则继续踏步查询 → 就绪后经数据端口传送一个字 → <strong>修改主存地址指针与传送计数器</strong> → 计数未完继续下一轮，C 正确。A 错，查询方式全部由软件（查询程序）实现，“软件查询/硬件查询”是中断判优的分类；B 错，数据传送同样由 CPU 执行 I/O 指令亲自完成；D 错，方向说反了——查询期间 CPU 被“拴死”在踏步循环上，<strong>不能</strong>去执行其他程序，这正是查询方式 CPU 利用率最低的根源。</p>
+  </div></details>
+</div>
+
+<div class="q-item">
+  <p><span class="q-no">第17题</span>【7.3·P319】在 DMA 传送方式中，由（　）发出 DMA 请求，在传送期间总线控制权由（　）掌握。</p>
+  <ol class="options">
+    <li>外部设备、CPU</li>
+    <li>DMA 控制器、DMA 控制器</li>
+    <li>外部设备、DMA 控制器</li>
+    <li>DMA 控制器、内存</li>
+  </ol>
+  <details class="ans"><summary>答案与解析</summary><div class="ans-body">
+    <p><span class="ans-letter">答案：C</span></p>
+    <p>两级请求要分清：外设准备好一个数据后，先向 <strong>DMA 控制器</strong>发出“DMA 请求”（由接口内请求触发器记录）；DMA 控制器再持此请求向 CPU 申请总线使用权。获准后，<strong>总线控制权移交给 DMA 控制器</strong>，由它直接指挥主存与接口之间的数据传送，传完把总线还给 CPU。故两空依次为“外部设备、DMA 控制器”，选 C。</p>
+  </div></details>
+</div>
+
+<div class="q-item">
+  <p><span class="q-no">第18题</span>【7.3·P319】以下关于 DMA 方式进行 I/O 的描述中，正确的是（　）</p>
+  <ol class="options">
+    <li>一个完整的 DMA 过程，部分由 DMA 控制器控制，部分由 CPU 控制</li>
+    <li>一个完整的 DMA 过程，完全由 CPU 控制</li>
+    <li>一个完整的 DMA 过程，完全由 DMA 控制器控制，CPU 不介入任何控制</li>
+    <li>一个完整的 DMA 过程，完全由 CPU 采用周期挪用法控制</li>
+  </ol>
+  <details class="ans"><summary>答案与解析</summary><div class="ans-body">
+    <p><span class="ans-letter">答案：A</span></p>
+    <p>完整的 DMA 过程分三段：<strong>预处理</strong>——CPU 执行初始化程序向 DMA 控制器写入主存起始地址、传送方向、传送字数；<strong>数据传送</strong>——DMA 控制器申请到总线后由硬件直接控制传送，CPU 不参与；<strong>后处理</strong>——传送结束时 DMA 控制器向 CPU 发中断请求，CPU 执行服务程序善后（校验、登记等）。可见“部分由 CPU 控制、部分由 DMA 控制器控制”，A 正确，B、C、D 的“完全由……”均片面。</p>
+  </div></details>
+</div>
+
+<div class="q-item">
+  <p><span class="q-no">第19题</span>【7.3·P320】采用周期挪用进行 DMA 数据传送时，每传送一个数据要占用一个（　）的时间。</p>
+  <ol class="options">
+    <li>指令周期</li>
+    <li>机器周期</li>
+    <li>时钟周期</li>
+    <li>存取周期</li>
+  </ol>
+  <details class="ans"><summary>答案与解析</summary><div class="ans-body">
+    <p><span class="ans-letter">答案：D</span></p>
+    <p>周期挪用（周期窃取）挪的是<strong>主存的存取周期</strong>：DMA 控制器每要传一个数据，就从 CPU 手里“借”一个存取周期完成一次主存读写，随即把周期还给 CPU。指令周期、机器周期、时钟周期都是 CPU 内部的时间单位，与主存一次读写并不一一对应，选 D。</p>
+  </div></details>
+</div>
+
+<div class="q-item">
+  <p><span class="q-no">第20题</span>【7.3·P320·2011 统考真题】某计算机处理器主频为 50MHz，采用定时查询方式控制设备 A 的 I/O，查询程序运行一次所用的时钟周期数至少为 500。在设备 A 工作期间，为保证数据不丢失，每秒需对其查询至少 200 次，则 CPU 用于设备 A 的 I/O 的时间占整个 CPU 时间的百分比至少是（　）</p>
+  <ol class="options">
+    <li>0.02%</li>
+    <li>0.05%</li>
+    <li>0.20%</li>
+    <li>0.50%</li>
+  </ol>
+  <details class="ans"><summary>答案与解析</summary><div class="ans-body">
+    <p><span class="ans-letter">答案：C</span></p>
+    <p>① 每秒至少查询 200 次，每次至少 500 个时钟周期，故每秒用于查询的周期数至少为 \(200 \times 500 = 1.0\times10^{5}\) 个；<br>
+    ② 主频 50MHz，每秒共有 \(50\times10^{6} = 5\times10^{7}\) 个时钟周期；<br>
+    ③ 占比 = \( \dfrac{1.0\times10^{5}}{5\times10^{7}} = 0.002 = 0.20\% \)，选 C。</p>
+  </div></details>
+</div>
+
+<div class="q-item">
+  <p><span class="q-no">第21题</span>【7.3·P321·2014 统考真题】若某设备中断请求的响应和处理时间为 100ns，每 400ns 发出一次中断请求，中断响应所允许的最长延迟时间为 50ns，则在该设备持续工作过程中，CPU 用于该设备的 I/O 时间占整个 CPU 时间的百分比至少是（　）</p>
+  <ol class="options">
+    <li>12.5%</li>
+    <li>25%</li>
+    <li>37.5%</li>
+    <li>50%</li>
+  </ol>
+  <details class="ans"><summary>答案与解析</summary><div class="ans-body">
+    <p><span class="ans-letter">答案：B</span></p>
+    <p>关键陷阱在 50ns：它是请求发出后<strong>等待被响应的最长延迟</strong>，属于设备的等待时间，<strong>不算 CPU 用于 I/O 的时间</strong>。CPU 的实际开销只有每次“响应 + 处理”的 100ns。设备每 400ns 请求一次且持续工作，故每 400ns 内 CPU 花在它身上的时间为 100ns：<br>
+    占比 = \( \dfrac{100\,\text{ns}}{400\,\text{ns}} = 25\% \)，选 B。（若误把 50ns 也算进去得 \( \frac{100}{400-50} \approx 28.6\%\) 或 \( \frac{100+50}{400} = 37.5\%\)，就掉进 C 的陷阱了。）</p>
+  </div></details>
+</div>
+
+<div class="q-item">
+  <p><span class="q-no">第22题</span>【7.3·P321·2019 统考真题】某设备以中断方式与 CPU 进行数据交换，CPU 主频为 1GHz，设备接口中的数据缓冲寄存器为 32 位，设备的数据传输率为 50kB/s。若每次中断开销（包括中断响应和中断处理）为 1000 个时钟周期，则 CPU 用于该设备输入/输出的时间占整个 CPU 时间的百分比最多是（　）</p>
+  <ol class="options">
+    <li>1.25%</li>
+    <li>2.5%</li>
+    <li>5%</li>
+    <li>12.5%</li>
+  </ol>
+  <details class="ans"><summary>答案与解析</summary><div class="ans-body">
+    <p><span class="ans-letter">答案：A</span></p>
+    <p>① 缓冲寄存器 32 位 = 4B，缓冲每满 4B 申请一次中断，每秒中断次数 = \( \dfrac{50\times10^{3}\,\text{B/s}}{4\,\text{B}} = 12500 \) 次；<br>
+    ② 每次开销 1000 个时钟周期，每秒用于该设备的周期数 = \(12500 \times 1000 = 1.25\times10^{7}\) 个；<br>
+    ③ 主频 1GHz，每秒总周期数 = \(1\times10^{9}\) 个；占比 = \( \dfrac{1.25\times10^{7}}{1\times10^{9}} = 1.25\% \)，选 A。</p>
+  </div></details>
+</div>
+
+<div class="q-item">
+  <p><span class="q-no">第23题</span>【7.3·P322·2020 统考真题】若设备采用周期挪用 DMA 方式进行输入和输出，每次 DMA 传送的数据块大小为 512 字节，相应的 I/O 接口中有一个 32 位数据缓冲寄存器。对于数据输入过程，下列叙述中，错误的是（　）</p>
+  <ol class="options">
+    <li>每准备好 32 位数据，DMA 控制器就发出一次总线请求</li>
+    <li>相对于 CPU，DMA 控制器的总线使用权的优先级更高</li>
+    <li>在整个数据块的传送过程中，CPU 不可以访问主存储器</li>
+    <li>数据块传送结束时，会产生“DMA 传送结束”中断请求</li>
+  </ol>
+  <details class="ans"><summary>答案与解析</summary><div class="ans-body">
+    <p><span class="ans-letter">答案：C</span></p>
+    <p>C 错误：周期挪用是 DMA 与 CPU <strong>逐周期交替访存</strong>——DMA 每次只挪用一个存取周期传走 32 位数据，其余时间总线仍归 CPU，CPU 完全可以继续访存；只有“停止 CPU 访存”方式才会出现整块传送期间 CPU 不能访存，选 C。A 正确：接口缓冲寄存器每凑满 32 位，DMA 控制器就申请一次总线；B 正确：若 DMA 优先级低于 CPU，高速设备的数据会因等不到总线而丢失；D 正确：整块 512B 传完后，DMA 控制器向 CPU 发“DMA 结束”中断请求，由 CPU 完成后处理。</p>
+  </div></details>
+</div>
+
+<div class="q-item">
+  <p><span class="q-no">第24题</span>【7.3·P323·2025 统考真题】下列设备中，适合采用 DMA 输入/输出方式的是（　）<br>I. 键盘　　II. 网卡　　III. 固态硬盘　　IV. 针式打印机</p>
+  <ol class="options">
+    <li>仅 I、II</li>
+    <li>仅 II、III</li>
+    <li>仅 II、IV</li>
+    <li>仅 III、IV</li>
+  </ol>
+  <details class="ans"><summary>答案与解析</summary><div class="ans-body">
+    <p><span class="ans-letter">答案：B</span></p>
+    <p>DMA 的适用场景是<strong>高速、成批</strong>交换数据：网卡（数据包成块到达，速率高）、固态硬盘（高速块设备）正属此类，II、III 正确，选 B。键盘、针式打印机是低速<strong>字符型设备</strong>，数据零星、节奏慢，用查询或中断方式即可；给它们配 DMA 既没必要，初始化与中断善后的固定开销反而不划算。</p>
+  </div></details>
+</div>
+
+<h2 class="q-section-title">二、综合题（第25～33题）</h2>
+
+<div class="q-item">
+  <p><span class="q-no">第25题</span>【P323】假定某 I/O 设备向 CPU 传送信息的最高频率为 4 万次/秒，而相应中断处理程序的执行时间为 40μs，则该 I/O 设备是否可采用中断方式工作？为什么？</p>
+  <details class="ans"><summary>答案与解析</summary><div class="ans-body">
+    <p>① 设备的最高请求频率为 \(4\times10^{4}\) 次/s，相邻两次中断请求的最小间隔为<br>
+    \( \dfrac{1}{4\times10^{4}}\,\text{s} = 25\times10^{-6}\,\text{s} = 25\,\mu\text{s} \)。</p>
+    <p>② 而中断处理程序执行一次需 40μs &gt; 25μs：上一次中断尚未处理完，下一次请求就已到达，请求产生的速度远快于处理的速度，数据必然丢失。</p>
+    <p>③ 结论：<strong>不能采用中断方式</strong>工作（应改用 DMA 等由硬件直送的方式）。</p>
+  </div></details>
+</div>
+
+<div class="q-item">
+  <p><span class="q-no">第26题</span>【P324】一个 DMA 接口可采用周期窃取方式把字符（字节）传送到存储器，它支持的最大批量为 400B。若存取周期为 0.2μs，每处理一次中断需 5μs，现有的字符设备的传输速率为 9600b/s。假设字符之间的传输是无间隙的，试问 DMA 方式每秒因数据传输占用处理器多少时间？若完全采用中断方式，又需占处理器多少时间（忽略预处理所需时间）？</p>
+  <details class="ans"><summary>答案与解析</summary><div class="ans-body">
+    <p>先统一单位：传输速率 9600b/s ÷ 8 = <strong>1200B/s</strong>，即每秒传送 1200 个字符（本题字符按字节计）。</p>
+    <p><strong>（1）DMA 方式（周期窃取）</strong></p>
+    <p>① 每传一个字符挪用一个存取周期，挪用的是<strong>主存的存取周期</strong>（0.2μs），不构成对处理器时间的占用；</p>
+    <p>② 每传满最大批量 400B 才向 CPU 发一次“块传送结束”中断：每秒中断次数 = \( \dfrac{1200}{400} = 3 \) 次；</p>
+    <p>③ CPU 每秒因数据传输占用的时间 = \(3 \times 5\,\mu\text{s} = \mathbf{15\,\mu s}\)。</p>
+    <p><strong>（2）中断方式</strong></p>
+    <p>① 每传一个字符就要中断一次：每秒中断 \(1200\) 次；</p>
+    <p>② CPU 每秒占用时间 = \(1200 \times 5\,\mu\text{s} = 6000\,\mu\text{s} = \mathbf{6\,ms}\)。</p>
+    <p><strong>对比</strong>：同样每秒 1200B，DMA 把 CPU 开销从 6ms/s 压到 15μs/s，相差 \(1200 \div 3 = 400\) 倍——中断的粒度是“一个字符”，DMA 的粒度是“一批字符”，这就是 DMA 省时间的本质。</p>
+  </div></details>
+</div>
+
+<div class="q-item">
+  <p><span class="q-no">第27题</span>【P324】假设磁盘传输数据以 32 位的字为单位，传输速率为 1MB/s，CPU 的时钟频率为 50MHz。回答以下问题：</p>
+  <ol>
+    <li>采取程序查询方式，假设查询操作需要 100 个时钟周期，求 CPU 为 I/O 查询所花费的时间比率（假设进行足够的查询以避免数据丢失）。</li>
+    <li>采用中断方式进行控制，每次传输的开销（包括中断处理）为 80 个时钟周期。求 CPU 为传输硬盘所花费的时间比率。</li>
+    <li>采用 DMA 的方式，假定 DMA 的启动需要 1000 个时钟周期，DMA 完成时后处理需要 500 个时钟周期。若平均传输的数据长度为 4KB（此处 K = 1000），试问硬盘工作时 CPU 将用多少时间比率进行输入/输出操作？忽略 DMA 申请总线的影响。</li>
+  </ol>
+  <details class="ans"><summary>答案与解析</summary><div class="ans-body">
+    <p>公共数据：字长 32 位 = 4B，每秒传送 \( \dfrac{1\,\text{MB}}{4\,\text{B}} = \dfrac{10^{6}}{4} = 2.5\times10^{5} \) 个字；主频 50MHz，每秒共 \(5\times10^{7}\) 个时钟周期。</p>
+    <p><strong>（1）程序查询方式</strong></p>
+    <p>① 每个字到来前都得查一次：每秒查询 \(2.5\times10^{5}\) 次；<br>
+    ② 每秒用于查询的周期数 = \(2.5\times10^{5} \times 100 = 2.5\times10^{7}\) 个；<br>
+    ③ 时间比率 = \( \dfrac{2.5\times10^{7}}{5\times10^{7}} = \mathbf{50\%} \)。</p>
+    <p><strong>（2）中断方式</strong></p>
+    <p>① 每传一个字中断一次：每秒中断 \(2.5\times10^{5}\) 次；<br>
+    ② 每秒开销 = \(2.5\times10^{5} \times 80 = 2\times10^{7}\) 个周期；<br>
+    ③ 时间比率 = \( \dfrac{2\times10^{7}}{5\times10^{7}} = \mathbf{40\%} \)。</p>
+    <p><strong>（3）DMA 方式</strong></p>
+    <p>① CPU 只负担预处理（启动）与后处理：每次 = \(1000 + 500 = 1500\) 个周期；<br>
+    ② 平均每块 4KB = 4000B，每秒 DMA 次数 = \( \dfrac{1\,\text{MB}}{4000\,\text{B}} = 250 \) 次；<br>
+    ③ 每秒 CPU 开销 = \(1500 \times 250 = 3.75\times10^{5}\) 个周期；比率 = \( \dfrac{3.75\times10^{5}}{5\times10^{7}} = 0.0075 = \mathbf{0.75\%} \)。</p>
+    <p><strong>结论</strong>：同一块磁盘，查询 50% → 中断 40% → DMA 0.75%，开销逐级断崖式下降；数据块越大、CPU 介入次数越少，DMA 的优势越明显。</p>
+  </div></details>
+</div>
+
+<div class="q-item">
+  <p><span class="q-no">第28题</span>【P324·2009 统考真题】某计算机的 CPU 主频为 500MHz，CPI 为 5（执行每条指令平均需 5 个时钟周期）。假定某外设的数据传输率为 0.5MB/s，采用中断方式与主机进行数据传送，以 32 位为传输单位，对应的中断服务程序包含 18 条指令，中断服务的其他开销相当于 2 条指令的执行时间。回答下列问题，要求给出计算过程。</p>
+  <ol>
+    <li>在中断方式下，CPU 用于该外设 I/O 的时间占整个 CPU 时间的百分比是多少？</li>
+    <li>当该外设的数据传输速率达到 5MB/s 时，此时改用 DMA 方式传送数据。假定每次 DMA 传送块大小为 5000B，且 DMA 预处理和后处理的总开销为 500 个时钟周期，则 CPU 用于该外设 I/O 的时间占整个 CPU 时间的百分比是多少（假设 DMA 与 CPU 之间没有访存冲突）？</li>
+  </ol>
+  <details class="ans"><summary>答案与解析</summary><div class="ans-body">
+    <p><strong>（1）中断方式</strong></p>
+    <p>① 每次中断传送 32 位 = 4B，每秒中断次数 = \( \dfrac{0.5\times10^{6}\,\text{B/s}}{4\,\text{B}} = 125000 \) 次；<br>
+    ② 每次中断 CPU 开销 =（18 + 2）条指令 = 20 条指令 × CPI 5 = 100 个时钟周期；<br>
+    ③ 每秒用于该外设 I/O 的周期数 = \(125000 \times 100 = 1.25\times10^{7}\) 个；<br>
+    ④ CPU 每秒总周期数 = \(500\times10^{6} = 5\times10^{8}\) 个；<br>
+    ⑤ 占比 = \( \dfrac{1.25\times10^{7}}{5\times10^{8}} = 0.025 = \mathbf{2.5\%} \)。</p>
+    <p><strong>（2）改用 DMA 方式</strong></p>
+    <p>① 每秒 DMA 次数 = \( \dfrac{5\times10^{6}\,\text{B/s}}{5000\,\text{B}} = 1000 \) 次；<br>
+    ② CPU 只承担预处理 + 后处理：每秒开销 = \(1000 \times 500 = 5\times10^{5}\) 个周期；<br>
+    ③ 占比 = \( \dfrac{5\times10^{5}}{5\times10^{8}} = 0.001 = \mathbf{0.1\%} \)。</p>
+    <p>对比可见：速率提高 10 倍后改用 DMA，CPU 负担反而从 2.5% 降到 0.1%——传送粒度从 4B 变成 5000B，中断次数从 12.5 万次/秒变成 1000 次/秒。</p>
+  </div></details>
+</div>
+
+<div class="q-item">
+  <p><span class="q-no">第29题</span>【P325·2016 统考真题】假定 CPU 主频为 50MHz，CPI 为 4。设备 D 采用异步串行通信方式向主机传送 7 位 ASCII 码字符，通信规程中有 1 位奇校验位和 1 位停止位，从 D 接收启动命令到字符送入 I/O 端口需要 0.5ms。回答下列问题，要求说明理由。</p>
+  <ol>
+    <li>每传送一个字符，在异步串行通信线上共需传输多少位？在设备 D 持续工作过程中，每秒最多可向 I/O 端口送入多少个字符？</li>
+    <li>设备 D 采用中断方式进行输入/输出，示意图如下所示：I/O 端口每收到一个字符申请一次中断，中断响应需 10 个时钟周期，中断服务程序共有 20 条指令，其中第 15 条指令启动 D 工作。若 CPU 需从 D 读取 1000 个字符，则完成这一任务所需时间大约是多少个时钟周期？CPU 用于完成这一任务的时间大约是多少个时钟周期？在中断响应阶段 CPU 进行了哪些操作？</li>
+  </ol>
+  <figure>
+    <img src="../assets/ch7/fig-p328.png" alt="设备 D 中断方式输入/输出的时序示意" loading="lazy">
+    <figcaption>中断方式下外设 D 与 CPU 的工作时序：启动 → D 工作 → 完成 → 中断请求/响应 → 返回 → 再启动</figcaption>
+  </figure>
+  <details class="ans"><summary>答案与解析</summary><div class="ans-body">
+    <p><strong>（1）</strong>异步串行通信每字符一帧：1 位起始位 + 7 位数据位（ASCII 字符占 7 位）+ 1 位奇校验位 + 1 位停止位 = <strong>10 位</strong>。设备持续工作时，D 每处理完一个字符需 0.5ms，故每秒最多向 I/O 端口送入 \( \dfrac{1\,\text{s}}{0.5\times10^{-3}\,\text{s}} = \mathbf{2000} \) 个字符。</p>
+    <p><strong>（2）</strong>时钟周期 = \( \dfrac{1}{50\,\text{MHz}} = 20\,\text{ns} \)。</p>
+    <p>① 每个字符的完整周期：从启动 D 到字符进入端口需 0.5ms，折合 \( \dfrac{0.5\times10^{-3}\,\text{s}}{20\times10^{-9}\,\text{s}} = 25000 \) 个时钟周期；字符到达后经中断响应 10 个周期、再执行服务程序前 15 条指令 \(15 \times 4 = 60\) 个周期后（第 15 条）重新启动 D。故每字符约需 \(25000 + 10 + 60 = 25070\) 个时钟周期，1000 个字符共约</p>
+    <p>\( 1000 \times 25070 = 2.507\times10^{7} \approx \mathbf{2.5\times10^{7}} \) 个时钟周期。</p>
+    <p>② CPU 实际用于该任务的时间：每个字符 = 中断响应 10 + 中断服务程序 \(20 \times 4 = 80\)，共 90 个时钟周期；1000 个字符共约 \(1000 \times 90 = \mathbf{9\times10^{4}}\) 个时钟周期。其余绝大部分时间 D 在工作、CPU 可执行其他程序（并行）。</p>
+    <p>③ 中断响应阶段（隐指令）CPU 进行的操作：<strong>关中断</strong>、<strong>保存断点（PC）和程序状态字（PSW）</strong>、<strong>发中断响应信号并获取中断类型号（识别中断源、形成向量地址）</strong>。</p>
+  </div></details>
+</div>
+
+<div class="q-item">
+  <p><span class="q-no">第30题</span>【P325·2018 统考真题】假定计算机的主频为 500MHz，CPI 为 4。现有设备 A 和 B，其数据传输速率分别为 2MB/s 和 40MB/s，对应 I/O 接口中各有一个 32 位数据缓冲寄存器。回答下列问题，要求给出计算过程。</p>
+  <ol>
+    <li>若设备 A 采用定时查询 I/O 方式，每次输入/输出都至少执行 10 条指令。设备 A 最多间隔多长时间查询一次才能不丢失数据？CPU 用于设备 A 输入/输出的时间占 CPU 总时间的百分比至少是多少？</li>
+    <li>在中断 I/O 方式下，若每次中断响应和中断处理的总时钟周期数至少为 400，则设备 B 能否采用中断 I/O 方式？为什么？</li>
+    <li>若设备 B 采用 DMA 方式，每次 DMA 传送的数据块大小为 1000B，CPU 用于 DMA 预处理和后处理的总时钟周期数为 500，则 CPU 用于设备 B 输入/输出的时间占 CPU 总时间的百分比最多是多少？</li>
+  </ol>
+  <details class="ans"><summary>答案与解析</summary><div class="ans-body">
+    <p>公共数据：主频 500MHz，每秒 \(5\times10^{8}\) 个时钟周期；缓冲寄存器 32 位 = 4B。</p>
+    <p><strong>（1）设备 A：定时查询</strong></p>
+    <p>① A 每 \( \dfrac{4\,\text{B}}{2\,\text{MB/s}} = 2\,\mu\text{s} \) 就会产生一个新的 32 位数据，故<strong>最多每隔 2μs 必须查询一次</strong>，否则缓冲被覆盖丢数据；<br>
+    ② 每秒至少查询 \( \dfrac{1\,\text{s}}{2\,\mu\text{s}} = 5\times10^{5} \) 次；<br>
+    ③ 每次至少执行 10 条指令 × CPI 4 = 40 个周期，每秒至少 \(5\times10^{5} \times 40 = 2\times10^{7}\) 个周期；<br>
+    ④ 占比至少 = \( \dfrac{2\times10^{7}}{5\times10^{8}} = \mathbf{4\%} \)。</p>
+    <p><strong>（2）设备 B：中断方式不可行</strong></p>
+    <p>① B 每 \( \dfrac{4\,\text{B}}{40\,\text{MB/s}} = 0.1\,\mu\text{s} \) 就备好一个 32 位数据；<br>
+    ② 一次中断响应 + 处理至少 \( \dfrac{400}{500\times10^{6}\,\text{Hz}} = 0.8\,\mu\text{s} \)；<br>
+    ③ \(0.8\,\mu\text{s} > 0.1\,\mu\text{s}\)：处理当前中断期间，缓冲寄存器早已被后续数据覆盖，<strong>必然丢数据，故设备 B 不能采用中断 I/O 方式</strong>。</p>
+    <p><strong>（3）设备 B：DMA 方式</strong></p>
+    <p>① 每秒 DMA 次数 = \( \dfrac{40\times10^{6}\,\text{B/s}}{1000\,\text{B}} = 40000 \) 次；<br>
+    ② CPU 只承担预处理 + 后处理：每秒最多 \(40000 \times 500 = 2\times10^{7}\) 个周期；<br>
+    ③ 占比最多 = \( \dfrac{2\times10^{7}}{5\times10^{8}} = \mathbf{4\%} \)。</p>
+    <p>对照（2）可见：同一台 40MB/s 的设备，中断方式根本来不及（0.1μs 就溢出），DMA 方式 CPU 只花 4% 的时间就搞定——高速设备必须 DMA。</p>
+  </div></details>
+</div>
+
+<div class="q-item">
+  <p><span class="q-no">第31题</span>【P325·2022 统考真题】假设某磁盘驱动器中有 4 个双面盘片，每个盘面有 20000 个磁道，每个磁道有 500 个扇区，每个扇区可记录 512 字节的数据，并且盘片转速为 7200rpm（转/分），平均寻道时间为 5ms。请回答下列问题。</p>
+  <ol>
+    <li>每个扇区包含数据及其地址信息，地址信息分为 3 个字段。这 3 个字段的名称各是什么？对于该磁盘，各字段至少占多少位？</li>
+    <li>一个扇区的平均访问时间约为多少？</li>
+    <li>若采用周期挪用 DMA 方式进行磁盘与主机之间的数据传送，磁盘控制器中的数据缓冲区大小为 64 位，则在一个扇区的读/写过程中，DMA 控制器向 CPU 发送了多少次总线请求？若 CPU 检测到 DMA 控制器的总线请求信号时也需要访问主存，则 DMA 控制器是否可以获得总线使用权？为什么？</li>
+  </ol>
+  <details class="ans"><summary>答案与解析</summary><div class="ans-body">
+    <p><strong>（1）</strong>三个字段：<strong>柱面号（磁道号）、盘面号（磁头号）、扇区号</strong>。<br>
+    ① 柱面号：磁道沿柱面编址，共 20000 个磁道，\(2^{14}=16384 &lt; 20000 \le 2^{15}=32768\)，至少 <strong>15 位</strong>；<br>
+    ② 盘面号：4 个双面盘片共 \(4\times2 = 8\) 个盘面，\(2^{3}=8\)，至少 <strong>3 位</strong>；<br>
+    ③ 扇区号：每磁道 500 个扇区，\(2^{9}=512 \ge 500\)，至少 <strong>9 位</strong>。</p>
+    <p><strong>（2）</strong>转速 7200r/min = 120 r/s，转一圈 \( \dfrac{1}{120}\,\text{s} \approx 8.33\,\text{ms} \)。<br>
+    平均旋转延迟 = 半圈 \(\approx 4.17\,\text{ms}\)；一个扇区的传输时间 = \( \dfrac{8.33\,\text{ms}}{500} \approx 0.017\,\text{ms} \)。<br>
+    平均访问时间 ≈ 寻道 5ms + 旋转 4.17ms + 传输 0.017ms ≈ <strong>9.2ms</strong>。</p>
+    <p><strong>（3）</strong>① 缓冲区 64 位 = 8B，每凑满 8B 发一次总线请求，一个扇区 512B ÷ 8B = <strong>64 次</strong>总线请求；<br>
+    ② <strong>可以获得</strong>。周期挪用方式下 DMA 控制器的总线优先级<strong>高于</strong> CPU：磁盘数据按传输速率定时到达/送出，若不及时挪用存取周期取走，缓冲区会被覆盖而丢失数据；CPU 让出一个（或几个）存取周期仅被延迟片刻，不影响正确性，所以 CPU 检测到请求时也必须把总线让给 DMA 控制器。</p>
+  </div></details>
+</div>
+
+<div class="q-item">
+  <p><span class="q-no">第32题</span>【P323】在 DMA 方式下，主存和 I/O 设备之间有一条物理通路相连吗？</p>
+  <details class="ans"><summary>答案与解析</summary><div class="ans-body">
+    <p><strong>没有</strong>。通常所说的「DMA 方式在主存和 I/O 设备之间建立一条<strong>直接的数据通路</strong>」，含义并不是在主存和 I/O 设备之间拉一条专用的物理直连线路，而是主存和 I/O 设备通过 <strong>I/O 接口、系统总线及总线桥接部件</strong>等相连，建立一个信息可以相互通达的通路——这在<strong>逻辑上</strong>可视为直接相连。其「直接」是相对于「数据要先经过 CPU 中转才能和主存相通」的程序查询/中断方式而言的：DMA 传送同样要申请并使用系统总线，只是整批数据的传送由 DMA 控制器掌管总线后硬件直送，不经过 CPU。</p>
+  </div></details>
+</div>
+
+<div class="q-item">
+  <p><span class="q-no">第33题</span>【P325·2012 统考真题】假定某计算机的 CPU 主频为 80MHz，CPI 为 4；平均每条指令访存 1.5 次，主存与 Cache 之间交换的块大小为 16B，Cache 的命中率为 99%，存储器总线宽度为 32 位。回答下列问题。</p>
+  <ol>
+    <li>该计算机的 MIPS 数是多少？平均每秒 Cache 缺失的次数是多少？在不考虑 DMA 传送的情况下，主存带宽至少达到多少 B/s 才能满足 CPU 的访存要求？</li>
+    <li>假定在 Cache 缺失的情况下访问主存时，存在 0.0005% 的缺页率，则 CPU 平均每秒产生多少次缺页异常？若页面大小为 4KB，每次缺页都需要访问磁盘，访问磁盘时 DMA 传送采用周期挪用方式，磁盘 I/O 接口的数据缓冲寄存器为 32 位，则磁盘 I/O 接口平均每秒发出的 DMA 请求次数至少是多少？</li>
+    <li>CPU 和 DMA 控制器同时要求使用存储器总线时，哪个优先级更高？为什么？</li>
+    <li>为了提高性能，主存采用 4 体低位交叉存储模式，工作时每 1/4 存储周期启动一个体。若每个体的存储周期为 50ns，则该主存能提供的最大带宽是多少？</li>
+  </ol>
+  <details class="ans"><summary>答案与解析</summary><div class="ans-body">
+    <p><strong>（1）</strong>① 每秒执行的指令数 = \( \dfrac{80\times10^{6}}{4} = 2\times10^{7} = 20\text{M} \) 条，故 <strong>MIPS = 20</strong>；<br>
+    ② 平均每秒访存 \(20\text{M} \times 1.5 = 3\times10^{7}\) 次，Cache 缺失率 \(1 - 99\% = 1\%\)，故平均每秒 Cache 缺失 \(3\times10^{7} \times 1\% = \mathbf{3\times10^{5}}\) 次；<br>
+    ③ 缺失时须从主存调入一块 16B，故主存带宽至少 = \(16\,\text{B} \times 3\times10^{5}/\text{s} = \mathbf{4.8\times10^{6}\,B/s}\)（4.8MB/s）。</p>
+    <p><strong>（2）</strong>① 平均每秒缺页异常 = \(3\times10^{5} \times 0.0005\% = \mathbf{1.5}\) 次；<br>
+    ② 缓冲寄存器 32 位 = 4B，每传送 4B 磁盘控制器就发出一次 DMA 请求，每页 4KB 需传 \( \dfrac{4\,\text{KB}}{4\,\text{B}} = 1024 \) 次，故每秒 DMA 请求次数至少 = \(1.5 \times 1024 = \mathbf{1536}\) 次。</p>
+    <p><strong>（3）</strong><strong>DMA 控制器优先级更高</strong>：磁盘等高速设备的数据按传输速率定时到达/送出，DMA 请求若得不到及时响应，I/O 传输的数据就会被缓冲寄存器中后续数据覆盖而<strong>丢失</strong>；而 CPU 多等一个存取周期只是稍慢，不影响正确性。</p>
+    <p><strong>（4）</strong>4 体低位交叉存储模式下，每 \( \dfrac{1}{4} \) 存储周期启动一个体，4 个体流水并行工作，宏观上每个存储周期可并存取 4 个字：最大带宽 = \( \dfrac{4 \times 4\,\text{B}}{50\,\text{ns}} = \mathbf{320\,MB/s} \)。</p>
+  </div></details>
+</div>
+
+<div class="pager">
+  <a class="prev" href="s-73.html"><span class="dir">上一篇</span>7.3 I/O方式</a>
+  <a class="next" href="../index.html"><span class="dir">下一篇</span>返回首页（全站完）</a>
+</div>
+</main>
+<footer class="site-footer"><div class="inner">
+  <p>本站为个人学习用途整理，内容与插图取自王道《计算机组成原理考研复习指导》，版权归原出版方所有，仅供交流，请勿商用。</p>
+  <p><a href="../index.html">← 返回首页</a> · <a href="quiz.html">本章习题</a></p>
+</div></footer>
+</body>
+</html>

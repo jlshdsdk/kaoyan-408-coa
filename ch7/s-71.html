@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>*7.1 I/O系统基本概念 · 第7章 · 408计组带学</title>
+<link rel="stylesheet" href="../css/style.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body>
+<header class="site-header"><div class="inner">
+  <a class="site-title" href="../index.html">408 计算机组成原理带学</a>
+  <nav class="chapnav">
+    <a href="../index.html">首页</a>
+    <a href="index.html" class="cur">第7章</a>
+    <a href="quiz.html">本章习题</a>
+  </nav>
+</div></header>
+<main>
+<nav class="crumbs"><a href="../index.html">首页</a> / <a href="index.html">第7章 输入/输出系统</a> / *7.1 I/O系统基本概念</nav>
+
+<h1>*7.1 I/O系统基本概念<span class="badge-ext">课外拓展 · 大纲已删</span></h1>
+
+<p>本节内容自 2021 年起已从 408 考纲中删除，仅供学习参考。但它回答了本章最基础的问题——什么是 I/O 系统、由什么组成、外围有哪些设备；其中显示器的性能参数与显存带宽计算在早年真题中出现过，作为背景知识快速过一遍即可，不必深究。</p>
+
+<h3><span class="sec-id">*7.1.1</span>输入输出系统</h3>
+<p>从主机的视角来看，<strong>输入</strong>是指将信息从外部设备传送到主机，<strong>输出</strong>则是将信息从主机传送到外部设备。输入/输出系统的控制任务，是对各类型信息的输入与输出过程进行有效控制。I/O 系统涉及以下几个基本概念：</p>
+<ul>
+<li><strong>外部设备</strong>：包括输入设备、输出设备，以及通过 I/O 接口访问的外部存储设备；</li>
+<li><strong>接口</strong>：位于主机与外设之间的逻辑部件，负责协调数据传输过程中的速度匹配、电平转换和信号适配等工作；</li>
+<li><strong>输入设备</strong>：用于向计算机输入命令、文本或数据的装置，如键盘、鼠标等；</li>
+<li><strong>输出设备</strong>：用于将计算机处理结果输出到外部介质的装置，如显示器、打印机等；</li>
+<li><strong>外存设备</strong>：指除内存和 CPU 缓存以外的存储器，如磁盘、光盘、固态硬盘等。</li>
+</ul>
+<p>通常，<strong>I/O 系统由 I/O 硬件和 I/O 软件两部分构成</strong>：</p>
+<ul>
+<li><strong>I/O 软件</strong>：主要包括设备驱动程序、I/O 管理程序以及用户应用程序等，负责实现 CPU 与 I/O 设备之间的信息交换；</li>
+<li><strong>I/O 硬件</strong>：包括外部设备、设备控制器、I/O 接口以及 I/O 总线等。其中，<strong>设备控制器</strong>负责控制外设的具体操作，<strong>I/O 接口</strong>则实现与主机总线的连接。</li>
+</ul>
+<div class="callout warn">
+<span class="tag">易混</span>设备控制器与 I/O 接口分工不同：<strong>控制器面向外设</strong>（管外设的具体动作），<strong>接口面向主机</strong>（负责与主机总线相连）。I/O 设备从不直接挂在系统总线上，总是经由设备控制器/接口接入——主机侧是 I/O 总线，设备侧则通过通信总线（接口电缆）连到外设。
+</div>
+
+<h3><span class="sec-id">*7.1.2</span>外部设备</h3>
+<p>常见的外部设备主要包括键盘、鼠标、显示器、打印机、磁盘存储器和光盘存储器等。</p>
+
+<h4>1. 输入设备</h4>
+<ul>
+<li><strong>键盘</strong>：最常用的输入设备，用于输入字符、数字及各种控制命令；</li>
+<li><strong>鼠标</strong>：一种定位输入设备，能够将用户的操作映射为屏幕上的光标位置，实现人机交互。</li>
+</ul>
+
+<h4>2. 输出设备</h4>
+<h5>（1）显示器</h5>
+<p>按显示器类型可分为阴极射线管（CRT）、液晶显示器（LCD）和发光二极管（LED）等。显示器以点阵方式工作，其主要性能参数包括：</p>
+<ul>
+<li><strong>屏幕尺寸</strong>：以对角线长度表示，单位为英寸，常见规格为 12～32 英寸；</li>
+<li><strong>分辨率</strong>：指屏幕上可显示的像素总数，常表示为「宽度 × 高度」，如 1920×1080 等；</li>
+<li><strong>灰度级</strong>：表示每个像素所能呈现的颜色数量。在黑白显示器中体现为灰度级（如 8 位对应 256 级）；在彩色显示器中，通常采用 24 位真彩色（约 1677 万种颜色）或更高；</li>
+<li><strong>刷新</strong>：像素发光持续时间段有限，必须周期性刷新屏幕图像，以维持画面稳定；</li>
+<li><strong>刷新频率</strong>：指每秒刷新屏幕的次数。人眼通常在刷新率高于 30Hz 时才不会感到闪烁，现代显示器一般支持 60～120Hz；</li>
+<li><strong>显示存储器（VRAM，即刷新存储器）</strong>：用于存储一帧完整的图像数据，其容量与带宽可按以下公式计算：</li>
+</ul>
+$$\text{VRAM 容量} = \text{分辨率} \times \text{色彩深度（位数）}$$
+$$\text{VRAM 带宽} = \text{分辨率} \times \text{色彩深度（位数）} \times \text{帧频}$$
+<div class="callout exam">
+<span class="tag">考点</span>显示器带宽相关计算（2010 真题）。套公式两步走：先算「一帧多大」\(1600 \times 1200 \times 24\,\text{bit}\)，再乘帧频得刷新带宽，例如分辨率 1600×1200、色彩深度 24 位、帧频 85Hz 的屏幕，刷新所需带宽约为 \(1600 \times 1200 \times 24 \times 85 \approx 3917\,\text{Mb/s}\)；若显存总带宽只有一半用于刷新屏幕，则显存总带宽至少约为其两倍（约 7834Mb/s）。「色彩深度」是每像素位数，「帧频」是每秒帧数，别漏乘也别乘重。
+</div>
+<h5>（2）打印机</h5>
+<p>打印机用于将计算机的输出结果打印到纸张等介质上，按工作原理可分为以下几类：</p>
+<ol>
+<li><strong>针式打印机</strong>：属于点阵式打印机，通过打印针撞击色带在纸张上形成字符。优点是支持多层复写（如发票打印），耗材便宜；缺点是噪声大、分辨率低、速度慢；</li>
+<li><strong>喷墨式打印机</strong>：通过精确喷射微小墨滴形成图像，基于青、品红、黄三基色的混合原理实现高质量彩色打印，广泛用于家庭和办公场景；</li>
+<li><strong>激光打印机</strong>：结合激光扫描与电子成像技术。计算机输出的数字信号经调制后控制激光束，在感光鼓上形成静电潜像，再经过显影、转印和定影等步骤，将图像牢固地呈现在纸张上。其特点是打印速度快、质量高、处理能力强，广泛应用于办公环境。</li>
+</ol>
+
+<h4>3. 外部存储器</h4>
+<ul>
+<li><strong>磁表面存储器</strong>：利用磁性材料涂覆在金属或塑料基片上存储信息，典型代表包括硬磁盘、软盘、磁带和磁鼓等；</li>
+<li><strong>固态硬盘（SSD）</strong>：采用 Flash 存储器作为存储介质，无机械运动部件，具有读写速度快、抗震性强、功耗低等优点，广泛用于轻薄型笔记本电脑及高性能计算设备；</li>
+<li><strong>光盘存储器</strong>：利用聚焦激光束以非接触方式在盘片上读/写信息。一个完整的光盘系统由光盘片、光盘驱动器和盘控制器组成，常见类型包括 CD、DVD 等。</li>
+</ul>
+<div class="callout tip">
+<span class="tag">衔接</span>本节虽然退居课外，但「接口」这个概念在这里埋了伏笔：外设五花八门、速度悬殊，主机不可能逐个适配——于是下一节 7.2 专门讲那个居中协调的部件，即 I/O 接口。
+</div>
+
+<div class="pager">
+  <a class="prev" href="index.html"><span class="dir">上一篇</span>第7章 导学</a>
+  <a class="next" href="s-72.html"><span class="dir">下一篇</span>7.2 I/O接口</a>
+</div>
+</main>
+<footer class="site-footer"><div class="inner">
+  <p>本站为个人学习用途整理，内容与插图取自王道《计算机组成原理考研复习指导》，版权归原出版方所有，仅供交流，请勿商用。</p>
+  <p><a href="../index.html">← 返回首页</a> · <a href="quiz.html">本章习题</a></p>
+</div></footer>
+</body>
+</html>

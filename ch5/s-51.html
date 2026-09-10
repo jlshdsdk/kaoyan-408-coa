@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>5.1 CPU的功能和基本结构 · 第5章 · 408计组带学</title>
+<link rel="stylesheet" href="../css/style.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body>
+<header class="site-header"><div class="inner">
+  <a class="site-title" href="../index.html">408 计算机组成原理带学</a>
+  <nav class="chapnav">
+    <a href="../index.html">首页</a>
+    <a href="index.html" class="cur">第5章</a>
+    <a href="quiz.html">本章习题</a>
+  </nav>
+</div></header>
+<main>
+<nav class="crumbs"><a href="../index.html">首页</a> / <a href="index.html">第5章 中央处理器</a> / 5.1 CPU的功能和基本结构</nav>
+
+<h1>5.1 CPU的功能和基本结构</h1>
+
+<p>CPU 是计算机的"大脑"：对外表现为不断取指、译码、执行的循环，对内则由运算器、控制器、中断系统以及一组用于数据交换的寄存器协同完成。本节先厘清 CPU 的功能定位（5.1.1），再拆开它的内部结构（5.1.2），最后把 CPU 中众多寄存器按"用户是否可见"分成两类（5.1.3）——这个分类是选择题的高频考点。</p>
+
+<h3><span class="sec-id">5.1.1</span>CPU 的功能</h3>
+<p>CPU 的<strong>核心功能是执行程序</strong>。在程序运行过程中，可能会遇到各类异常或中断事件，如译码阶段发现非法操作码、外部设备发出中断请求等。因此，CPU 不仅需要高效执行指令，还要具备检测并响应各类异常与中断的能力。其基本功能可包括：</p>
+<ol>
+<li><strong>取指令并译码</strong>：从主存中取出指令，解析操作码，并生成相应的控制信号；</li>
+<li><strong>更新程序计数器（PC）</strong>：确定下一条指令地址，以支持顺序执行或程序转移；</li>
+<li><strong>执行算术与逻辑运算</strong>：通过 ALU 对操作数进行算术或逻辑运算；</li>
+<li><strong>执行操作数与结果 I/O</strong>：与主存或 I/O 接口交换操作数或运算结果；</li>
+<li><strong>处理异常或中断</strong>：检测异常或中断请求，并在必要时转入相应的处理程序；</li>
+<li><strong>时序控制</strong>：通过时序信号协调各操作的执行顺序和持续时间，确保指令按序执行。</li>
+</ol>
+<p>概括地说，CPU 由两大部分组成：一是<strong>指令执行部件</strong>（运算器等数据通路部件），二是<strong>控制部件</strong>（控制器），前者负责真正干活，后者负责发号施令。</p>
+
+<h3><span class="sec-id">5.1.2</span>CPU 的基本结构</h3>
+<p>为实现完整的指令执行过程，CPU 必须包含若干关键功能部件：为支持<strong>指令控制</strong>，需要设置程序计数器（PC），用于存储即将执行指令的地址；为完成<strong>指令译码</strong>，需要配备指令寄存器（IR）暂存当前指令，并由指令译码器（ID）解析操作码；控制单元（CU）综合译码结果、时钟信号与状态标志，生成微操作控制信号序列，驱动各部件协同工作；<strong>运算器</strong>包括 ALU 和通用寄存器（GPRs）、暂存器，完成数据运算；<strong>中断系统</strong>用于响应异常与外部中断请求；此外，为协调 CPU 与主存之间的数据交换，还需要设置存储器地址寄存器（MAR）和存储器数据寄存器（MDR）。图 5.1 展示了 CPU 的基本组成框图。</p>
+<figure>
+<img src="../assets/ch5/fig-p208.png" alt="CPU的基本组成框图" loading="lazy">
+<figcaption>图5.1 CPU的基本组成框图（王道教材）</figcaption>
+</figure>
+<p>图中各部件的作用与特点（选择题高频）：</p>
+<ol>
+<li><strong>程序计数器（PC）</strong>：存放即将执行指令的地址。顺序执行时自动递增（增量为当前指令所占的字节数）；遇到转移类指令时，更新为目标地址。程序启动时，首条指令地址被装入 PC。其位数反映出 CPU 可直接寻址的存储空间大小；</li>
+<li><strong>指令寄存器（IR）</strong>：暂存当前正在执行的指令。指令从主存取出后首先进入 IR，供指令译码使用。其位数等于指令字长；</li>
+<li><strong>通用寄存器组（GPRs）</strong>：供用户程序灵活使用，用于暂存操作数、中间结果或地址指针，减少对主存的频繁访问，提升执行效率；</li>
+<li><strong>标志寄存器（FR）</strong>，也称程序状态字寄存器（PSWR）：保存 ALU 运算产生的状态信息，用作条件判断与转移控制。这些标志位通常由硬件自动设置。整数运算程序的状态（如溢出、进位、零标志等）记录于此；</li>
+<li><strong>存储器地址寄存器（MAR）</strong>：存放当前要访问的主存地址。取指或数据读/写时，地址先送入 MAR，再通过地址总线传至主存，其位数由地址总线宽度（地址线宽度）决定；</li>
+<li><strong>存储器数据寄存器（MDR）</strong>：暂存从主存读出的数据或将要写入主存的数据，起到缓冲与同步作用，缓解 CPU 与主存之间的速度差异；</li>
+<li><strong>指令译码器（ID）</strong>：对 IR 中的操作码进行分析，识别指令类型，并输出对应的译码信号；</li>
+<li><strong>算术逻辑单元（ALU）</strong>：执行数据运算的核心部件，完成算术与逻辑运算，运算结果送回寄存器，状态标志则写入标志寄存器，供条件转移指令使用；</li>
+<li><strong>时钟信号产生部件</strong>：以系统时钟为基础，生成指令执行所需的周期、节拍和工作脉冲，为整个 CPU 提供时序基准；</li>
+<li><strong>操作控制信号形成部件</strong>：综合译码信号、时序信号和状态标志，生成微操作控制信号；</li>
+<li><strong>总线控制逻辑</strong>：实现对总线传输的控制，包括数据和地址信息的缓冲与控制；</li>
+<li><strong>中断机构</strong>：实现对异常情况和外部中断请求的处理。</li>
+</ol>
+<div class="callout exam">
+<span class="tag">考点</span>CPU 中各种寄存器的用途与特点（2013、2016、2021 真题）。判断抓手有三条：PC 存的是<strong>下一条指令的地址</strong>（不是指令本身），顺序执行时自动"＋1"；IR 存的是<strong>当前指令</strong>，位数 = 指令字长；MAR、MDR 是 CPU 与主存打交道的"门卫"，位数分别由地址线和数据线宽度决定。
+</div>
+<div class="callout warn">
+<span class="tag">易混</span>PC 的位数与 IR 的位数是两回事：PC 位数决定<strong>可寻址空间</strong>（与 MAR 一致），IR 位数等于<strong>指令字长</strong>。例如 4GB 空间、按字节编址、指令长 32 位：PC 至少 30 位（4GB = \(2^{32}\)B，按字寻址时 32 位字地址需 30 位，取指时 PC 值左移 2 位形成字节地址），而 IR 至少 32 位。
+</div>
+
+<h3><span class="sec-id">5.1.3</span>CPU 中的寄存器</h3>
+<div class="callout exam">
+<span class="tag">考点</span>用户可见寄存器（2010、2015、2021 真题）。
+</div>
+<p>CPU 中的寄存器可根据汇编语言（或机器语言）程序是否能直接访问，分为两类。</p>
+<h4>1. 用户可见寄存器</h4>
+<p>这类寄存器可被用户程序直接读取或修改，用于暂存数据、地址或状态信息，从而减少对主存的访问次数，提高程序执行效率。这类寄存器主要包括通用寄存器组（GPRs）、地址寄存器（如基址寄存器、变址寄存器）、堆栈指针等，以及程序计数器（PC）、数据寄存器等。</p>
+<p>此外，还有一类只读型用户可见寄存器，即标志寄存器（FR），其内容由 ALU 运算结果自动生成，用户程序不能直接修改其值。</p>
+<h4>2. 用户不可见寄存器</h4>
+<p>这类寄存器对用户程序完全透明，既不能被读取，也不能被修改，仅由 CPU 硬件或操作系统内核在特权模式下使用，如指令寄存器（IR）、存储器地址寄存器（MAR）、存储器数据寄存器（MDR）、页表基址寄存器等。</p>
+<div class="callout warn">
+<span class="tag">易混</span>「汇编程序员能否访问」是唯一判据：<strong>可见</strong>——通用寄存器、PC、基址/变址寄存器、堆栈指针、标志寄存器（只读可见）；<strong>不可见</strong>——IR、MAR、MDR、页表基址寄存器以及后面微程序控制器中的 μPC、μIR。注意两点反直觉处：PC 虽由硬件自动维护，但转移指令、子程序调用等可以修改它的值，所以 PC 是用户可见的；标志寄存器不能写，但可被条件转移隐式使用，属于「只读型可见」。
+</div>
+<div class="callout ext">
+<span class="tag">拓展</span>机器字长指 CPU 内部用于整数运算的数据通路的宽度。数据通路是指数据在指令执行过程中所经过的路径及路径上的部件，主要是 CPU 内部进行数据运算、存储和传送的部件，这些部件的宽度基本上要一致才能相匹配。因此，机器字长等于 ALU 位数和通用寄存器宽度。
+</div>
+
+<div class="pager">
+  <a class="prev" href="index.html"><span class="dir">上一篇</span>第5章 导学</a>
+  <a class="next" href="s-52.html"><span class="dir">下一篇</span>5.2 指令执行过程</a>
+</div>
+</main>
+<footer class="site-footer"><div class="inner">
+  <p>本站为个人学习用途整理，内容与插图取自王道《计算机组成原理考研复习指导》，版权归原出版方所有，仅供交流，请勿商用。</p>
+  <p><a href="../index.html">← 返回首页</a> · <a href="quiz.html">本章习题</a></p>
+</div></footer>
+</body>
+</html>

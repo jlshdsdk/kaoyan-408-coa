@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>4.2 指令的寻址方式 · 第4章 · 408计组带学</title>
+<link rel="stylesheet" href="../css/style.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body>
+<header class="site-header"><div class="inner">
+  <a class="site-title" href="../index.html">408 计算机组成原理带学</a>
+  <nav class="chapnav">
+    <a href="../index.html">首页</a>
+    <a href="index.html" class="cur">第4章</a>
+    <a href="quiz.html">本章习题</a>
+  </nav>
+</div></header>
+<main>
+<nav class="crumbs"><a href="../index.html">首页</a> / <a href="index.html">第4章 指令系统</a> / 4.2 指令的寻址方式</nav>
+
+<h1>4.2 指令的寻址方式</h1>
+
+<p>寻址方式是指确定指令或操作数<strong>有效地址</strong>的方法，既包括确定下一条待执行指令的地址，也包括确定本条指令操作数的地址。因此寻址方式分为<strong>指令寻址</strong>和<strong>数据寻址</strong>两大类。本节要求掌握各种寻址方式的特点及有效地址的计算，三种偏移寻址（相对寻址、基址寻址和变址寻址）的地址计算方法是历年真题的高频命题点，需具备熟练汇编指令的综合答题能力。</p>
+
+<h3><span class="sec-id">4.2.1</span>指令寻址和数据寻址</h3>
+<p>确定<strong>下一条</strong>将执行的指令地址称为<strong>指令寻址</strong>；确定<strong>本条指令</strong>操作数地址称为<strong>数据寻址</strong>。</p>
+
+<h4>1. 指令寻址</h4>
+<p>指令寻址有两种方式：<strong>顺序寻址</strong>和<strong>跳跃寻址</strong>。</p>
+<h5>（1）顺序寻址</h5>
+<p>通过<strong>程序计数器（PC）加上当前指令的字节长度</strong>，自动形成下一条指令地址。</p>
+<div class="callout exam">
+<span class="tag">考点</span>PC 自增大小与编址方式和指令字长的关系（2013、2014、2019、2023 真题）。现代计算机通常按字节编址，PC 自增量 = 指令字长折成的字节数，不是「+1」。
+</div>
+<div class="callout warn">
+<span class="tag">注意</span>PC 自增的大小与编址方式和指令字长有关。现代计算机通常按字节编址：若指令字长为 16 位（2 字节），则 PC 自增为 (PC)+2；若指令字长为 32 位（4 字节），则 PC 自增为 (PC)+4。
+</div>
+<h5>（2）跳跃寻址</h5>
+<p>通过转移类指令实现。是否发生转移通常由状态寄存器中的条件决定，<strong>转移目标地址由指令给出</strong>。转移方式分为：① <strong>绝对转移</strong>，地址码直接给出目标地址；② <strong>相对转移</strong>，地址码给出相对于当前 PC 的偏移量。无条件转移和条件转移的执行结果都是<strong>修改 PC 的值</strong>，CPU 随后根据新的 PC 从主存取出下一条指令。</p>
+
+<h4>2. 数据寻址</h4>
+<div class="callout exam">
+<span class="tag">考点</span>指令格式中寻址特征位的分析（2020 真题）；指令格式中寻址特征位的作用（2023 真题）。
+</div>
+<p>数据寻址是指令在指令中表示计算操作数的地址。为区分不同的寻址方式，指令中通常设有<strong>寻址特征字段</strong>，其位数决定了可支持的寻址方式种类。典型指令格式如下：</p>
+<table class="small">
+<tbody>
+<tr><td>操作码</td><td>寻址特征</td><td>形式地址 A</td></tr>
+</tbody>
+</table>
+<p>指令中的地址码字段所包含的地址称为<strong>形式地址（A）</strong>，它不代表操作数的真实地址；真实地址通过寻址方式和形式地址计算得到，称为<strong>有效地址（EA）</strong>。不同寻址方式下 A 的身份不同：</p>
+<ul>
+<li>若为<strong>立即寻址</strong>，则形式地址中存放的就是操作数（立即数）本身；</li>
+<li>若为<strong>直接寻址</strong>，则形式地址 A 的位数决定了可寻址的存储空间大小；</li>
+<li>若为<strong>寄存器寻址</strong>，则形式地址 A 的位数决定了通用寄存器的最大数量；</li>
+<li>若为<strong>寄存器间接寻址</strong>，则寄存器的位数决定了可寻址空间的大小。</li>
+</ul>
+<div class="callout warn">
+<span class="tag">注意</span>\((A)\) 表示地址 A 处所存放的内容，A 可以是寄存器编号或内存地址。后面各种寻址的有效地址公式全靠这对括号区分：(A) 与 A 一字之差，访存次数就不同。
+</div>
+
+<h3><span class="sec-id">4.2.2</span>常见的数据寻址方式</h3>
+
+<h4>1. 隐含寻址</h4>
+<p>隐含寻址是指指令中<strong>不显式给出操作数地址</strong>，而将操作数地址隐含在特定寄存器中。例如，在累加器型结构中，单地址指令仅显式指定一个操作数地址，另一个操作数默认来自累加器（ACC），运算结果也通常返回 ACC，如图 4.2 所示。</p>
+<figure>
+<img src="../assets/ch4/fig-p169.png" alt="隐含寻址" loading="lazy">
+<figcaption>图4.2 隐含寻址（王道教材）</figcaption>
+</figure>
+<p><strong>优点</strong>是可有效缩短指令字长；<strong>缺点</strong>是依赖存储隐含操作数的硬件（如 ACC）。</p>
+
+<h4>2. 立即（数）寻址</h4>
+<div class="callout exam">
+<span class="tag">考点</span>立即寻址的概念（2023 真题）。
+</div>
+<p>在立即寻址中，指令的形式地址字段并不是操作数的地址，而是<strong>直接存放操作数本身</strong>，称为<strong>立即数</strong>，通常以补码形式表示。如图 4.3 所示，<code class="bin">#</code> 表示立即寻址特征，A 即为立即数。</p>
+<figure>
+<img src="../assets/ch4/fig-p169_2.png" alt="立即寻址示意图" loading="lazy">
+<figcaption>图4.3 立即寻址示意图（王道教材）</figcaption>
+</figure>
+<p><strong>优点</strong>是操作数已包含在指令中，执行阶段无须访问存储器，<strong>指令执行速度最快</strong>；<strong>缺点</strong>是立即数的大小受限于形式地址字段的位数，寻址范围非常有限。</p>
+
+<h4>3. 直接寻址</h4>
+<div class="callout exam">
+<span class="tag">考点</span>地址位数与直接寻址范围的关系（2010、2021 真题）。
+</div>
+<p>直接寻址是指令中的形式地址 A 就是操作数的真实地址 EA，即 \(EA = A\)，如图 4.4 所示。</p>
+<figure>
+<img src="../assets/ch4/fig-p169_3.png" alt="直接寻址示意图" loading="lazy">
+<figcaption>图4.4 直接寻址示意图（王道教材）</figcaption>
+</figure>
+<p><strong>优点</strong>是实现简单，无须额外计算操作数地址，执行阶段只需<strong>访存一次</strong>；<strong>缺点</strong>是形式地址 A 的位数限制了寻址范围，且地址固定，难以动态修改。</p>
+<p>例如，若形式地址字段占 24 位，则直接寻址范围为 \(2^{24} = 16M\)。</p>
+
+<h4>4. 间接寻址</h4>
+<div class="callout exam">
+<span class="tag">考点</span>间接寻址中 EA 的分析（2016 真题）。
+</div>
+<p>间接寻址是相对于直接寻址而言的，指令中的形式地址 A 并不直接给出操作数的有效地址，而是指向一个主存单元，该单元中存放操作数的有效地址，即 \(EA = (A)\)，如图 4.5 所示。</p>
+<figure>
+<img src="../assets/ch4/fig-p170.png" alt="间接寻址示意图" loading="lazy">
+<figcaption>图4.5 间接寻址示意图（王道教材）</figcaption>
+</figure>
+<p><strong>优点</strong>是可扩大寻址范围——有效地址 EA 的位数通常大于形式地址 A 的位数（由主存字长决定），并支持地址的动态生成（如实现指针和转移）；<strong>缺点</strong>是指令在执行阶段需<strong>多次访存</strong>（一次间接需 2 次访存）。由于访存开销较大，若需兼顾寻址范围与执行效率，通常用寄存器间接寻址。</p>
+
+<h4>5. 寄存器寻址</h4>
+<div class="callout exam">
+<span class="tag">考点</span>寄存器编号位数与寄存器数量的关系（2022、2024 真题）。
+</div>
+<p>与直接寻址类似，寄存器寻址将操作数存放在指令中给出的寄存器内，指令的地址码段给出的是寄存器的编号，即 \(EA = R_i\)，操作数存在于由 \(R_i\) 指定的寄存器内，如图 4.6 所示。例如，若 CPU 有 32 个通用寄存器，则寄存器编号需 5 位，形式地址字段仅占 5 位即可寻址全部寄存器。</p>
+<figure>
+<img src="../assets/ch4/fig-p170_2.png" alt="寄存器寻址" loading="lazy">
+<figcaption>图4.6 寄存器寻址（王道教材）</figcaption>
+</figure>
+<p><strong>优点</strong>是执行阶段无须访存、仅访问寄存器，<strong>执行速度快</strong>；且因寄存器数量远少于内存单元，地址码位数较少，有助于缩短指令字长；<strong>缺点</strong>是寄存器成本高，CPU 中可用寄存器数量有限。</p>
+
+<h4>6. 寄存器间接寻址</h4>
+<div class="callout exam">
+<span class="tag">考点</span>寄存器间接寻址的取数操作（2010 真题）。
+</div>
+<p>寄存器间接寻址结合了间接寻址和寄存器寻址的特点，指令中 \(R_i\) 所指寄存器中存放的<strong>不是操作数</strong>，而是操作数所在主存单元的地址，即 \(EA = (R_i)\)，如图 4.7 所示。</p>
+<figure>
+<img src="../assets/ch4/fig-p170_3.png" alt="寄存器间接寻址示意图" loading="lazy">
+<figcaption>图4.7 寄存器间接寻址示意图（王道教材）</figcaption>
+</figure>
+<p>相比间接寻址，寄存器间接寻址在执行阶段只需<strong>一次访存</strong>，减少了访存开销；同时，由于使用寄存器来存放有效地址，其寻址范围不受形式地址字段位数限制，从而<strong>扩大了寻址范围</strong>。相比寄存器寻址，这种方式在执行阶段需要从主存获取操作数，增加了访存需求。</p>
+
+<h4>7. 相对寻址</h4>
+<div class="callout exam">
+<span class="tag">考点</span>相对寻址的分析与计算（2009、2010、2013、2014、2019、2023 真题），是本节出题最密集的一个。
+</div>
+<p>相对寻址是指将<strong>程序计数器（PC）的内容与指令中的形式地址 A 相加</strong>，形成转移目标地址，即 \(EA = (PC) + A\)，如图 4.8 所示。其中，PC 为<strong>取指完成后自动更新的值</strong>，指向下一条指令的地址；A 是相对于该 PC 值的偏移量，可正可负，通常以补码表示。</p>
+<figure>
+<img src="../assets/ch4/fig-p171.png" alt="相对寻址示意图" loading="lazy">
+<figcaption>图4.8 相对寻址示意图（王道教材）</figcaption>
+</figure>
+<p>相对寻址主要用于<strong>转移类指令</strong>，形式地址 A 的位数决定了转移范围。例如，假设某机器按字节编址，指令长度为 2B，一条相对转移指令（JMP A）位于地址 1000H，其形式地址 A=0005H（补码表示），则取指完成后 PC=1002H，实际转移目标地址为 \(1002\text{H} + 0005\text{H} = 1007\text{H}\)。</p>
+<div class="callout warn">
+<span class="tag">易混</span>相对寻址最常设的坑是 <strong>PC 用哪个值</strong>：算 EA 时 PC 已经完成取指并自增，指向<strong>下一条指令</strong>，而不是本条转移指令自己的地址。上例中指令在 1000H、长 2B，参与加法的是 1002H 而非 1000H——先加指令字长、再加偏移量。
+</div>
+<p><strong>优点</strong>是目标地址不固定，而是相对于当前指令位置偏移，因此程序可在内存中任意浮动而不影响转移正确性，便于实现<strong>重定位</strong>和<strong>共享代码</strong>。</p>
+
+<h4>8. 基址寻址</h4>
+<div class="callout exam">
+<span class="tag">考点</span>基址寻址的 EA 的计算（2019 真题）。
+</div>
+<p>基址寻址是指将<strong>基址寄存器（BR）的内容与指令中的形式地址 A 相加</strong>，形成操作数的有效地址，即 \(EA = (BR) + A\)，如图 4.9 所示。BR 可以是专用基址寄存器，或由指定的通用寄存器充当。</p>
+<figure>
+<img src="../assets/ch4/fig-p171_2.png" alt="基址寻址" loading="lazy">
+<figcaption>图4.9 基址寻址：(a) 采用专用寄存器BR作基址寄存器；(b) 采用通用寄存器R0作基址寄存器（王道教材）</figcaption>
+</figure>
+<p>在多道程序环境下，<strong>基址寄存器的内容由操作系统设定</strong>，在程序执行期间保持不变（作为基地址），而形式地址 A 作为偏移量，由用户程序设定并可根据需要变化。当使用通用寄存器作为基址寄存器时，尽管用户可选择哪个寄存器扮演此角色，但其内容仍由操作系统控制。</p>
+<p><strong>优点</strong>：可扩大地址范围（因基址寄存器位数常大于形式地址 A），能访问更大的地址空间；简化编程，用户无须关注程序在主存的具体位置，有利于<strong>多道程序设计</strong>和<strong>操作系统</strong>的实现。<strong>缺点</strong>是：形式地址 A 的位数较少，限制了偏移量的范围。</p>
+
+<h4>9. 变址寻址</h4>
+<div class="callout exam">
+<span class="tag">考点</span>变址寻址的 EA 的相关计算（2013、2016、2024 真题）；变址寻址的特点与应用（2017、2018、2024 真题）。
+</div>
+<p>变址寻址是指将<strong>变址寄存器（IX）的内容与指令中的形式地址 A 相加</strong>，形成操作数的有效地址，即 \(EA = (IX) + A\)，如图 4.10 所示。IX 可以是专用变址寄存器或指定的通用寄存器。</p>
+<figure>
+<img src="../assets/ch4/fig-p171_3.png" alt="变址寻址" loading="lazy">
+<figcaption>图4.10 变址寻址（王道教材）</figcaption>
+</figure>
+<p>变址寄存器<strong>由用户维护</strong>，其内容（作为偏移量）可以在程序执行过程中由用户<strong>动态修改</strong>，而形式地址 A（作为基地址）保持不变。这种方式不仅扩大了寻址范围，还特别适用于<strong>数组结构</strong>的处理——通过调整 IX 的值，可高效访问数组中的任意元素，非常适合编写循环程序。例如，假设数组 B 首地址为 1000H，存储在形式地址 A 中，变址寄存器 IX 初值为 0。要访问 B[3] 元素（每个元素占 4B），可将 IX 置为 0CH（\(3 \times 4 = 12\)），则该元素的有效地址 \(EA = (IX) + A = 0\text{CH} + 1000\text{H} = 100\text{CH}\)。</p>
+<div class="callout warn">
+<span class="tag">易混</span>基址寻址 vs 变址寻址：两者都通过「寄存器内容 + 形式地址」生成有效地址，但<strong>本质不同</strong>——<strong>基址寻址面向系统</strong>，BR 的内容由操作系统设定且运行时不可变（A 是可变偏移量），用于支持多道程序和存储分配（地址重定位）；<strong>变址寻址面向用户</strong>，IX 的值可由程序动态修改（A 是不变基地址），用于数组等灵活的数据访问。一句话：谁的内容可变、谁说了算，正好相反。
+</div>
+<div class="callout tip">
+<span class="tag">归纳</span>相对寻址、基址寻址和变址寻址均属于<strong>偏移寻址</strong>，其共同特点是通过某个寄存器的值与形式地址相加来求得操作数的有效地址，便于统一理解和应用（偏移寻址的考查见 2011 真题）。
+</div>
+
+<h4>10. 堆栈寻址</h4>
+<p>堆栈是存储器（或寄存器组）中一块按<strong>先进后出</strong>原则管理的特定存储区，其读写单元的地址由一个称为<strong>堆栈指针（SP）</strong>的特定寄存器给出。堆栈可分为两类：<strong>硬堆栈</strong>由高速寄存器构成，成本较高、容量较小；<strong>软堆栈</strong>则是从主存中划分一块区域实现，更为经济实用。</p>
+<p>在采用堆栈结构的计算机中，多数指令表面上表现为<strong>无操作数形式</strong>，因为其操作数地址由 SP 隐含指定。在访问堆栈时，SP 会<strong>自动更新</strong>以指向新的栈顶位置。</p>
+
+<h4>寻址方式总表</h4>
+<p>上述各寻址方式的有效地址计算方法及访存次数（<strong>不含取本条指令</strong>）的总结见表 4.1。</p>
+<table>
+<thead>
+<tr><th>寻址方式</th><th>有效地址</th><th>访存次数</th></tr>
+</thead>
+<tbody>
+<tr><td>立即寻址</td><td>A 即是操作数</td><td>0</td></tr>
+<tr><td>直接寻址</td><td>\(EA = A\)</td><td>1</td></tr>
+<tr><td>一次间接寻址</td><td>\(EA = (A)\)</td><td>2</td></tr>
+<tr><td>寄存器寻址</td><td>\(EA = R_i\)</td><td>0</td></tr>
+<tr><td>寄存器间接一次寻址</td><td>\(EA = (R_i)\)</td><td>1</td></tr>
+<tr><td>相对寻址</td><td>\(EA = (PC) + A\)</td><td>1</td></tr>
+<tr><td>基址寻址</td><td>\(EA = (BR) + A\)</td><td>1</td></tr>
+<tr><td>变址寻址</td><td>\(EA = (IX) + A\)</td><td>1</td></tr>
+</tbody>
+</table>
+<div class="callout tip">
+<span class="tag">小结</span>九（十）种寻址一张网：先问「A 里装的是什么」——是操作数本身（立即）、寄存器号（寄存器）、内存地址（直接）；再问「要不要拐个弯」——经内存拐弯是间接、经寄存器拐弯是寄存器间接；最后看「和谁相加」——PC（相对）、BR（基址）、IX（变址）、SP（堆栈）。有效地址公式 + 访存次数，按这张表条件反射。
+</div>
+
+<div class="pager">
+  <a class="prev" href="s-41.html"><span class="dir">上一篇</span>4.1 指令系统</a>
+  <a class="next" href="s-43.html"><span class="dir">下一篇</span>4.3 程序的机器级代码表示</a>
+</div>
+</main>
+<footer class="site-footer"><div class="inner">
+  <p>本站为个人学习用途整理，内容与插图取自王道《计算机组成原理考研复习指导》，版权归原出版方所有，仅供交流，请勿商用。</p>
+  <p><a href="../index.html">← 返回首页</a> · <a href="quiz.html">本章习题</a></p>
+</div></footer>
+</body>
+</html>

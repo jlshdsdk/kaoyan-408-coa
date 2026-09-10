@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>3.6 虚拟存储器 · 第3章 · 408计组带学</title>
+<link rel="stylesheet" href="../css/style.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body>
+<header class="site-header"><div class="inner">
+  <a class="site-title" href="../index.html">408 计算机组成原理带学</a>
+  <nav class="chapnav">
+    <a href="../index.html">首页</a>
+    <a href="index.html" class="cur">第3章</a>
+    <a href="quiz.html">本章习题</a>
+  </nav>
+</div></header>
+<main>
+<nav class="crumbs"><a href="../index.html">首页</a> / <a href="index.html">第3章 存储系统</a> / 3.6 虚拟存储器</nav>
+
+<h1>3.6 虚拟存储器</h1>
+
+<p>虚拟存储器是一种由<strong>硬件与系统软件协同实现</strong>的存储管理机制，它用主存和辅存（如磁盘）构建一个容量巨大的逻辑地址空间。对应用程序员而言，该机制是<strong>透明的</strong>：程序可按虚拟地址空间编写，无须关心实际主存容量或程序在主存中的物理位置。本节覆盖考纲全部四条：基本概念（3.6.1）、页式（3.6.2，含页表、地址转换、TLB）、段式（3.6.3）、段页式（3.6.4），最后是与 Cache 的比较（3.6.5）。</p>
+
+<h3><span class="sec-id">3.6.1</span>虚拟存储器的基本概念</h3>
+<p>虚拟存储器将程序的地址空间（称为<strong>虚拟地址空间</strong>或逻辑地址空间）与主存的物理地址空间分离：用户程序使用的地址称为<strong>虚地址</strong>（或逻辑地址），实际主存单元的地址称为<strong>实地址</strong>（或物理地址）。通常，虚地址空间远大于实地址空间（见图 3.26）。</p>
+<figure>
+<img src="../assets/ch3/fig-p142.png" alt="虚拟存储器的地址空间" loading="lazy">
+<figcaption>图3.26 虚拟存储器的地址空间（王道教材）</figcaption>
+</figure>
+<p>当 CPU 使用虚地址访存时，系统首先判断该虚地址对应的数据是否已调入主存：若已调入，则通过地址变换机制将其转换为实地址，CPU 即可直接访问对应的物理单元；若未调入，则触发<strong>缺页</strong>（或缺段）异常，由操作系统将该页（或缺段）从辅存调入主存，之后 CPU 再进行访问；若主存已满，则需根据替换算法选择一个页面进行替换。</p>
+<div class="callout exam">
+<span class="tag">考点</span>虚拟存储器只能采用回写法的原因（2016 真题）。虚拟存储器借鉴了 Cache 的思想，将辅存中频繁访问的数据缓存在主存中。由于辅存（如磁盘）访问延迟极高，<strong>每次写操作都同步更新辅存是不可行的</strong>。因此系统采用类似回写的策略：当页面被替换且脏位为 1 时，才将数据写回辅存，这显著降低了 I/O 开销。此外，虚拟存储器的分页机制允许任一页面装入主存中任意可用的物理页框（类似全相联映射），从而提高主存利用率，并支持高效的地址重定位。
+</div>
+
+<h3><span class="sec-id">3.6.2</span>页式虚拟存储器</h3>
+<p>页式虚拟存储器以页为基本单位，<strong>主存空间和虚拟地址空间均被划分为大小相同的页</strong>：主存中的页称为<strong>物理页</strong>（或实页、页框），虚拟地址空间中的页称为<strong>虚拟页</strong>（或虚页）。<strong>页表</strong>记录了每个虚页在主存中的映射位置，通常常驻主存。</p>
+
+<h4>1. 页表</h4>
+<p>图 3.27 是一个页表示例。页表项中的主要控制字段如下：</p>
+<ul>
+<li><strong>有效位</strong>（也称装入位）：表示对应虚页是否已调入主存。若为 1，表示该页已在主存，页表项中存放其<strong>物理页号</strong>；若为 0，表示未调入，页表项通常存放该页在<strong>外存（如磁盘）中的地址</strong>；</li>
+<li><strong>脏位</strong>（也称修改位）：表示页面是否被修改过。在采用回写策略的虚拟存储器中，替换页面时根据脏位决定是否将其写回磁盘；</li>
+<li><strong>引用位</strong>（也称使用位）：记录页面是否被访问过，主要用于实现基于使用频率的页面替换算法（如 Clock 或 LRU 算法）。</li>
+</ul>
+<figure>
+<img src="../assets/ch3/fig-p143.png" alt="主存中的页表示例" loading="lazy">
+<figcaption>图3.27 主存中的页表示例（王道教材）</figcaption>
+</figure>
+<div class="callout exam">
+<span class="tag">考点</span>有效位分析与缺页处理过程（2014、2019、2023、2025 真题）。以图 3.27 的页表为例：若 CPU 访问第 1 页，有效位为 1，说明该页已驻留主存，地址转换部件根据虚页号查得物理页号，CPU 即可访问对应物理页框中的数据；若访问有效位为 0 的页，则发生<strong>缺页异常</strong>，系统调用缺页处理程序，根据页表项中的外存地址将该页从磁盘调入一个空闲的物理页框——若主存已满，需先由页面置换算法决定换出页面；缺页处理完成后，更新页表中的相应项。
+</div>
+<p>页式虚拟存储器的优点：页大小固定、页面固定，调入操作方便。缺点：程序大小通常不是页的整数倍，导致<strong>最后一页产生内部碎片</strong>；此外页是物理划分单位、缺乏逻辑意义，因此在程序模块化、保护和共享方面不如段式虚拟存储器灵活。</p>
+
+<h4>2. 地址转换</h4>
+<p>程序生成的地址为虚拟地址，CPU 执行指令时必须先将其转换为物理地址，才能访问主存中的指令或数据。虚拟地址分为两部分：<strong>高位为虚页号，低位为页内偏移</strong>；物理地址同样分为高位物理页号和低位页内偏移。由于页大小相同，<strong>两部分的页内偏移完全一致</strong>。虚拟地址到物理地址的转换通过页表实现——页表是一张存放在主存中的「虚页号 → 物理页号」映射表。</p>
+<div class="callout exam">
+<span class="tag">考点</span>虚拟地址结构的分析（2011、2019、2021、2024 真题）；虚拟地址与物理地址的转换（2011、2013、2018、2022 真题）。变换过程：系统通过<strong>页表基址寄存器</strong>指向当前进程的页表起始地址（①）；转换时，首先从虚拟地址中提取虚页号（②），以此作为索引查找页表项：若该页表项的有效位为 1，则从中取出物理页号（③），并与虚拟地址中的页内偏移相拼接，形成最终的物理地址（④）；若有效位为 0，则发生缺页异常，需由操作系统执行缺页处理。整个过程如图 3.28 所示。
+</div>
+<figure>
+<img src="../assets/ch3/fig-p143_2.png" alt="页式虚拟存储器的地址变换过程" loading="lazy">
+<figcaption>图3.28 页式虚拟存储器的地址变换过程（王道教材）</figcaption>
+</figure>
+<p><strong>算一算</strong>（照图 3.28 的示例）：虚拟地址中虚页号为 <code class="bin">00000010</code>、页内地址为 <code class="bin">11011010</code>；以虚页号 <code class="bin">00000010</code>（第 2 项）为索引查页表，命中有效位为 1 的表项，取出物理页号 <code class="bin">11010</code>，与页内地址 <code class="bin">11011010</code> 拼接，得到物理地址 <code class="bin">11010 11011010</code>。注意：<strong>页内偏移原封不动地拼在物理页号后面</strong>，变的只是页号。</p>
+
+<h4>3. 快表（TLB）</h4>
+<p>由于地址转换过程必须访问主存中的页表以获取物理页号，再访问主存取得实际数据，因此采用虚拟存储机制后<strong>平均访存次数增加，性能下降</strong>。根据程序访问的局部性原理，在一段时间内 CPU 往往集中访问少数页面，若将这些页面对应的页表项缓存至由<strong>高速 SRAM</strong> 构成的<strong>快表（TLB）</strong>中，则可在地址转换时避免每次都访问主存中的页表，从而显著提升效率。相应地，主存中的页表被称为<strong>慢表（Page）</strong>。</p>
+<p>TLB 的工作原理类似于 Cache，通常采用<strong>全相联或组相联</strong>映射。TLB 表项包含<strong>虚页号（作为标记）</strong>和对应的<strong>物理页号及控制位</strong>（如有效位、脏位等）：在全相联映射下，TLB 标记即为完整的虚页号；在组相联映射下，虚页号的<strong>高位作为标记，低位作为组索引</strong>。</p>
+<div class="callout warn">
+<span class="tag">易混</span>TLB、Cache、页表三层别搅混：<strong>TLB 缓存的是页表项</strong>（服务于地址变换），<strong>Cache 缓存的是主存数据</strong>（服务于取指/取数）；<strong>页表（慢表）放在主存</strong>，TLB 是 CPU 内的高速 SRAM。记住两条蕴含关系：<strong>TLB 命中 ⇒ Page 必命中</strong>（页表项都缓存了，页当然已调入）；<strong>Page 缺失 ⇒ TLB 必缺失，且 Cache 中一定没有该数据</strong>（主存里都没有，副本无从谈起）。
+</div>
+
+<h4>4. 具有 TLB 和 Cache 的多级存储系统</h4>
+<p>图 3.29 为一个具有 TLB 和 Cache 的多级存储系统，其中 Cache 采用 2 路组相联映射方式，CPU 给出一个 32 位的虚拟地址，TLB 采用全相联结构、每项均配置一个比较器。<strong>地址转换时</strong>，将虚拟地址中的虚页号与所有 TLB 项的标记字段并行比较：若某一项匹配且有效位为 1，则 <strong>TLB 命中</strong>，直接从中取得物理页号，完成地址转换；若 TLB 未命中，则需访问主存中的页表（慢表）以获取对应的页表项，完成地址转换并将其装入 TLB（若 TLB 已满，则需按替换算法处理）。</p>
+<p><strong>获得物理地址后</strong>，Cache 根据映射方式将其划分为标记、组号和块内地址三个字段：首先利用组号定位对应的 Cache 组，再将该组中各 Cache 行的标记与物理地址的标记进行比较：若某一行匹配且有效位为 1，则 <strong>Cache 命中</strong>，根据块内地址读出对应的数据送至 CPU。</p>
+<figure>
+<img src="../assets/ch3/fig-p144.png" alt="TLB和Cache的访问过程" loading="lazy">
+<figcaption>图3.29 TLB和Cache的访问过程（王道教材）</figcaption>
+</figure>
+<p>通过 TLB 缓存频繁访问的页表项，系统避免了每次地址转换都访问主存页表，从而在引入虚拟存储器的同时，几乎不降低访存性能。</p>
+
+<h4>5. TLB、Page、Cache 三种缺失的组合分析</h4>
+<p>CPU 一次访存操作可能涉及 TLB、页表、Cache、主存和磁盘的访问，访问过程如图 3.30 所示。可见，CPU 访存过程中存在三种缺失情况：</p>
+<ol>
+<li><strong>TLB 缺失</strong>：要访问的虚页号不在 TLB 中；</li>
+<li><strong>Cache 缺失</strong>：要访问的主存块不在 Cache 中；</li>
+<li><strong>Page 缺失</strong>：要访问的页面不在主存中。</li>
+</ol>
+<p>TLB 是页表项的缓存，因此 Page 缺失时 TLB 也必然缺失；同理，Cache 是主存的副本，因此 Page 缺失时 Cache 中也不可能有对应的数据。这三种缺失的组合情况见表 3.3。</p>
+<figure>
+<img src="../assets/ch3/fig-p145.png" alt="带TLB虚拟存储器的CPU访存流程" loading="lazy">
+<figcaption>图3.30 带TLB虚拟存储器的CPU访存流程（王道教材）</figcaption>
+</figure>
+<table class="small">
+<thead>
+<tr><th>序号</th><th>TLB</th><th>Page</th><th>Cache</th><th>说明</th></tr>
+</thead>
+<tbody>
+<tr><td>1</td><td>命中</td><td>命中</td><td>命中</td><td>TLB 命中则 Page 一定命中，信息在主存，也可能在 Cache 中</td></tr>
+<tr><td>2</td><td>命中</td><td>命中</td><td>缺失</td><td>TLB 命中则 Page 一定命中，信息在主存，也可能不在 Cache 中</td></tr>
+<tr><td>3</td><td>缺失</td><td>命中</td><td>命中</td><td>TLB 缺失但 Page 可能命中，信息在主存，也可能在 Cache 中</td></tr>
+<tr><td>4</td><td>缺失</td><td>命中</td><td>缺失</td><td>TLB 缺失但 Page 可能命中，信息在主存，也可能不在 Cache 中</td></tr>
+<tr><td>5</td><td>缺失</td><td>缺失</td><td>缺失</td><td>TLB 缺失且 Page 缺失，信息不在主存，也一定不在 Cache 中</td></tr>
+</tbody>
+</table>
+<p class="small" style="font-size:.86rem;color:var(--fg-soft)">注：组合表已剔除逻辑上不可能的情形（如 TLB 命中而 Page 缺失、Page 缺失而 Cache 命中等）。</p>
+<p><strong>各种组合的访存开销</strong>：最好的情况是第 1 种组合，此时无须访问主存；第 2 种和第 3 种组合需要访问一次主存；第 4 种组合需要访问两次主存；第 5 种组合会发生「缺页异常」，需要访问磁盘，并至少访问两次主存。Cache 缺失处理由<strong>硬件自动完成</strong>；缺页处理由<strong>操作系统</strong>通过「缺页异常处理程序」实现，具体步骤包括调入所需页面、更新页表等；TLB 缺失既可用硬件处理，也可用软件处理。</p>
+<div class="callout exam">
+<span class="tag">考点</span>TLB、Cache 和 Page 缺失组合的分析（2010 真题）。带 TLB 的有效访存时间可按各情形加权平均（笔记写法）：
+$$\text{有效访存时间} = h_{\text{TLB}} \times t_1 + (1-h_{\text{TLB}})h_{\text{Page}} \times t_2 + (1-h_{\text{TLB}})(1-h_{\text{Page}}) \times t_3$$
+其中 \(t_1\) 为 TLB 命中时的耗时（TLB 查找 + Cache 访问），\(t_2\) 额外增加一次查主存慢表的时间，\(t_3\) 为缺页调盘的耗时。考试更常考的是「各组合各需几次主存访问」：<strong>0 / 1 / 2 次 + 缺页</strong>，先把组合表背熟再谈加权。
+</div>
+<div class="callout warn">
+<span class="tag">易混</span>三种缺失的处理者不同：<strong>Cache 缺失 → 硬件</strong>；<strong>缺页 → 操作系统</strong>（缺页异常处理程序）；<strong>TLB 缺失 → 硬件或软件皆可</strong>。另外注意：在《操作系统考研复习指导》第 3 章中介绍了同时具有 TLB 和 Cache 的存储系统中虚地址转换的实例，可结合学习。
+</div>
+
+<h3><span class="sec-id">3.6.3</span>段式虚拟存储器</h3>
+<p>段式虚拟存储器中的<strong>段按程序的逻辑结构划分</strong>，各个段的长度因程序而异。虚拟地址分为两部分：<strong>段号和段内地址</strong>。虚拟地址到物理地址的变换由<strong>段表</strong>实现。段表是程序的逻辑段与主存中存放位置的对照表，每行记录段号对应的<strong>有效位、段起点和段长</strong>等信息——由于段的长度可变，段表中<strong>必须给出各段的起始地址与段长</strong>。</p>
+<p>CPU 根据虚拟地址访存时：首先从虚拟地址中提取段号，并根据段表基地址找到对应的段表项；然后检查该表项的有效位——若为 1，表示该段已调入主存，若为 0，表示该段不在主存中；当段表已调入主存时，从段表中读出该段在主存中的起始地址，<strong>与段内地址相加</strong>，得到对应的物理地址。段式虚拟存储器的地址变换过程如图 3.31 所示。</p>
+<figure>
+<img src="../assets/ch3/fig-p146.png" alt="段式虚拟存储器的地址变换过程" loading="lazy">
+<figcaption>图3.31 段式虚拟存储器的地址变换过程（王道教材）</figcaption>
+</figure>
+<div class="callout warn">
+<span class="tag">易混</span>透明性方向别记反：<strong>分段对程序员不透明</strong>——段是按程序逻辑结构划分的独立部分，程序员编程时是「知道段的存在的」；<strong>分页对程序员透明</strong>——程序员编写程序时无须关心程序如何分页。变换方式也不同：页式是「物理页号 + 页内偏移」<strong>拼接</strong>，段式是「段起点 + 段内地址」<strong>相加</strong>。
+</div>
+<p>段式虚拟存储器的优点：段的边界与程序的天然逻辑模块一致，具有良好的逻辑独立性，便于程序的编译、管理、修改和保护，也易于实现多道程序间的共享。缺点：段长度可变，主存分配困难，段间容易产生<strong>外部碎片</strong>，难以有效利用，造成存储空间浪费。</p>
+
+<h3><span class="sec-id">3.6.4</span>段页式虚拟存储器</h3>
+<p>段页式虚拟存储器中，程序先按逻辑结构<strong>分段</strong>，每段再划分为<strong>固定大小的页</strong>，主存空间也划分为大小相等的页；程序对主存的调入和调出<strong>以页为基本交换单位</strong>；每个程序对应一个段表，<strong>每段对应一个页表</strong>。虚拟地址由<strong>段号、段内页号和页内地址</strong>三部分组成。CPU 根据虚拟地址访存时：首先用段号查段表，获得该段对应页表的起始地址；接着以段内页号为索引访问页表，取出实页号；最后将实页号与页内地址拼接，形成物理地址。</p>
+<p>段页式虚拟存储器的优点是兼顾页式和段式的长处：既支持按段进行共享和保护，又避免了段式外部碎片问题。缺点是地址变换过程中需要<strong>两次查表</strong>（先查段表、再查页表），系统开销较大。</p>
+
+<h3><span class="sec-id">3.6.5</span>虚拟存储器与 Cache 的比较</h3>
+<p>虚拟存储器与 Cache 既有相同之处，又有不同之处。</p>
+<h4>1. 相同之处</h4>
+<ol>
+<li>最终目标都是提高系统性能，两者都体现了<strong>容量、速度、价格的梯度</strong>；</li>
+<li>都把数据划分为<strong>小信息块</strong>作为基本的交换单位（虚拟存储器的页通常比 Cache 块大得多）；</li>
+<li>都涉及<strong>地址映射、替换算法和更新策略</strong>等问题；</li>
+<li>都基于<strong>局部性原理</strong>，采用「快速缓存」思想，将活跃数据放在高速部件中。</li>
+</ol>
+<h4>2. 不同之处</h4>
+<ol>
+<li><strong>Cache</strong> 主要解决 CPU 与主存之间的<strong>速度差异</strong>，而虚拟存储器是为了解决<strong>主存容量</strong>；</li>
+<li><strong>Cache 完全由硬件实现</strong>，对所有程序员透明；虚拟存储器由<strong>操作系统和硬件共同实现</strong>，对应用程序员透明，但其管理机制对操作系统开发者不透明；</li>
+<li>不命中时的性能影响不同：Cache 不命中需再访主存，延迟增加数十倍；而虚拟存储系统缺页需访问磁盘，延迟增加十万倍，对系统性能影响更严重；</li>
+<li>CPU 可<strong>直接访问</strong> Cache 和主存，Cache 不命中时硬件自动从主存取数据并装入 Cache；CPU<strong>无法直接访问辅存</strong>，缺页时必须先将数据从辅存调入主存，之后 CPU 才能访问。</li>
+</ol>
+<div class="callout exam">
+<span class="tag">考点</span>虚拟存储器与 Cache 的比较（2024 真题）；Cache 缺失和缺页的处理开销对比（2016 真题）。答题时四条「不同」按「目标 → 实现者/透明性 → 缺失代价 → CPU 可达性」的顺序写，一条都别漏。
+</div>
+<div class="callout tip">
+<span class="tag">小结</span>三种虚拟存储器一张表收尾：<strong>页式</strong>——页固定、物理划分、对程序员透明、有内部碎片；<strong>段式</strong>——段可变、逻辑划分、对程序员不透明、有外部碎片、需存段起点和段长；<strong>段页式</strong>——先段后页、两次查表、兼顾共享保护与无外部碎片。配合 TLB 的作用（缓存页表项、减少一次访主存），本章的「最后一座山」就翻完了。
+</div>
+
+<div class="pager">
+  <a class="prev" href="s-35.html"><span class="dir">上一篇</span>3.5 高速缓冲存储器</a>
+  <a class="next" href="quiz.html"><span class="dir">下一篇</span>本章习题</a>
+</div>
+</main>
+<footer class="site-footer"><div class="inner">
+  <p>本站为个人学习用途整理，内容与插图取自王道《计算机组成原理考研复习指导》，版权归原出版方所有，仅供交流，请勿商用。</p>
+  <p><a href="../index.html">← 返回首页</a> · <a href="quiz.html">本章习题</a></p>
+</div></footer>
+</body>
+</html>

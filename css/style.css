@@ -1,0 +1,164 @@
+/* 408 计组带学站 全站公共样式 */
+:root {
+  --bg: #ffffff;
+  --bg-soft: #f5f7fa;
+  --bg-card: #ffffff;
+  --fg: #24292f;
+  --fg-soft: #57606a;
+  --accent: #1f6feb;
+  --accent-soft: #dbeafe;
+  --border: #d8dee4;
+  --code-bg: #f0f2f5;
+  --warn-bg: #fff8e6;
+  --warn-border: #e3b341;
+  --tip-bg: #eef7ee;
+  --tip-border: #4c9a4c;
+  --ext-bg: #f3eefe;
+  --ext-border: #8250df;
+  --key-bg: #e8f1fd;
+  --key-border: #1f6feb;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0d1117;
+    --bg-soft: #161b22;
+    --bg-card: #161b22;
+    --fg: #e6edf3;
+    --fg-soft: #9aa4b2;
+    --accent: #58a6ff;
+    --accent-soft: #1c2f4a;
+    --border: #30363d;
+    --code-bg: #21262d;
+    --warn-bg: #2d2410;
+    --warn-border: #bb8009;
+    --tip-bg: #12261a;
+    --tip-border: #3fb950;
+    --ext-bg: #221a33;
+    --ext-border: #a371f7;
+    --key-bg: #16233a;
+    --key-border: #58a6ff;
+  }
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  font-family: "Segoe UI", "Microsoft YaHei", "PingFang SC", "Noto Sans CJK SC", sans-serif;
+  background: var(--bg);
+  color: var(--fg);
+  line-height: 1.75;
+}
+main { max-width: 960px; margin: 0 auto; padding: 1rem 1.25rem 4rem; }
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+/* 顶部导航 */
+.site-header {
+  position: sticky; top: 0; z-index: 10;
+  background: var(--bg-card);
+  border-bottom: 1px solid var(--border);
+  box-shadow: 0 1px 3px rgba(0,0,0,.06);
+}
+.site-header .inner {
+  max-width: 960px; margin: 0 auto; padding: .55rem 1.25rem;
+  display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;
+}
+.site-title { font-weight: 700; font-size: 1.02rem; color: var(--fg); white-space: nowrap; }
+.chapnav { display: flex; gap: .3rem; flex-wrap: wrap; }
+.chapnav a {
+  padding: .18rem .55rem; border-radius: 6px; font-size: .88rem;
+  color: var(--fg-soft); border: 1px solid transparent;
+}
+.chapnav a:hover { background: var(--bg-soft); text-decoration: none; }
+.chapnav a.cur { color: var(--accent); border-color: var(--accent); font-weight: 600; }
+
+/* 面包屑 */
+.crumbs { font-size: .86rem; color: var(--fg-soft); margin: 1rem 0 .4rem; }
+.crumbs a { color: var(--fg-soft); }
+
+/* 标题 */
+h1 { font-size: 1.55rem; line-height: 1.35; margin: .6rem 0 1rem; }
+h2 { font-size: 1.28rem; margin: 2rem 0 .8rem; padding-bottom: .3rem; border-bottom: 1px solid var(--border); }
+h3 { font-size: 1.1rem; margin: 1.5rem 0 .6rem; }
+h4 { font-size: 1rem; margin: 1.2rem 0 .5rem; }
+.sec-id { color: var(--accent); font-family: Consolas, monospace; margin-right: .35em; }
+
+/* 卡片与提示框 */
+.card {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: 10px; padding: 1rem 1.25rem; margin: 1rem 0;
+}
+.callout { border-left: 4px solid var(--border); background: var(--bg-soft); border-radius: 0 8px 8px 0; padding: .7rem 1rem; margin: 1rem 0; }
+.callout .tag { font-weight: 700; font-size: .85rem; display: inline-block; margin-right: .4em; }
+.callout.exam { background: var(--key-bg); border-color: var(--key-border); }
+.callout.exam .tag { color: var(--accent); }
+.callout.warn { background: var(--warn-bg); border-color: var(--warn-border); }
+.callout.warn .tag { color: var(--warn-border); }
+.callout.tip { background: var(--tip-bg); border-color: var(--tip-border); }
+.callout.tip .tag { color: var(--tip-border); }
+.callout.ext { background: var(--ext-bg); border-color: var(--ext-border); }
+.callout.ext .tag { color: var(--ext-border); }
+
+.badge-ext {
+  display: inline-block; font-size: .78rem; font-weight: 600; vertical-align: middle;
+  color: var(--ext-border); border: 1px solid var(--ext-border);
+  border-radius: 999px; padding: 0 .6em; margin-left: .5em; background: var(--ext-bg);
+}
+
+/* 插图 */
+figure { margin: 1.4rem auto; text-align: center; max-width: 100%; }
+figure img {
+  max-width: 100%; height: auto; border: 1px solid var(--border);
+  border-radius: 8px; background: #fff; padding: .35rem;
+}
+figure figcaption { font-size: .88rem; color: var(--fg-soft); margin-top: .45rem; }
+
+/* 表格 */
+table { border-collapse: collapse; margin: 1rem auto; max-width: 100%; display: block; overflow-x: auto; }
+th, td { border: 1px solid var(--border); padding: .42rem .8rem; text-align: center; }
+th { background: var(--bg-soft); font-weight: 600; }
+tbody tr:nth-child(even) { background: var(--bg-soft); }
+table.small td, table.small th { padding: .3rem .55rem; font-size: .9rem; }
+
+/* 代码与机器码 */
+code, pre { font-family: Consolas, "JetBrains Mono", "Courier New", monospace; }
+code { background: var(--code-bg); border-radius: 4px; padding: .1em .4em; font-size: .92em; }
+pre { background: var(--code-bg); border-radius: 8px; padding: .8rem 1rem; overflow-x: auto; line-height: 1.5; }
+pre code { background: none; padding: 0; }
+.bin { letter-spacing: .06em; }
+
+/* 章节地图 / 导航卡 */
+.map-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(270px, 1fr)); gap: .8rem; margin: 1rem 0; }
+.map-card { border: 1px solid var(--border); border-radius: 10px; padding: .8rem 1rem; background: var(--bg-card); }
+.map-card a.sec-link { display: block; font-weight: 600; margin-bottom: .15rem; }
+.map-card .desc { font-size: .86rem; color: var(--fg-soft); }
+
+/* 习题 */
+.q-item { border: 1px solid var(--border); border-radius: 10px; padding: .9rem 1.1rem; margin: 1.1rem 0; background: var(--bg-card); }
+.q-item .q-no { font-weight: 700; color: var(--accent); margin-right: .5em; }
+.q-item ol.options { list-style: upper-alpha; padding-left: 1.8rem; margin: .5rem 0; }
+.q-item ol.options li { margin: .18rem 0; }
+details.ans { margin-top: .6rem; border-top: 1px dashed var(--border); padding-top: .55rem; }
+details.ans summary { cursor: pointer; color: var(--accent); font-weight: 600; user-select: none; }
+details.ans .ans-body { margin-top: .5rem; }
+.ans-letter { font-weight: 700; }
+.q-section-title { margin-top: 2.2rem; }
+
+/* 首页 hero */
+.hero { text-align: center; padding: 2.2rem 1rem 1.4rem; }
+.hero h1 { font-size: 1.9rem; margin-bottom: .4rem; }
+.hero p { color: var(--fg-soft); max-width: 720px; margin: .4rem auto; }
+
+/* 页脚 */
+.site-footer { border-top: 1px solid var(--border); margin-top: 3rem; }
+.site-footer .inner { max-width: 960px; margin: 0 auto; padding: 1.2rem 1.25rem; font-size: .84rem; color: var(--fg-soft); }
+
+/* 上一篇/下一篇 */
+.pager { display: flex; justify-content: space-between; gap: 1rem; margin-top: 2.2rem; }
+.pager a { flex: 1; border: 1px solid var(--border); border-radius: 10px; padding: .6rem .9rem; }
+.pager a.next { text-align: right; }
+.pager .dir { display: block; font-size: .78rem; color: var(--fg-soft); }
+
+.toc-inpage { font-size: .9rem; background: var(--bg-soft); border: 1px solid var(--border); border-radius: 10px; padding: .7rem 1.1rem; }
+.toc-inpage .cap { font-weight: 700; margin-bottom: .3rem; }
+.toc-inpage ol { margin: .2rem 0; padding-left: 1.4rem; }

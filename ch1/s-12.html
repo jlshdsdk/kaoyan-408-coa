@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>1.2 计算机系统层次结构 · 第1章 · 408计组带学</title>
+<link rel="stylesheet" href="../css/style.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body>
+<header class="site-header"><div class="inner">
+  <a class="site-title" href="../index.html">408 计算机组成原理带学</a>
+  <nav class="chapnav">
+    <a href="../index.html">首页</a>
+    <a href="index.html" class="cur">第1章</a>
+    <a href="quiz.html">本章习题</a>
+  </nav>
+</div></header>
+<main>
+<nav class="crumbs"><a href="../index.html">首页</a> / <a href="index.html">第1章 计算机系统概述</a> / 1.2 计算机系统层次结构</nav>
+
+<h1>1.2 计算机系统层次结构</h1>
+
+<p>这一节回答三个递进的问题：计算机由什么组成（1.2.1～1.2.3）？这些组成如何一层层叠起来（1.2.4～1.2.5）？一个程序到底是怎么跑起来的（1.2.6）？本节是选择题的高频产区，冯·诺依曼机的特点、三种语言的翻译方式、ISA 的定位都要能背能辨。</p>
+
+<h3><span class="sec-id">1.2.1</span>计算机系统的组成</h3>
+<p>一个完整的计算机系统由<strong>硬件</strong>与<strong>软件</strong>组成。<strong>硬件</strong>指有形的物理装置，即计算机系统中的各类物理部件；<strong>软件</strong>则是在硬件上运行的程序及其相关的数据与文档。可以把硬件想象成「身体」，软件是「思想」，二者缺一不可。</p>
+<p>计算机系统的实际性能，很大程度上取决于软件对硬件资源的利用效率，而该效率的实现依赖于硬件所提供的能力。因此，<strong>计算机系统设计必须合理划分软硬件的功能边界</strong>。一般而言，对于使用频繁且硬件实现成本较低的功能，宜由硬件实现，以显著提升整体效率。</p>
+
+<h3><span class="sec-id">1.2.2</span>计算机硬件</h3>
+
+<h4>1. 冯·诺依曼机的基本思想</h4>
+<p>冯·诺依曼在研究 EDVAC 机时首次提出了<strong>「存储程序」</strong>的思想，奠定了现代计算机的基本结构。基于这一思想的计算机统称<strong>冯·诺依曼机</strong>，其主要特点如下：</p>
+<ol>
+<li>采用<strong>「存储程序」</strong>的工作方式：将编制好的程序和初始数据预先存入主存储器，计算机启动后能自动、连续地取指并执行，直至程序结束，无须人工干预；</li>
+<li>硬件系统由<strong>运算器、控制器、存储器、输入设备和输出设备</strong>五大部件组成；</li>
+<li>指令和数据在存储器中以相同形式存放，仅凭内容无法区分，但计算机应能识别它们；</li>
+<li>指令和数据均采用<strong>二进制</strong>编码表示；</li>
+<li>指令由<strong>操作码</strong>和<strong>地址码</strong>组成，其中操作码指明操作类型，地址码指出操作数的地址。</li>
+</ol>
+<div class="callout exam">
+<span class="tag">考点</span>冯·诺依曼机的特点（2019 真题）。最核心的一条是「存储程序」：程序（指令）和数据一样，都提前放进存储器，机器自动逐条执行——这是选择题最爱考查的判断点。另外注意第 3 条：指令和数据同等地存放在存储器中、形式上难以区分，靠执行的「阶段」来区分含义。
+</div>
+
+<h4>2. 计算机的功能部件</h4>
+<p>现代计算机将运算器、控制器和各类寄存器高度集成，形成一块称为<strong>中央处理器</strong>（Central Processing Unit, CPU）的芯片。完整的计算机硬件系统主要包含以下部件：中央处理器、存储器、输入/输出控制器、外部设备，以及用于协调这些部件协同工作的总线。</p>
+<p><strong>（1）中央处理器。</strong>CPU 是计算机系统中负责指令执行的<strong>核心部件</strong>，其传统基本组成为<strong>运算器和控制器</strong>；在现代计算机架构中，这两部分被系统地组织为<strong>数据通路与控制单元</strong>。</p>
+<ul>
+<li><strong>数据通路</strong>是执行实际运算的硬件通路，其核心包括<strong>算术逻辑单元（ALU）</strong>和<strong>通用寄存器</strong>：ALU 负责完成所有算术与逻辑运算，通用寄存器组则为 ALU 提供操作数并暂存运算结果；此外还包含多路选择器、加法器与通路等组件，用于在各部件间高效传递数据。</li>
+<li><strong>控制器</strong>负责协调整个 CPU 的工作：从存储器中取出指令并译码，随后根据指令含义生成一系列精确的控制信号，指挥数据通路的操作（例如选择寄存器、配置 ALU 功能、启动运算并在正确时序下完成结果写回），从而确保指令有序、高效地执行。</li>
+</ul>
+<p><strong>（2）存储器。</strong>按功能特性，存储器通常分为<strong>内存与外存</strong>。现代内存由<strong>主存和高速缓存（Cache）</strong>组成，但由于 Cache 是后期引入的，传统上「内存」仅指主存。在冯·诺依曼结构中，<strong>主存作为核心的工作存储器，用于存放正在执行的程序和数据</strong>。外存则包含两类：一类用于与主存交换数据的磁盘、固态硬盘等，另一类用于长期备份的海量存储设备（如磁带、光盘等）。</p>
+<p><strong>（3）外部设备和设备控制器。</strong>外部设备简称外设，也称 <strong>I/O 设备</strong>（I/O 是 Input/Output 的缩写）。外设通常由物理功能部件（如打印机、鼠标、键盘）和设备控制部件组成，二者在功能或物理实现上往往相互分离：前者负责实际的输入/输出操作，后者负责与主机通信并控制前者的工作。外设通过<strong>设备控制器</strong>连接到主机，各种设备控制器统称 <strong>I/O 控制器或 I/O 接口</strong>，例如键盘接口、显卡控制器（简称显卡）、网络控制器（简称网卡）等都是设备控制器。</p>
+<p><strong>（4）总线。</strong>总线是计算机中用于在各个部件之间<strong>传输信息的公共道路</strong>。CPU、主存和 I/O 接口通过总线互连；其中，CPU 和 I/O 接口内部均包含寄存器，部分还集成了高速缓存。</p>
+<figure>
+<img src="../assets/ch1/fig-p016.png" alt="一个典型的多总线计算机硬件系统" loading="lazy">
+<figcaption>图1.1 一个典型的多总线计算机硬件系统（王道教材）</figcaption>
+</figure>
+
+<div class="callout tip">
+<span class="tag">理解</span>按功能给部件归类：ALU 是数据运算部件，主存和磁盘是存储部件，所有总线、桥接器、接口及控制器共同构成系统的互连结构，负责全系统的数据传输与协调。CPU 通过处理器总线、经由 I/O 桥接器与主存和 I/O 设备通信；各类 I/O 设备则通过自己的控制器接入 I/O 总线。
+</div>
+
+<h3><span class="sec-id">1.2.3</span>计算机软件</h3>
+<h4>1. 系统软件和应用软件</h4>
+<p>软件按其功能可分为<strong>系统软件</strong>和<strong>应用软件</strong>。<strong>系统软件</strong>是一组保障计算机系统高效、正确运行的基础软件，用于管理和调度系统资源，为用户及应用程序提供基础服务，典型的系统软件包括：操作系统（OS）、数据库管理系统（DBMS）、语言处理程序、网络与分布式软件系统、标准库程序、服务性程序等。<strong>应用软件</strong>是指用户为解决特定应用领域问题而开发的程序，例如科学计算、工程设计、数据统计与信息处理等领域的专用软件。</p>
+<div class="callout warn">
+<span class="tag">易混</span>数据库管理系统（DBMS）属于<strong>系统软件</strong>，而不是应用软件——这是选择题的经典陷阱。
+</div>
+<h4>2. 软件和硬件的逻辑功能等价性</h4>
+<p>在计算机中，最基本的操作（如算术与逻辑运算）通常由硬件直接实现，而更复杂的功能则可由软件完成。对于某一特定功能，既可采用硬件实现，又可通过软件实现；从用户视角看，在相同规范下，二者在<strong>逻辑功能上是等价的</strong>，这一性质称为<strong>软/硬件逻辑功能的等价性</strong>。例如，浮点运算既可由专用浮点运算器硬件实现，又可通过软件子程序模拟；在相同输入和数值规范（如 IEEE 754）下，二者产生一致的数值结果，但硬件实现的效率通常远高于软件。这一等价性是计算机系统设计的重要依据——如何划分软硬件的功能边界，是计算机体系结构研究的核心问题之一。</p>
+
+<h3><span class="sec-id">1.2.4</span>计算机系统的层次结构</h3>
+<p>如图 1.2 所示，计算机系统呈现多层结构，通过层层抽象隔离复杂的硬件实现与高层应用需求。从用户的应用问题到物理器件，<strong>每层都向上提供简洁的接口，向下依赖更底层的功能实现</strong>。这种分层设计不仅明确了软/硬件的职责边界，还使系统开发和维护得以并行高效进行。</p>
+<figure>
+<img src="../assets/ch1/fig-p017.png" alt="计算机系统的层次结构示意图" loading="lazy">
+<figcaption>图1.2 计算机系统的层次结构示意图（王道教材）</figcaption>
+</figure>
+
+<h4>1. 算法和编程</h4>
+<p>解决应用问题需要先将其抽象为一个正确的算法描述，随后程序员将该算法用编程语言编写成程序。与自然语言不同，编程语言语法严谨、无二义性，能够精确描述计算机的执行顺序。</p>
+<p><strong>（1）编程语言</strong>可分为高级语言与低级语言。<strong>高级语言</strong>独立于计算机底层硬件结构，是主流软件开发语言；<strong>低级语言</strong>则依赖机器结构，特指机器语言及其符号化形式——汇编语言。</p>
+<div class="callout exam">
+<span class="tag">考点</span>三种计算机语言的特点（2015、2024 真题）：
+</div>
+<ol>
+<li><strong>机器语言</strong>：由二进制代码 <code class="bin">0</code>/<code class="bin">1</code> 组成的指令序列构成。程序员需要熟记每条指令的二进制编码，它是计算机<strong>唯一能直接识别和执行</strong>的语言。</li>
+<li><strong>汇编语言</strong>：采用英文缩写（助记符，如 <code>mov</code>、<code>add</code>）或其缩写符号代替机器语言的二进制指令，显著提升了可读性与记忆性。但汇编语言源程序不能被硬件直接执行，必须通过一个称为<strong>汇编程序</strong>的系统软件翻译，将其转换为机器语言程序后才能运行。</li>
+<li><strong>高级语言</strong>：如 C、C++、Java 等，允许程序员以接近自然语言的方式描述问题求解过程，极大地提高了开发效率。高级语言程序通常需经编译程序处理；或先编译为汇编语言、再汇编成机器语言；或者直接编译为目标机器的机器语言程序。</li>
+</ol>
+<p><strong>（2）翻译程序</strong>。高级语言源程序必须转换为机器语言程序才能被计算机直接执行，用于完成该转换的系统软件称为翻译程序。按照生成目标程序的方式不同，翻译程序主要分为三类：</p>
+<ul>
+<li><strong>汇编程序（汇编器）</strong>：将汇编语言源程序翻译为机器语言目标程序；</li>
+<li><strong>解释程序（解释器）</strong>：逐句翻译并立即执行高级语言源程序语句，不生成独立的目标程序；</li>
+<li><strong>编译程序（编译器）</strong>：将高级语言源程序一次性翻译为汇编语言或机器语言目标程序。</li>
+</ul>
+<div class="callout exam">
+<span class="tag">考点</span>各种翻译程序的概念（2016 真题）。判别口诀：输入是汇编语言 → 汇编程序；逐句翻译边执行、不生成目标程序 → 解释程序；整体翻译、生成目标程序 → 编译程序。
+</div>
+
+<h4>2. 操作系统</h4>
+<p>所有的高层应用系统都必须在操作系统提供的运行环境中执行。<strong>操作系统通过对计算机硬件及其底层结构的抽象，构建出一台可供程序员使用的虚拟机</strong>，向上屏蔽了硬件细节。</p>
+
+<h4>3. 指令集体系结构</h4>
+<p><strong>指令集体系结构</strong>（Instruction Set Architecture, ISA）是计算机<strong>软件/硬件之间的关键接口</strong>。它从程序员编程的视角，完整地定义了软件可直接使用的硬件功能，主要包括：指令格式、操作类型、寻址方式，以及可访问的寄存器等硬件资源。因此，ISA 构成了软件所能「感知」到的计算机功能视图，也称为<strong>软件可见部分</strong>。我们编写的机器语言程序，本质上就是一组严格遵循该 ISA 规范的指令序列；而硬件执行程序的过程，就是逐条解释并完成这些指令所规定操作的过程。</p>
+
+<h4>4. 微体系结构</h4>
+<p><strong>微体系结构（又称微架构）</strong>是处理器内部的硬件组织方式，用于实现 ISA 定义的功能。如果说 ISA 定义了「<strong>做什么</strong>」，那么微架构则决定了「<strong>怎么做</strong>」，其核心设计包括数据通路组织、控制单元实现、流水线级数、缓存层次结构以及分支预测机制等。例如，加法器可通过行波进位加法器、超前进位加法器，甚至专用的 SIMD 单元来实现，这些都属于微体系结构的范畴。</p>
+<div class="callout ext">
+<span class="tag">拓展</span>相同的 ISA 可以对应多种不同的微架构。以 Intel x86 为例，不同代际的处理器（如 Core、Skylake、Alder Lake）均遵循同一套 ISA 规范，但内部组织方式差异显著，体现了微架构的多样性与演进性——这也解释了「同一套指令集，新一代 CPU 更快」的现象。
+</div>
+
+<h3><span class="sec-id">1.2.5</span>计算机系统的不同用户</h3>
+<p>根据用户使用计算机所完成任务的不同，可将用户划分为四类角色：</p>
+<ul>
+<li><strong>最终用户</strong>：直接操作应用程序去完成特定任务的人员，如使用办公软件、浏览网页的人员。他们通过操作系统提供的界面与计算机交互，无须了解底层技术细节。</li>
+<li><strong>系统管理员</strong>：负责配置、管理和维护计算机系统，确保其稳定高效运行的人员，主要工作包括安装软硬件、管理用户账户、数据备份与系统升级等。</li>
+<li><strong>应用程序员</strong>：使用高级语言开发应用程序，以满足最终用户在办公、娱乐等领域特定需求的人员。</li>
+<li><strong>系统程序员</strong>：设计并开发操作系统、编译器、数据库管理系统等核心系统软件的人员。</li>
+</ul>
+<p>在实际使用中，同一用户可能在不同场景下承担多种角色。例如一名计算机专业的学生：网上购物时是最终用户；配置和管理服务器、备份数据时是系统管理员；编写程序解决作业问题时是应用程序员；参与操作系统开发时则是系统程序员。</p>
+<figure>
+<img src="../assets/ch1/fig-p018.png" alt="计算机系统的层次与各层用户" loading="lazy">
+<figcaption>图1.3 计算机系统的层次与各层用户（王道教材）</figcaption>
+</figure>
+<p>如图 1.3 所示，<strong>ISA 处于计算机软/硬件的交界处</strong>，是硬件功能的集中体现，也是软件执行的基础：ISA 以下为硬件层，包括 CPU、主存和 I/O 设备等物理组件；ISA 以上为软件层，涵盖系统软件与应用软件。不同用户工作在以 ISA 为基础逐层构建的抽象层次上——系统程序员工作在机器语言层面（直接面向 ISA）；系统管理员工作在操作系统层面；应用程序员（高级语言程序员）工作在高级语言层面；最终用户通过应用软件完成任务，处于最上层。</p>
+<div class="callout warn">
+<span class="tag">易混</span>「透明」= 看不见 = 无须关心。下层机器的结构特性对上层用户通常是<strong>透明</strong>的：例如 ISA 之下的硬件实现细节对高级语言程序员是透明的，他们无须了解底层机制即可进行开发。这与日常语言中「透明 = 看得见」恰好相反（详见本章导学页常见问题 2）。
+</div>
+
+<h3><span class="sec-id">1.2.6</span>计算机系统的工作原理</h3>
+
+<h4>1. 「存储程序」工作方式</h4>
+<p>「存储程序」工作方式规定：在程序执行前，需将其包含的指令和数据预先加载到主存储器中；一旦启动，计算机无须人工干预，自动逐条取出并执行指令。如图 1.4 所示，程序的执行是一个周而复始的循环：根据 PC 取指 → 对指令译码 → 取操作数并执行，并将结果写回存储器。CPU 使用<strong>程序计数器（PC）</strong>提供的内容作为地址访问主存；在每条指令执行的最后阶段，系统根据指令类型更新 PC：</p>
+<ul>
+<li>若为<strong>顺序指令</strong>，则下一条指令地址为当前 PC 值加上指令长度；</li>
+<li>若为<strong>跳转指令</strong>，则下一条指令地址为指令中指定的目标地址。</li>
+</ul>
+<p>随后，CPU 根据更新后的 PC 从主存储器中取出下一条待执行的指令，从而实现指令流的自动连续执行。</p>
+<figure>
+<img src="../assets/ch1/fig-p019.png" alt="程序执行过程" loading="lazy">
+<figcaption>图1.4 程序执行过程（王道教材）</figcaption>
+</figure>
+
+<h4>2. 从源程序到可执行文件</h4>
+<div class="callout exam">
+<span class="tag">考点</span>翻译过程的四个阶段（2022 真题）。在计算机中编译 C 语言程序，必须经过<strong>编译与链接</strong>过程，转换为一系列低级机器指令，并按特定格式封装为可执行目标文件，最终以二进制形式存储于磁盘。
+</div>
+<p>以 UNIX 系统中的 GCC 编译器为例，给定源程序文件 <code>hello.c</code>，系统通过<strong>四个阶段</strong>生成可执行文件 <code>hello</code>，如图 1.5 所示：</p>
+<ol>
+<li><strong>预处理阶段</strong>：预处理器（<code>cpp</code>）处理源文件中以 <code>#</code> 开头的预处理指令，如将 <code>#include&lt;stdio.h&gt;</code> 替换为对应头文件中的完整内容，生成预处理后的 C 文件 <code>hello.i</code>；</li>
+<li><strong>编译阶段</strong>：编译器（<code>ccl</code>）将 <code>hello.i</code> 翻译为汇编程序 <code>hello.s</code>，其中每条语句以文本格式描述一条低级机器语言指令；</li>
+<li><strong>汇编阶段</strong>：汇编器（<code>as</code>）将 <code>hello.s</code> 转换为机器语言指令，生成可重定位目标文件 <code>hello.o</code>，该文件为二进制格式，包含代码、数据及符号信息；</li>
+<li><strong>链接阶段</strong>：链接器（<code>ld</code>）将 <code>hello.o</code> 与标准 C 库中所需的函数（例如 printf）进行链接，解析外部符号引用，最终生成完整的可执行文件 <code>hello</code>，并保存至磁盘。</li>
+</ol>
+<figure>
+<img src="../assets/ch1/fig-p019_2.png" alt="源程序转换为可执行文件的过程" loading="lazy">
+<figcaption>图1.5 源程序转换为可执行文件的过程（王道教材）</figcaption>
+</figure>
+
+<h4>3. 指令执行过程的简要描述</h4>
+<p>可执行文件中的代码段由一条条机器指令构成。每条指令是一串二进制编码，用于指示 CPU 完成一个特定的基本操作。指令的执行可被建模为经典的<strong>「取指—译码—执行」</strong>三阶段循环。掌握这一抽象模型，对于理解软件如何驱动硬件至关重要。至于「这个循环在硬件上究竟如何一步步实现」——控制器的工作原理、数据通路的结构、时序信号的控制等具体实现技术，教材已系统性地安排在第 5 章「中央处理器」中展开，本书后续章节会逐一拆解。</p>
+
+<div class="pager">
+  <a class="prev" href="s-11.html"><span class="dir">上一篇</span>*1.1 计算机发展历程（课外拓展）</a>
+  <a class="next" href="s-13.html"><span class="dir">下一篇</span>1.3 计算机的性能指标</a>
+</div>
+</main>
+<footer class="site-footer"><div class="inner">
+  <p>本站为个人学习用途整理，内容与插图取自王道《计算机组成原理考研复习指导》，版权归原出版方所有，仅供交流，请勿商用。</p>
+  <p><a href="../index.html">← 返回首页</a> · <a href="quiz.html">本章习题</a></p>
+</div></footer>
+</body>
+</html>

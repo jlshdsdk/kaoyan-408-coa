@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>6.1 总线概述 · 第6章 · 408计组带学</title>
+<link rel="stylesheet" href="../css/style.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body>
+<header class="site-header"><div class="inner">
+  <a class="site-title" href="../index.html">408 计算机组成原理带学</a>
+  <nav class="chapnav">
+    <a href="../index.html">首页</a>
+    <a href="index.html" class="cur">第6章</a>
+    <a href="quiz.html">本章习题</a>
+  </nav>
+</div></header>
+<main>
+<nav class="crumbs"><a href="../index.html">首页</a> / <a href="index.html">第6章 总线</a> / 6.1 总线概述</nav>
+
+<h1>6.1 总线概述</h1>
+
+<p>这一节解决四个问题：总线是什么、怎么分类（6.1.1）？业界有哪些现成的总线标准（*6.1.2，课外拓展）？用什么指标衡量一条总线的好坏（6.1.3，带宽计算是绝对重点）？一条总线在整个机器里如何组织成结构（6.1.4）？</p>
+
+<h3><span class="sec-id">6.1.1</span>总线的分类</h3>
+<p>早期计算机中，各部件通过专用连线直接互连，称为<strong>分散连接</strong>。随着 I/O 设备种类和数量不断增加，这种连接方式在扩展性和灵活性方面面临挑战。为提升系统的可扩展性与连接灵活性，计算机体系结构逐步演进为采用总线连接方式，并进一步催生了各类标准化总线规范。</p>
+<p><strong>总线</strong>是一组可供多个部件<strong>分时共享</strong>的公共信息传输线路，其核心特征是：</p>
+<ul>
+<li><strong>分时性</strong>：任一时刻仅允许一个部件向总线发送信息，多个发送方需要分时使用总线。</li>
+<li><strong>共享性</strong>：多个部件可同时挂接在总线上，并能同时接收总线上传输的信息。</li>
+</ul>
+<div class="callout exam">
+<span class="tag">考点</span>总线的概念与特点（2016、2017 真题）。抓住「一组线路、分时发送、共享接收」三要素：分时性针对<strong>发送方</strong>（任一时刻只能有一个部件发），共享性针对<strong>接收方</strong>（多个部件可同时接收）。两句话连起来就是选择题的标准答案。
+</div>
+<p>按连接的位置和层次，总线可分为四类：</p>
+<ol>
+<li><strong>内部总线</strong>：芯片内部的总线，也称<strong>片内总线</strong>，用于 CPU 芯片内部各寄存器之间以及寄存器与 ALU 之间的连接。</li>
+<li><strong>系统总线</strong>：计算机系统内各功能部件（如 CPU、主存、I/O 接口）之间相互连接的总线。按所传输信息内容的不同，系统总线又分为以下三类：
+  <ul>
+  <li><strong>数据总线</strong>（双向）：用于在各部件之间双向传输数据信息，包括<strong>指令、操作数、状态字、中断类型号</strong>等。其位数反映了 CPU 一次能并行传送的数据位数。</li>
+  <li><strong>地址总线</strong>（单向）：用于指定要访问的主存单元或 I/O 端口的地址，由 CPU 发出。其位数决定了系统最大可寻址空间。为减少芯片引脚数量并降低成本，部分硬件架构采用<strong>地址线/数据线复用</strong>设计，此时地址与数据信息分时在同一组物理线路上传输。</li>
+  <li><strong>控制总线</strong>：用于传输各种协调与控制信号，以确保各部件同步、有序地工作。典型信号包括：时钟、复位、总线请求/允许、中断请求/响应、存储器读/写、I/O 读/写、传输确认等。控制总线由若干单向或双向信号线组成，其具体构成取决于系统设计需求。</li>
+  </ul></li>
+<li><strong>I/O 总线</strong>：用于连接主机与其内部的各类 I/O 控制器（如显卡、网卡等），通常采用标准化内部总线协议，如 PCI、AGP、PCI Express 等。</li>
+<li><strong>通信总线</strong>：用于主机与外部 I/O 设备之间或不同计算机系统之间的通信。这类总线需要适应不同的传输距离、速率和电气规范，典型代表包括 RS-232、USB 等。</li>
+</ol>
+<div class="callout exam">
+<span class="tag">考点</span>数据总线上传输的内容（2011 真题）。数据总线传的不只是「数据」：<strong>指令、操作数、状态字、中断类型号</strong>都走数据总线；而握手（应答）信号属于控制信号，走控制总线。
+</div>
+<div class="callout warn">
+<span class="tag">易混</span>方向性辨析：数据总线<strong>双向</strong>；地址总线<strong>单向</strong>（CPU → 主存/外设）；控制总线中<strong>每根信号线</strong>是单向或双向的（如 CPU 发出的读/写命令单向、设备送回的应答信号反向单向），整体看控制总线「有出有进」。此外，地址线的位数 <em>n</em> 决定寻址空间 \(2^n\) 个单元，与数据线的位数（一次传送的数据位数）是两个独立指标。
+</div>
+
+<h3><span class="sec-id">*6.1.2</span>常见的总线标准<span class="badge-ext">课外拓展 · 大纲已删</span></h3>
+<div class="callout ext">
+<span class="tag">大纲变动</span>本节内容已于 2021 年从统考大纲中删除（教材原注「仅供学习参考」），以下内容按教材照录要点，仅供课外拓展。
+</div>
+<p><strong>总线标准</strong>是国际上制定的、用于互连计算机各功能模块的规范，是构建计算机系统时必须遵循的接口协议。典型的总线标准包括 ISA、EISA、VESA、PCI、AGP、PCI-Express、USB 等。它们的主要区别是总线宽度、带宽、时钟频率、寻址能力、是否支持突发传送等。</p>
+<table class="small">
+<thead>
+<tr><th>标准</th><th style="width:62%">要点（照录教材）</th><th>归类</th></tr>
+</thead>
+<tbody>
+<tr><td>ISA</td><td style="text-align:left">Industry Standard Architecture，工业标准体系结构。最早的系统总线标准，传输速率低、CPU 占用率高、占用较多中断资源</td><td>系统总线、并行</td></tr>
+<tr><td>EISA</td><td style="text-align:left">Extended ISA，扩展的 ISA。在 ISA 基础上扩展，支持多主控器和突发传送，且完全兼容 ISA</td><td>系统总线、并行</td></tr>
+<tr><td>VESA</td><td style="text-align:left">Video Electronics Standards Association，视频电子标准协会。一种 32 位局部总线标准，为满足多媒体 PC 对高速图像数据传输的需求而设计</td><td>局部总线、并行</td></tr>
+<tr><td>PCI</td><td style="text-align:left">Peripheral Component Interconnect，外部设备互连。高性能的 32 位或 64 位总线，广泛用于显卡、声卡、网卡等扩展卡；与处理器时钟频率无关的高速外围总线，支持即插即用</td><td>局部总线、并行</td></tr>
+<tr><td>AGP</td><td style="text-align:left">Accelerated Graphics Port，加速图形接口。专为图形卡设计的高速接口，允许显卡直接高效访问系统主存，用于加速 3D 图形和视频处理</td><td>局部总线、并行</td></tr>
+<tr><td>PCI-E</td><td style="text-align:left">PCI-Express。采用高速串行点对点连接，由多条通道组成（如 ×1、×16），支持全双工通信，传输速率远超 PCI 和 AGP</td><td>局部总线、串行</td></tr>
+<tr><td>RS-232C</td><td style="text-align:left">用于数据终端设备（DTE）与数据通信设备（DCE）之间进行串行二进制通信的标准接口</td><td>设备总线、串行</td></tr>
+<tr><td>USB</td><td style="text-align:left">Universal Serial Bus，通用串行总线。用于连接外部 I/O 设备，支持即插即用、热插拔和多设备级联，广泛应用于键盘、鼠标、移动存储等</td><td>设备总线、串行</td></tr>
+<tr><td>PCMCIA</td><td style="text-align:left">Personal Computer Memory Card International Association。主要用于笔记本电脑的扩展卡标准，支持即插即用</td><td>设备总线、并行</td></tr>
+<tr><td>IDE</td><td style="text-align:left">Integrated Drive Electronics，集成设备电路，更准确称为 ATA。连接主板与硬盘/光驱的传统并行接口</td><td>设备总线、并行</td></tr>
+<tr><td>SCSI</td><td style="text-align:left">Small Computer System Interface，小型计算机系统接口。一种高性能的系统级设备接口，常用于服务器硬盘等</td><td>设备总线、并行</td></tr>
+<tr><td>SATA</td><td style="text-align:left">Serial Advanced Technology Attachment，串行高级技术附件。IDE/ATA 的串行替代标准，采用高速串行传输</td><td>设备总线、串行</td></tr>
+</tbody>
+</table>
+<div class="callout tip">
+<span class="tag">概念</span><strong>局部总线</strong>：位于 CPU 与 ISA 总线之间的高速扩展总线，旨在将高速外部设备（如显卡、磁盘控制器）从低速 ISA 总线迁移至更接近 CPU 的数据通路，以提升 I/O 性能（2013 真题考过「区分设备总线和局部总线」）。
+</div>
+<div class="callout warn">
+<span class="tag">易混</span>USB 是连接<strong>外部 I/O 设备</strong>的<strong>设备总线</strong>、串行总线——它是串行的，<strong>不能同时传输 2 位数据</strong>；PCI、AGP、PCI-E 属于局部总线。PCI-E 虽然名字里带「×16」，但那是 16 条串行通道的点对点互连，<strong>本质仍是串行总线</strong>。
+</div>
+
+<h3><span class="sec-id">6.1.3</span>总线的性能指标</h3>
+<ol>
+<li><strong>总线传输周期</strong>：指完成一次完整总线事务（如一次读或写操作）的总时间，通常由若干总线时钟周期组成，简称<strong>总线周期</strong>。</li>
+<li><strong>总线时钟频率</strong>：即总线基础时钟信号的频率，是总线时钟周期的倒数。早期总线的时钟与 CPU 时钟同频，随着 CPU 的快速发展，现代总线的时钟通常独立于 CPU 时钟。</li>
+<li><strong>总线工作频率</strong>：指总线每秒能进行的有效数据传输次数。早期总线每个时钟周期仅传输一次数据，此时工作频率等于时钟频率；现代总线一个时钟周期内可以传送 2 次、4 次甚至更多次数据，因此工作频率可达时钟频率的 2 倍、4 倍等。</li>
+<li><strong>总线宽度</strong>：即总线中数据线的条数，决定了每次能并行传输的数据位数。</li>
+<li><strong>总线带宽</strong>：总线在单位时间内所能传输的<strong>最大数据量</strong>，计算公式为
+$$\text{总线带宽} = \text{总线宽度} \times \text{总线工作频率}$$
+其中总线宽度以字节计（若以位为单位需除以 8）。</li>
+<li><strong>总线复用</strong>：指同一信号线在不同时间传输不同类型的信号。例如地址/数据线复用中，数据线在初期传输地址，后期传输数据，因此可减少引脚数量、节省硬件成本（但并不提高传输速率）。</li>
+<li><strong>总线寻址能力</strong>：由地址线的数量决定，表示 CPU 能访问的最大地址空间。例如，16 位地址线可寻址 \(2^{16} = 65536\) 个存储单元；若每个单元为 1B，则最大寻址空间为 64KB。</li>
+</ol>
+<div class="callout exam">
+<span class="tag">考点</span>总线带宽的分析与计算（2009、2013、2014、2018—2020、2024、2025 真题，近年年年必考）。三步走：① 由时钟频率和「每周期传 <em>n</em> 次」求工作频率 = 时钟频率 × <em>n</em>；② 宽度换算成字节 = 位数 / 8；③ 带宽 = 宽度（字节）× 工作频率。
+</div>
+<div class="callout tip">
+<span class="tag">例题</span>照教材复算：若某总线的时钟频率为 11MHz，每个时钟周期可传送 2 次数据（工作频率为 \(11\times 2 = 22\,\text{MHz}\)），总线宽度为 16 位（2 字节），则
+$$\text{总线带宽} = 2\,\text{B} \times 22\times 10^{6}/\text{s} = 44\times 10^{6}\,\text{B/s} = 44\,\text{MB/s}$$
+</div>
+<div class="callout warn">
+<span class="tag">注意</span>计算带宽（最大数据传输率）时，应依据总线的<strong>物理参数</strong>（宽度、时钟频率、每周期传输的次数），反映其理论峰值传输能力，<strong>无须</strong>考虑具体总线事务中的地址/命令开销或突发传输细节；仅在求<strong>平均</strong>数据传输率时，才需要分析事务时序。切勿将「两个设备间一次通信的有效速率」误当作「总线带宽」。
+</div>
+
+<h3><span class="sec-id">6.1.4</span>总线的结构</h3>
+<p>总线是计算机系统中各功能部件之间传输信息的公共通道，其结构设计直接影响系统的整体性能和扩展能力。随着处理器速度的不断提升，总线结构经历了从简单共享到分层并行、再到高度集成的演进过程，核心目标始终是<strong>提升带宽、降低延迟、打破通信瓶颈</strong>。</p>
+
+<h4>1. 早期单总线结构</h4>
+<p>在计算机发展的早期阶段，普遍采用<strong>单总线结构</strong>：CPU、主存储器和各类 I/O 设备均挂接在同一条系统总线上，如图 6.1 所示。这种结构实现简单、成本低，但所有设备必须分时竞争总线使用权，导致频繁的传输冲突，效率低下，难以满足高速外设的数据吞吐需求。</p>
+<figure>
+<img src="../assets/ch6/fig-p289.png" alt="单总线结构示意图" loading="lazy">
+<figcaption>图6.1 单总线结构示意图（王道教材）</figcaption>
+</figure>
+<p>为缓解 CPU 与主存之间的通信压力，后续引入了<strong>双总线结构</strong>，增设一条专用的<strong>存储总线</strong>，使 CPU 与主存的数据交换独立于 I/O 通路。尽管主存访问效率有所提升，但 I/O 设备若需与主存交换数据，仍须通过 CPU 中转，形成了新的性能瓶颈。进一步改进的<strong>三总线结构</strong>增加了 DMA（直接存储访问）总线，允许高速 I/O 设备通过 DMA 控制器直接与主存通信，无须 CPU 干预，显著提升了 I/O 的吞吐能力。然而，传统总线固有的「共享式、广播式」特性，仍然限制了系统的并发性和可扩展性。</p>
+
+<h4>2. 分层次总线：南北桥结构</h4>
+<p>为突破早期总线结构的性能瓶颈，主流 PC 系统逐步转向分层次的多总线结构，典型代表是 Intel 在 Pentium 4 及早期 Core 系列处理器平台上广泛采用的<strong>南北桥结构</strong>，如图 6.2 所示。该结构将系统划分为两个功能区域：</p>
+<ol>
+<li><strong>北桥芯片</strong>（Memory Controller Hub, MCH）：作为高速枢纽，连接 CPU、主存和显卡，负责高带宽的数据传输。</li>
+<li><strong>南桥芯片</strong>（I/O Controller Hub, ICH）：一个 I/O 控制器集线器，负责管理 USB、SATA、以太网等低速 I/O 接口，并提供扩展槽支持。</li>
+</ol>
+<figure>
+<img src="../assets/ch6/fig-p289_2.png" alt="南北桥结构示意图" loading="lazy">
+<figcaption>图6.2 南北桥结构示意图（王道教材）</figcaption>
+</figure>
+<p>在这一结构中，CPU 与北桥之间的互连总线称为<strong>前端总线</strong>（Front Side Bus, FSB），也称系统总线。CPU 通过 FSB 连接至北桥，再经由北桥分别与主存（通过存储器总线）和显卡通信；各类 I/O 设备（如 USB 设备、网卡、磁盘等）则通过各自的设备控制器接入南桥，北桥与南桥之间通过专用的桥接总线互连，最终形成从 I/O 到 CPU、主存的完整数据通路。</p>
+<p>尽管该结构实现了存储通路与 I/O 通路的物理分离，但所有数据（包括内存访问以及 I/O 传输）最终仍需要通过前端总线汇聚至 CPU。因此，FSB 成为整个系统的唯一高性能通道，其共享式特性反而演变为新的性能瓶颈，严重制约了系统整体吞吐能力的进一步提升。</p>
+
+<h4>3. 现代集成化总线结构</h4>
+<p>自 Intel Core i7 处理器起，总线结构迎来新的转变：<strong>北桥芯片的核心功能（如内存控制器）被集成到 CPU 内部</strong>，传统北桥随之消失，系统互连方式转向<strong>片上集成与点对点互连</strong>。这一转变带来三大重要优势：</p>
+<ol>
+<li><strong>内存访问路径缩短</strong>：CPU 可通过片上存储器控制器直接访问主存，无须经过北桥中转。同时普遍支持多通道 DDR 内存（如双通道、三通道），各通道并行工作，理论带宽成倍递增，例如三通道 DDR3-1333 的峰值带宽可达到单通道的 3 倍。</li>
+<li><strong>处理器间高速互连</strong>：多核 CPU 内核之间、多 CPU 芯片之间通过 QPI（QuickPath Interconnect）等点对点高速串行链路实现数据交换。QPI 不仅用于 CPU 间通信，还用于连接 CPU 与 IOH（输入/输出集线器，类似于早期南桥），大幅提升了互连效率。</li>
+<li><strong>I/O 通路直连</strong>：高速外设（如显卡、SSD）通过 PCIe 通道直接接入 CPU，绕过南桥；低速设备则由集成度更高的 PCH（Platform Controller Hub，新一代南桥）统一管理。</li>
+</ol>
+
+<div class="pager">
+  <a class="prev" href="index.html"><span class="dir">上一篇</span>第6章 导学</a>
+  <a class="next" href="s-62.html"><span class="dir">下一篇</span>6.2 总线事务和定时</a>
+</div>
+</main>
+<footer class="site-footer"><div class="inner">
+  <p>本站为个人学习用途整理，内容与插图取自王道《计算机组成原理考研复习指导》，版权归原出版方所有，仅供交流，请勿商用。</p>
+  <p><a href="../index.html">← 返回首页</a> · <a href="quiz.html">本章习题</a></p>
+</div></footer>
+</body>
+</html>

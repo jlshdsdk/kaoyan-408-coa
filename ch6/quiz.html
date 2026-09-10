@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>第6章 习题精选 · 408计组带学</title>
+<link rel="stylesheet" href="../css/style.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body>
+<header class="site-header"><div class="inner">
+  <a class="site-title" href="../index.html">408 计算机组成原理带学</a>
+  <nav class="chapnav">
+    <a href="../index.html">首页</a>
+    <a href="index.html" class="cur">第6章</a>
+    <a href="quiz.html">本章习题</a>
+  </nav>
+</div></header>
+<main>
+<nav class="crumbs"><a href="../index.html">首页</a> / <a href="index.html">第6章 总线</a> / 本章习题</nav>
+
+<h1>第6章 习题精选</h1>
+
+<div class="callout exam">
+<span class="tag">考情</span>本章选择题集中在两处：<strong>6.1 总线概述</strong>（总线分时共享的特点、数据/地址/控制三总线的辨析，以及<strong>总线带宽计算</strong>——2009、2013、2014、2018—2020、2024、2025 真题反复命题）与 <strong>6.2 总线事务和定时</strong>（突发传输「一次地址、多次数据」及其时间计算、同步/异步/半同步/分离式的特点对比、不互锁/半互锁/全互锁辨析）。综合题基本只考总线数据传输速率的计算。带 * 的「常见总线标准」题（2010、2012、2013）已随 6.1.2 删纲，本页不收录，仅在正文保留课外拓展；2017 年「多总线结构」真题（考点仍在大纲内）未精选收录。
+</div>
+
+<p>本页共 16 题：选择题 14 道（第 1～8 题出自 6.1 总线概述，第 9～14 题出自 6.2 总线事务和定时；做题本两节共 45 道选择题，此处按考点精选），综合题 2 道（做题本第 6 章综合题共 2 题，全部收录）。题干【 】内为做题本出处；选择题答案均已与《选择题【答案速查】》网格逐题核对。</p>
+
+<h2 class="q-section-title">一、选择题（第1～14题）</h2>
+
+<div class="q-item">
+  <p><span class="q-no">第1题</span>【6.1·P280】挂接在总线上的多个部件（　）</p>
+  <ol class="options">
+    <li>只能分时向总线发送数据，并只能分时从总线接收数据</li>
+    <li>只能分时向总线发送数据，但可同时从总线接收数据</li>
+    <li>可同时向总线发送数据，并同时从总线接收数据</li>
+    <li>可同时向总线发送数据，但只能分时从总线接收数据</li>
+  </ol>
+  <details class="ans"><summary>答案与解析</summary><div class="ans-body">
+    <p><span class="ans-letter">答案：B</span></p>
+    <p>总线是分时共享的公共传输线路：<strong>分时性</strong>指任一时刻仅允许一个部件向总线发送信息，多个发送方必须分时使用总线；<strong>共享性</strong>指多个部件可同时挂接在总线上，并能<strong>同时接收</strong>总线上传输的信息。「分时发送、同时接收」，故选 B。</p>
+  </div></details>
+</div>
+
+<div class="q-item">
+  <p><span class="q-no">第2题</span>【6.1·P281】系统总线用来连接（　）</p>
+  <ol class="options">
+    <li>寄存器和运算器部件</li>
+    <li>运算器和控制器部件</li>
+    <li>CPU、主存和外设部件</li>
+    <li>接口和外部设备</li>
+  </ol>
+  <details class="ans"><summary>答案与解析</summary><div class="ans-body">
+    <p><span class="ans-letter">答案：C</span></p>
+    <p>系统总线用于连接计算机系统内的各个功能部件（如 CPU、主存和 I/O 设备）。A、B 中寄存器、运算器、控制器都在 CPU <strong>芯片内部</strong>，它们之间的连线属于内部总线（片内总线）；D 接口与外部设备之间的互连属于设备总线的范畴。</p>
+  </div></details>
+</div>
+
+<div class="q-item">
+  <p><span class="q-no">第3题</span>【6.1·P281】不同信号在同一条信号线上分时传输的方式称为（　）</p>
+  <ol class="options">
+    <li>总线复用方式</li>
+    <li>并串行传输方式</li>
+    <li>并行传输方式</li>
+    <li>串行传输方式</li>
+  </ol>
+  <details class="ans"><summary>答案与解析</summary><div class="ans-body">
+    <p><span class="ans-letter">答案：A</span></p>
+    <p><strong>总线复用</strong>指同一信号线在不同时间传输不同类型的信号，典型的如地址/数据线复用：先传地址、后传数据。它可减少芯片引脚、节省成本，但并不提高传输速率。串行传输是一位接一位地传<strong>一串数据</strong>，与「不同类型信号分时复用同一条线」不是一回事。</p>
+  </div></details>
+</div>
+
+<div class="q-item">
+  <p><span class="q-no">第4题</span>【6.1·P281】在 32 位总线系统中，若时钟频率为 500MHz，传送一个 32 位字需要 5 个时钟周期，则该总线的数据传输率是（　）</p>
+  <ol class="options">
+    <li>200MB/s</li>
+    <li>400MB/s</li>
+    <li>600MB/s</li>
+    <li>800MB/s</li>
+  </ol>
+  <details class="ans"><summary>答案与解析</summary><div class="ans-body">
+    <p><span class="ans-letter">答案：B</span></p>
+    <p>① 32 位 = 4B，即每次传送 4B；② 传送一个字需 5 个时钟周期，故总线工作频率（每秒可传送的字数）= \(500\,\text{MHz}/5 = 100\,\text{MHz}\)；③ 数据传输率 = \(4\,\text{B} \times (500\,\text{MHz}/5) = 4\,\text{B} \times 100\,\text{MHz} = 400\,\text{MB/s}\)。注意分母是 5 个时钟周期，不能直接用 500MHz 去乘。</p>
+  </div></details>
+</div>
+
+<div class="q-item">
+  <p><span class="q-no">第5题</span>【6.1·P281】在一个 16 位的总线系统中，若时钟频率为 100MHz，总线周期为 5 个时钟周期传输一个字，则总线带宽是（　）</p>
+  <ol class="options">
+    <li>4MB/s</li>
+    <li>40MB/s</li>
+    <li>16MB/s</li>
+    <li>64MB/s</li>
+  </ol>
+  <details class="ans"><summary>答案与解析</summary><div class="ans-body">
+    <p><span class="ans-letter">答案：B</span></p>
+    <p>① 时钟周期 = \(1/100\,\text{MHz} = 0.01\,\mu\text{s}\)；② 总线周期 = \(5 \times 0.01 = 0.05\,\mu\text{s}\)，故总线工作频率 = \(1/0.05\,\mu\text{s} = 20\,\text{MHz}\)；③ 总线宽度 16 位 = 2B，总线带宽 = \(2\,\text{B} \times 20\,\text{MHz} = 40\,\text{MB/s}\)。本题关键：总线周期 ≠ 时钟周期，先用「5 个时钟周期传一个字」把工作频率折算出来。</p>
+  </div></details>
+</div>
+
+<div class="q-item">
+  <p><span class="q-no">第6题</span>【6.1·P282·2009 统考真题】假设某系统总线在一个总线周期中并行传输 4 字节信息，一个总线周期占用 2 个时钟周期，总线时钟频率为 10MHz，则总线带宽是（　）</p>
+  <ol class="options">
+    <li>10MB/s</li>
+    <li>20MB/s</li>
+    <li>40MB/s</li>
+    <li>80MB/s</li>
+  </ol>
+  <details class="ans"><summary>答案与解析</summary><div class="ans-body">
+    <p><span class="ans-letter">答案：B</span></p>
+    <p>总线工作频率 = 时钟频率 ÷ 每个总线周期占用的时钟周期数 = \(10\,\text{MHz}/2 = 5\,\text{MHz}\)，即每秒可进行 5M 次总线传输；每次并行传输 4B，故总线带宽 = \(4\,\text{B} \times 5\,\text{MHz} = 20\,\text{MB/s}\)。直接用 10MHz 乘 4B 得 40MB/s 是没折算工作频率的经典错误。</p>
+  </div></details>
+</div>
+
+<div class="q-item">
+  <p><span class="q-no">第7题</span>【6.1·P282·2011 统考真题】在系统总线的数据线上，不可能传输的是（　）</p>
+  <ol class="options">
+    <li>指令</li>
+    <li>操作数</li>
+    <li>握手 (应答) 信号</li>
+    <li>中断类型号</li>
+  </ol>
+  <details class="ans"><summary>答案与解析</summary><div class="ans-body">
+    <p><span class="ans-letter">答案：C</span></p>
+    <p>数据总线上传输的是「数据信息」，包括<strong>指令</strong>（取指时指令代码经数据总线送入 CPU）、<strong>操作数</strong>、<strong>中断类型号</strong>（CPU 响应中断后从数据总线读取）等；而<strong>握手（应答）信号属于总线定时的控制信号</strong>，应在控制总线上传输，不可能走数据线，选 C。</p>
+  </div></details>
+</div>
+
+<div class="q-item">
+  <p><span class="q-no">第8题</span>【6.1·P282·2014 统考真题】某同步总线采用数据线和地址线复用方式，其中地址/数据线有 32 根，总线时钟频率为 66MHz，每个时钟周期传送两次数据（上升沿和下降沿各传送一次数据），该总线的最大数据传输率（总线带宽）是（　）</p>
+  <ol class="options">
+    <li>132MB/s</li>
+    <li>264MB/s</li>
+    <li>528MB/s</li>
+    <li>1056MB/s</li>
+  </ol>
+  <details class="ans"><summary>答案与解析</summary><div class="ans-body">
+    <p><span class="ans-letter">答案：C</span></p>
+    <p>① 地址/数据线复用不影响带宽计算，32 根线一次可并行传送 32bit = 4B；② 每个时钟周期传送 2 次，故每秒传送次数 = \(66\,\text{M} \times 2\)；③ 总线带宽 = \(4\,\text{B} \times 66\,\text{M} \times 2 = 528\,\text{MB/s}\)。</p>
+  </div></details>
+</div>
+
+<div class="q-item">
+  <p><span class="q-no">第9题</span>【6.2·P288】下列有关同步总线事务的描述中，错误的是（　）</p>
+  <ol class="options">
+    <li>一个总线事务需多个总线时钟周期完成</li>
+    <li>总线事务开始时，先将地址和读/写命令发送到总线</li>
+    <li>「存储器读」总线事务中，地址与数据通常分时传输</li>
+    <li>一次总线事务只能完成一次数据交换</li>
+  </ol>
+  <details class="ans"><summary>答案与解析</summary><div class="ans-body">
+    <p><span class="ans-letter">答案：D</span></p>
+    <p>D 错误：总线事务通常包含地址/命令阶段和数据阶段，需多个时钟周期完成；事务开始时主设备先将地址和读/写命令送到总线，地址与数据（尤其在线复用时）分时传输，A、B、C 均正确。而<strong>支持突发传送的现代同步总线事务允许一次总线事务连续传输多个数据单元</strong>，「只能完成一次数据交换」的说法不成立。</p>
+  </div></details>
+</div>
+
+<div class="q-item">
+  <p><span class="q-no">第10题</span>【6.2·P288】下列选项中，属于同步传输特点的是（　）</p>
+  <ol class="options">
+    <li>需要应答信号</li>
+    <li>各部件的存取时间比较接近</li>
+    <li>总线长度较长</li>
+    <li>总线周期长度可变</li>
+  </ol>
+  <details class="ans"><summary>答案与解析</summary><div class="ans-body">
+    <p><span class="ans-letter">答案：B</span></p>
+    <p>同步定时采用统一时钟、固定节拍，没有应答（握手）机制，因此只适合<strong>总线长度较短、各部件存取时间比较接近</strong>的系统，选 B。A「需要应答信号」和 D「总线周期长度可变」都是异步定时的特征；C 总线长度较长时统一时钟难以协调各处的时序偏差，恰恰不适合同步传输。</p>
+  </div></details>
+</div>
+
+<div class="q-item">
+  <p><span class="q-no">第11题</span>【6.2·P288】在各种异步通信方式中，（　）的速度最快。</p>
+  <ol class="options">
+    <li>全互锁</li>
+    <li>半互锁</li>
+    <li>不互锁</li>
+    <li>速度均相等</li>
+  </ol>
+  <details class="ans"><summary>答案与解析</summary><div class="ans-body">
+    <p><span class="ans-letter">答案：C</span></p>
+    <p>不互锁方式中，主设备发出「请求」后无须等待「回答」即可撤销，从设备的「回答」也延时后自动撤销，双方没有任何等待和确认，因此<strong>速度最快</strong>；但正因缺少互锁确认，其可靠性最差。速度排序：不互锁 &gt; 半互锁 &gt; 全互锁，可靠性排序正好相反。</p>
+  </div></details>
+</div>
+
+<div class="q-item">
+  <p><span class="q-no">第12题</span>【6.2·P289·2012 统考真题】某同步总线的时钟频率为 100MHz，宽度为 32 位，地址/数据线复用，每传输一个地址或数据占用一个时钟周期。若该总线支持突发 (猝发) 传输方式，则一次「主存写」总线事务传输 128 位数据所需要的时间至少是（　）</p>
+  <ol class="options">
+    <li>20ns</li>
+    <li>40ns</li>
+    <li>50ns</li>
+    <li>80ns</li>
+  </ol>
+  <details class="ans"><summary>答案与解析</summary><div class="ans-body">
+    <p><span class="ans-letter">答案：C</span></p>
+    <p>① 时钟周期 = \(1/100\,\text{MHz} = 10\,\text{ns}\)；② 突发方式是「一次地址，多次数据」：128 位数据需按 32 位宽度分 4 次连续传送，加上 1 次地址传送，共占用 \(1 + 4 = 5\) 个时钟周期；③ 总时间 = \(5 \times 10\,\text{ns} = 50\,\text{ns}\)。若不采用突发方式，每个 32 位数据都须先发地址再发数据，共 \(4 \times (1+1) = 8\) 个周期 = 80ns（即选项 D），比突发的 50ns 多出 60%，也说明突发的意义。</p>
+  </div></details>
+</div>
+
+<div class="q-item">
+  <p><span class="q-no">第13题</span>【6.2·P289·2015 统考真题】下列有关总线定时的叙述中，错误的是（　）</p>
+  <ol class="options">
+    <li>异步通信方式中，全互锁协议最慢</li>
+    <li>异步通信方式中，非互锁协议的可靠性最差</li>
+    <li>同步通信方式中，同步时钟信号可由各设备提供</li>
+    <li>半同步通信方式中，握手信号的采样由同步时钟控制</li>
+  </ol>
+  <details class="ans"><summary>答案与解析</summary><div class="ans-body">
+    <p><span class="ans-letter">答案：C</span></p>
+    <p>C 错误：同步通信方式采用<strong>系统统一的时钟信号</strong>来协调收发双方，各设备共享同一时钟，而不是「由各设备提供」各自的时钟。A 正确，全互锁双方都要等待对方确认，握手次数最多、最慢；B 正确，非互锁（不互锁）没有任何确认环节，可靠性最差；D 正确，半同步方式增设 Wait 线，握手信号在时钟前沿/后沿被采样，仍由同步时钟控制。</p>
+  </div></details>
+</div>
+
+<div class="q-item">
+  <p><span class="q-no">第14题</span>【6.2·P290·2023 统考真题】某存储器总线宽度为 64 位，总线时钟频率为 1GHz，在总线上传输一个数据或地址需要一个时钟周期，不支持突发传送方式。若通过该总线连接 CPU 和主存，主存每次准备一个 64 位数据需要 6ns，主存块大小为 32B，则读取一个主存块所需的时间是（　）</p>
+  <ol class="options">
+    <li>8ns</li>
+    <li>11ns</li>
+    <li>26ns</li>
+    <li>32ns</li>
+  </ol>
+  <details class="ans"><summary>答案与解析</summary><div class="ans-body">
+    <p><span class="ans-letter">答案：D</span></p>
+    <p>① 时钟周期 = \(1/1\,\text{GHz} = 1\,\text{ns}\)；② 不支持突发，每次传输都须完整走「传输地址（1ns）→ 主存准备数据（6ns）→ 传输数据（1ns）」三个过程，共 \(8\,\text{ns}\)；③ 每次传输 64 位 = 8B，主存块 32B 需要传输 \(32/8 = 4\) 次；④ 总时间 = \(8\,\text{ns} \times 4 = 32\,\text{ns}\)。</p>
+  </div></details>
+</div>
+
+<h2 class="q-section-title">二、综合题（第15～16题）</h2>
+
+<div class="q-item">
+  <p><span class="q-no">第15题</span>【6.1·P283】某总线的时钟频率为 66MHz，在一个 64 位总线中，总线数据传输的周期是 7 个时钟周期传输 6 个字的数据块。</p>
+  <ol>
+    <li>总线的数据传输速率是多少？</li>
+    <li>若不改变数据块的大小，而将时钟频率减半，这时总线的数据传输速率是多少？</li>
+  </ol>
+  <details class="ans"><summary>答案与解析</summary><div class="ans-body">
+    <ol>
+      <li>
+        <p>总线周期为 7 个时钟周期，总线频率为 \(66\,\text{MHz}/7\)。</p>
+        <p>总线在一个完整的操作周期中传输了一个数据块，一个周期内传输的数据量为 \(64\,\text{bit}/8 \times 6 = 48\,\text{B}\)，即「总线宽度」为 48B。数据传输速率 = \(48\,\text{B} \times \dfrac{66}{7}\,\text{MHz} \approx \mathbf{452.6\,MB/s}\)。</p>
+      </li>
+      <li>
+        <p>时钟频率减半时，总线频率为 \(\dfrac{66/7}{2}\,\text{MHz}\)。因数据块大小不变，一个总线周期传输的数据量仍为 48B，故数据传输速率 = \(48\,\text{B} \times \dfrac{33}{7}\,\text{MHz} \approx \mathbf{226.3\,MB/s}\)，为原来的一半。</p>
+        <p>注意总线周期和时钟周期的联系与区别：总线周期通常由多个时钟周期组成，时钟频率减半时，完成同一数据块传输所需的时间等比例变长。</p>
+      </li>
+    </ol>
+  </div></details>
+</div>
+
+<div class="q-item">
+  <p><span class="q-no">第16题</span>【6.1·P283】某总线支持二级 Cache 块传输方式，若每块 6 个字，每个字长 4 字节，时钟频率为 100MHz。</p>
+  <ol>
+    <li>读操作时，第一个时钟周期接收地址，第二、三个为延时周期，另用 4 个周期传送一个块。读操作的总线传输速率为多少？</li>
+    <li>写操作时，第一个时钟周期接收地址，第二个为延时周期，另用 4 个周期传送一个块，写操作的总线传输速率是多少？</li>
+    <li>设在全部的传输中，70% 的时间用于读，30% 的时间用于写，该总线在本次传输中的平均传输速率是多少？</li>
+  </ol>
+  <details class="ans"><summary>答案与解析</summary><div class="ans-body">
+    <ol>
+      <li>
+        <p>读操作占用的时钟周期数：\(1 + 2 + 4 = 7\)；<br>
+        对应的工作频率：\(100\,\text{MHz}/7\)；<br>
+        总线宽度（一块的数据量）：\(6 \times 4\,\text{B} = 24\,\text{B}\)。<br>
+        读传输速率 = 总线宽度 ÷ 每块操作时间 = \(24\,\text{B} \times \dfrac{100\,\text{MHz}}{7} \approx \mathbf{343\,MB/s}\)。</p>
+      </li>
+      <li>
+        <p>写操作占用的时钟周期数：\(1 + 1 + 4 = 6\)；<br>
+        对应的工作频率：\(100\,\text{MHz}/6\)；总线宽度仍为 24B。<br>
+        写传输速率 = \(24\,\text{B} \times \dfrac{100\,\text{MHz}}{6} = \mathbf{400\,MB/s}\)。</p>
+      </li>
+      <li>
+        <p>平均传输速率 = 按时间加权：\(343 \times 70\% + 400 \times 30\% = 240.1 + 120 = \mathbf{360.1\,MB/s}\)。</p>
+      </li>
+    </ol>
+  </div></details>
+</div>
+
+<div class="pager">
+  <a class="prev" href="s-62.html"><span class="dir">上一篇</span>6.2 总线事务和定时</a>
+  <a class="next" href="../ch7/index.html"><span class="dir">下一篇</span>第7章 输入/输出系统</a>
+</div>
+</main>
+<footer class="site-footer"><div class="inner">
+  <p>本站为个人学习用途整理，内容与插图取自王道《计算机组成原理考研复习指导》，版权归原出版方所有，仅供交流，请勿商用。</p>
+  <p><a href="../index.html">← 返回首页</a> · <a href="quiz.html">本章习题</a></p>
+</div></footer>
+</body>
+</html>

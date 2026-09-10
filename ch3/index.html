@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>第3章 导学 · 存储系统 · 408计组带学</title>
+<link rel="stylesheet" href="../css/style.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body>
+<header class="site-header"><div class="inner">
+  <a class="site-title" href="../index.html">408 计算机组成原理带学</a>
+  <nav class="chapnav">
+    <a href="../index.html">首页</a>
+    <a href="index.html" class="cur">第3章</a>
+    <a href="quiz.html">本章习题</a>
+  </nav>
+</div></header>
+<main>
+<nav class="crumbs"><a href="../index.html">首页</a> / <a href="index.html">第3章 存储系统</a> / 本章导学</nav>
+
+<h1>第3章 存储系统</h1>
+
+<p>本章是历年真题的重灾区：Cache 与虚拟存储器的考点容易出综合题，存储器的格式与扩展（芯片选择、连接方式）、交叉存取、Cache 的相关计算与替换算法、虚拟存储器与 TLB 则是选择题的高频产区。建议在掌握基本原理的基础上，多结合题目反复练习，尤其要在掌握 TLB 基本原理的前提下多做「地址翻译与 Cache 映射」的综合训练。</p>
+
+<div class="callout exam">
+<span class="tag">408考纲要求</span>
+<ul>
+<li><strong>（一）存储器的分类</strong></li>
+<li><strong>（二）层次化存储器的基本结构</strong></li>
+<li><strong>（三）半导体随机存储器</strong>：SRAM、DRAM、Flash 存储器。</li>
+<li><strong>（四）主存储器</strong>：DRAM 芯片和内存条、多模块存储器、主存储器和 CPU 之间的连接。</li>
+<li><strong>（五）外部存储器</strong>：磁盘存储器、固态硬盘（SSD）。</li>
+<li><strong>（六）高速缓冲存储器（Cache）</strong>：Cache 的基本原理；Cache 和主存之间的映射方式；Cache 中主存块的替换算法；Cache 写策略。</li>
+<li><strong>（七）虚拟存储器</strong>：虚拟存储器的基本概念；页式虚拟存储器——基本原理、页表、地址转换、TLB（快表）；段式虚拟存储器的基本原理；段页式虚拟存储器的基本原理。</li>
+</ul>
+</div>
+
+<h2>复习提示：带着这三个问题学</h2>
+<p>教材在本章开头建议读者边学边思考以下问题，章末给出参考答案（见下方「本章小结」）：</p>
+<ol>
+<li>存储器系统为何要分这些层次？计算机如何管理这些层次？</li>
+<li>影响 Cache 性能的因素有哪些？</li>
+<li>虚拟存储系统的页面是设置得大一些好还是设置得小一些好？</li>
+</ol>
+
+<h2>本章地图</h2>
+<div class="map-grid">
+  <div class="map-card">
+    <a class="sec-link" href="s-31.html">3.1 存储器概述</a>
+    <div class="desc">按元件/存取方式/可改变性/可保存性四种分类，主存的组成与 MAR/MDR，层次化结构中 Cache-主存、主存-辅存两个层级的分工，以及存取时间、存取周期、带宽三大指标。</div>
+  </div>
+  <div class="map-card">
+    <a class="sec-link" href="s-32.html">3.2 主存储器</a>
+    <div class="desc">SRAM 触发器 vs DRAM 电容（刷新、地址复用），ROM 家族与 Flash，多模块存储器的连续编址与低位交叉流水存取（m=T/r、t=T+(m−1)r）。</div>
+  </div>
+  <div class="map-card">
+    <a class="sec-link" href="s-33.html">3.3 主存储器与 CPU 的连接</a>
+    <div class="desc">三类总线怎么接，位扩展、字扩展、字位同时扩展的连接方式与芯片数计算，各片地址范围的划分。</div>
+  </div>
+  <div class="map-card">
+    <a class="sec-link" href="s-34.html">3.4 外部存储器</a>
+    <div class="desc">磁盘的组成、性能指标与存取时间（寻道+旋转等待+传输）、磁盘地址划分、RAID 分级；SSD 的页/块结构与磨损均衡。</div>
+  </div>
+  <div class="map-card">
+    <a class="sec-link" href="s-35.html">3.5 高速缓冲存储器</a>
+    <div class="desc">全章最重的一节：局部性原理、命中率与平均访问时间、三种映射方式的地址划分、LRU 等替换算法、直写/写回与写分配策略、Cache 容量计算、分离与多级 Cache。</div>
+  </div>
+  <div class="map-card">
+    <a class="sec-link" href="s-36.html">3.6 虚拟存储器</a>
+    <div class="desc">页式（页表、地址变换、TLB）、段式、段页式三种机制，TLB/Cache/页表的缺失组合分析，虚拟存储器与 Cache 的异同。</div>
+  </div>
+</div>
+
+<h2>本章小结</h2>
+<p>下表整理自教材本章小结，回答开篇的三个思考题。</p>
+<table>
+<thead>
+<tr><th style="width:34%">问题</th><th>结论要点</th></tr>
+</thead>
+<tbody>
+<tr>
+<td>存储器系统为何要分这些层次？计算机如何管理这些层次？</td>
+<td>存储系统采用多级层次结构，旨在兼顾存储速度、存储容量与单位成本：<strong>Cache-主存层</strong>主要用于加速 CPU 访存，使平均访问速度接近 Cache，而寻址空间和单位价格接近主存；<strong>主存-辅存层</strong>主要用于扩展可用存储容量，使程序员看到的地址空间和单位价格接近辅存，而访问速度接近主存。Cache 与主存之间的信息调度由硬件自动完成，对程序员透明；主存与辅存之间的信息调度通过虚拟存储技术实现，由软件与硬件共同完成——程序员使用远大于物理内存的虚拟地址空间编程，程序执行时由硬件和操作系统协作完成虚拟地址到物理地址的转换。</td>
+</tr>
+<tr>
+<td>影响 Cache 性能的因素有哪些？</td>
+<td>Cache 系统的性能主要由命中率决定，命中率又受多种因素影响：① <strong>映射方式</strong>：全相联命中率最高，直接映射最低，组相联介于两者之间；② <strong>Cache 容量</strong>：容量越大命中率越高，但提升速度会放缓；③ <strong>块大小（Cache 行大小）</strong>：块过小难以利用空间局部性，过大则可能降低有效容量并增加缺失损失，须适当权衡。此外，Cache 数量（单级/多级）、指令与数据 Cache 是否分离、以及主存-总线-Cache-CPU 的架构等，也会显著影响 Cache 的整体性能。</td>
+</tr>
+<tr>
+<td>虚拟存储系统的页面是设置得大一些好还是小一些好？</td>
+<td>页面大小应适中，过大或过小都带来问题。<strong>页面过小</strong>：页表项数量剧增，导致页表庞大，同时难以有效利用空间局部性，降低命中率；<strong>页面过大</strong>：虽可减小页表规模，但会增加页内碎片、浪费内存空间，且页面调入/调出时的传输开销更大，延长缺页处理时间。因此实际系统通常选择 4KB～几 MB 的页面大小，在页表开销、局部性利用与 I/O 效率之间取得平衡。</td>
+</tr>
+</tbody>
+</table>
+
+<h2>常见问题和易混淆知识点</h2>
+
+<h3><span class="sec-id">问题 1</span>Cache 行的大小和命中率之间有什么关系？</h3>
+<p>当 Cache 行较大时，能更好地利用空间局部性，将更多的相邻数据一次性调入 Cache，从而提高命中率。但行长不宜过大，主要原因有两个：① 行长过大会增加<strong>缺失损失</strong>，即未命中时需从主存读取更多数据，传输时间更长；② 在 Cache 总容量固定的情况下，行长增大会导致行数减少，降低地址映射的灵活性，反而可能降低命中率。反之，行长过小会降低空间利用效率，且难以有效利用空间局部性，命中率通常偏低。</p>
+<div class="callout warn">
+<span class="tag">易混</span>「行大 → 命中率高」不是无条件成立：命中率先随行大而升（空间局部性），后因行数减少、缺失损失增大而受影响——要答出「适当权衡」这层意思。
+</div>
+
+<h3><span class="sec-id">问题 2</span>发生取指令 Cache 缺失时的处理步骤是什么？</h3>
+<p>当发生取指令 Cache 缺失时，系统按以下步骤处理：</p>
+<ol>
+<li>保持程序计数器（PC）不变，确保缺失处理完成后能重新获取同一条指令；</li>
+<li>根据 PC 指向的地址，从主存读取该指令；</li>
+<li>将该指令所在主存块调入 Cache，并更新对应 Cache 行的有效位和标记位；</li>
+<li>重新从 Cache 中取指并继续执行。</li>
+</ol>
+
+<div class="pager">
+  <a class="prev" href="../index.html"><span class="dir">上一篇</span>首页</a>
+  <a class="next" href="s-31.html"><span class="dir">下一篇</span>3.1 存储器概述</a>
+</div>
+</main>
+<footer class="site-footer"><div class="inner">
+  <p>本站为个人学习用途整理，内容与插图取自王道《计算机组成原理考研复习指导》，版权归原出版方所有，仅供交流，请勿商用。</p>
+  <p><a href="../index.html">← 返回首页</a> · <a href="quiz.html">本章习题</a></p>
+</div></footer>
+</body>
+</html>

@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>3.3 主存储器与CPU的连接 · 第3章 · 408计组带学</title>
+<link rel="stylesheet" href="../css/style.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body>
+<header class="site-header"><div class="inner">
+  <a class="site-title" href="../index.html">408 计算机组成原理带学</a>
+  <nav class="chapnav">
+    <a href="../index.html">首页</a>
+    <a href="index.html" class="cur">第3章</a>
+    <a href="quiz.html">本章习题</a>
+  </nav>
+</div></header>
+<main>
+<nav class="crumbs"><a href="../index.html">首页</a> / <a href="index.html">第3章 存储系统</a> / 3.3 主存储器与CPU的连接</nav>
+
+<h1>3.3 主存储器与 CPU 的连接</h1>
+
+<p>这一节解决「芯片不够大怎么办」：先看主存与 CPU 之间三类总线怎么接、不同芯片的控制线有什么差异（3.3.1），再掌握主存容量扩展的三种方法——位扩展、字扩展、字位同时扩展（3.3.2）。<strong>芯片数计算与各片地址范围的划分</strong>是本节的核心考法，综合题几乎年年从这里出。</p>
+
+<h3><span class="sec-id">3.3.1</span>连接原理</h3>
+<p>主存储器通过<strong>数据总线、地址总线和控制总线</strong>与 CPU 相连，三条总线协同完成数据传输与地址定位、操作控制：</p>
+<ul>
+<li><strong>数据总线</strong>：其位数与工作频率共同决定数据传输速率，二者的乘积正比于理论带宽；</li>
+<li><strong>地址总线</strong>：其位数决定了 CPU 可寻址的最大内存空间；</li>
+<li><strong>控制总线</strong>：控制线因存储器类型而异——<strong>SRAM</strong> 芯片通常包含片选与读/写控制信号线；<strong>ROM</strong> 芯片仅需片选线（只读无须写控制）；<strong>DRAM</strong> 芯片一般不设独立片选线，其芯片选择通过行地址选通信号或外部译码逻辑实现。</li>
+</ul>
+<figure>
+<img src="../assets/ch3/fig-p109.png" alt="主存储器与CPU的连接" loading="lazy">
+<figcaption>图3.11 主存储器与CPU的连接（王道教材）</figcaption>
+</figure>
+<p>由于单个存储芯片的容量有限，实际系统中通常通过<strong>存储器扩展技术</strong>将多个芯片集成在内存条上，并结合主板上的 ROM，共同构成计算机所需的存储空间，再经由系统总线与 CPU 连接。</p>
+<div class="callout warn">
+<span class="tag">易混</span>三类芯片的控制线差异是选择题常客：SRAM 有片选＋读/写控制；ROM 只有片选（不可写）；DRAM 无独立片选线（靠行选通/外部译码）。另外别忘了 3.2 节的结论——DRAM 的地址线是行列复用的，引脚数比同容量 SRAM 少一半。
+</div>
+
+<h3><span class="sec-id">3.3.2</span>主存容量的扩展</h3>
+<p>当单个存储芯片的<strong>字数</strong>（存储单元数量）或<strong>字长</strong>（每个存储单元的位数）无法满足实际主存需求时，需要在位和字两个方向进行扩展，以构建所需容量的存储器。芯片数的一条总算式：</p>
+$$\text{所需芯片数} = \underbrace{\frac{\text{总字数}}{\text{每片字数}}}_{\text{字方向}} \times \underbrace{\frac{\text{总位数}}{\text{每片位数}}}_{\text{位方向}}$$
+
+<h4>1. 位扩展法</h4>
+<p><strong>位扩展用于增加存储字的长度</strong>，适用于 CPU 数据线位数大于单个芯片数据位宽的情况。通过并联多个芯片，使其总数据位宽与 CPU 总线匹配。<strong>连接方式</strong>：各芯片的地址线、片选线和读/写控制线并联，接至系统对应总线；<strong>数据线单独引出</strong>，分别连接到系统数据总线的不同位，所有芯片<strong>同时工作</strong>，共同提供一个完整的字。</p>
+<p><strong>【例】</strong>用 8 片 8K×1 位的 RAM 芯片构成 8K×8 位的存储器。位方向芯片数 = 8位/1位 = 8 片（字方向不变，8K/8K = 1）；各芯片的地址线 \(\mathrm{A}_{12} \sim \mathrm{A}_0\)（\(8\mathrm{K} = 2^{13}\)，共 13 根）、片选线和读/写控制线均连在一起，每片的数据线依次对应 CPU 数据总线的一位。</p>
+<figure>
+<img src="../assets/ch3/fig-p110.png" alt="位扩展连接示意图" loading="lazy">
+<figcaption>图3.12 位扩展连接示意图（王道教材）</figcaption>
+</figure>
+
+<h4>2. 字扩展法</h4>
+<p><strong>字扩展用于增加存储单元的数量（扩大地址空间）</strong>，而存储字的位数已满足系统要求。此时系统数据线位数等于芯片数据线位数，而系统地址总线的位数多于芯片地址线位数。<strong>连接方式</strong>：各芯片的低地址线接系统地址总线的低位，数据线和读/写控制线并联至系统总线；<strong>系统地址总线的高位经译码器生成片选信号，分时选中不同芯片</strong>，各芯片分时工作。</p>
+<div class="callout exam">
+<span class="tag">考点</span>字扩展（或字扩展后）存储器的地址范围（2010 真题）。用 4 片 16K×8 位的 RAM 芯片构成 64K×8 位的存储器：字方向芯片数 = 64K/16K = 4 片；所有芯片的数据线 \(\mathrm{D}_7 \sim \mathrm{D}_0\) 并联至系统数据总线；地址线 \(\mathrm{A}_{15}\mathrm{A}_{14}\) 作为高位地址输入译码器，产生 4 个片选信号——\(\mathrm{A}_{15}\mathrm{A}_{14}=00\) 时选中 1 号芯片，\(=01\) 时选中 2 号芯片，以此类推（<strong>同一时刻只能有一个片选线有效</strong>）。各芯片的地址划分如下：
+<ul>
+<li>第一片：最低地址 <code class="bin">0000000000000000</code>，最高地址 <code class="bin">0011111111111111</code>（16 位）</li>
+<li>第二片：最低地址 <code class="bin">0100000000000000</code>，最高地址 <code class="bin">0111111111111111</code></li>
+<li>第三片：最低地址 <code class="bin">1000000000000000</code>，最高地址 <code class="bin">1011111111111111</code></li>
+<li>第四片：最低地址 <code class="bin">1100000000000000</code>，最高地址 <code class="bin">1111111111111111</code></li>
+</ul>
+</div>
+<figure>
+<img src="../assets/ch3/fig-p110_2.png" alt="字扩展连接示意图" loading="lazy">
+<figcaption>图3.13 字扩展连接示意图（王道教材）</figcaption>
+</figure>
+
+<h4>3. 字位同时扩展法</h4>
+<p>当芯片的<strong>字长和容量均不足</strong>时，需同时进行位扩展和字扩展。该方法将位扩展后的芯片组视为一个逻辑单元，再对这些单元进行字扩展。<strong>连接方式</strong>：先将若干芯片按位扩展方式连成一组（满足字长要求）；再将多组按字扩展方式连接，系统地址总线的低位接各组内各芯片的地址引脚，高位经译码器生成各组的片选信号。</p>
+<p><strong>【例】</strong>用 8 片 16K×4 位的 RAM 芯片构成 64K×8 位的存储器。所需芯片数 = (64K/16K) × (8/4) = 4 × 2 = 8 片：每 2 片组成一组（位扩展为 16K×8 位），共 4 组。地址线 \(\mathrm{A}_{15}\mathrm{A}_{14}\) 经译码器产生 4 个片选信号：\(\mathrm{A}_{15}\mathrm{A}_{14}=00\) 时选中第一组（芯片①和②）；\(=01\) 时选中第二组（芯片③和④）；以此类推。片内地址由 \(\mathrm{A}_{13} \sim \mathrm{A}_0\) 共 14 位给出（\(16\mathrm{K} = 2^{14}\)）。</p>
+<figure>
+<img src="../assets/ch3/fig-p111.png" alt="字位同时扩展及CPU的连接图" loading="lazy">
+<figcaption>图3.14 字位同时扩展及CPU的连接图（王道教材）</figcaption>
+</figure>
+<div class="callout exam">
+<span class="tag">考点</span>扩展方向判断与芯片数计算。口诀：<strong>字方向 d<sub>字</sub> = 总字数/每片字数（地址不够扩字），位方向 d<sub>位</sub> = 总位数/每片位数（数据线不够扩位）</strong>，总片数 = d<sub>字</sub> × d<sub>位</sub>。判断连接方式的关键是「谁在同时工作」：位扩展的芯片同时工作（拼数据线），字扩展的芯片分时工作（拼地址空间），字位同时扩展则组内同时、组间分时。
+</div>
+<div class="callout tip">
+<span class="tag">小结</span>做综合题的三步固定套路：① 算芯片数（字方向×位方向）；② 分地址线——低位接片内地址（位数 = \(\log_2\)每片字数），高位送译码器产生片选（位数 = \(\log_2\)组数）；③ 核对每组/每片的起止地址（二进制首尾通常一串 0 到一串 1）。
+</div>
+
+<div class="pager">
+  <a class="prev" href="s-32.html"><span class="dir">上一篇</span>3.2 主存储器</a>
+  <a class="next" href="s-34.html"><span class="dir">下一篇</span>3.4 外部存储器</a>
+</div>
+</main>
+<footer class="site-footer"><div class="inner">
+  <p>本站为个人学习用途整理，内容与插图取自王道《计算机组成原理考研复习指导》，版权归原出版方所有，仅供交流，请勿商用。</p>
+  <p><a href="../index.html">← 返回首页</a> · <a href="quiz.html">本章习题</a></p>
+</div></footer>
+</body>
+</html>

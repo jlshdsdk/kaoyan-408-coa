@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>4.3 程序的机器级代码表示 · 第4章 · 408计组带学</title>
+<link rel="stylesheet" href="../css/style.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body>
+<header class="site-header"><div class="inner">
+  <a class="site-title" href="../index.html">408 计算机组成原理带学</a>
+  <nav class="chapnav">
+    <a href="../index.html">首页</a>
+    <a href="index.html" class="cur">第4章</a>
+    <a href="quiz.html">本章习题</a>
+  </nav>
+</div></header>
+<main>
+<nav class="crumbs"><a href="../index.html">首页</a> / <a href="index.html">第4章 指令系统</a> / 4.3 程序的机器级代码表示</nav>
+
+<h1>4.3 程序的机器级代码表示</h1>
+
+<p>本节是 2022 年新增考点（涉及汇编代码的年份：2012、2014、2015、2017、2019、2023、2024），但相关知识点早已多次以综合题形式出现在历年真题中，难度较大，不少考生感觉到无从下手。通过本节学习后，考生应从内容应对此类考题。统考大纲不指定具体指令集，但历年真题主要考查 x86 和 MIPS 伪指令。其中，MIPS 指令通常会在试题中附带功能说明，而 x86 指令则常作为默认考查对象。因此，本节重点介绍 x86 汇编指令。</p>
+
+<h3><span class="sec-id">4.3.1</span>常用汇编指令介绍</h3>
+
+<h4>1. 相关寄存器</h4>
+<p>x86 处理器中有 8 个 32 位通用寄存器，主要寄存器及说明如图 4.11 所示。为向后兼容早期的 16 位和 8 位架构，EAX、EBX、ECX 和 EDX 的低 16 位可作为独立寄存器使用（分别记为 AX、BX、CX、DX），而每个 16 位寄存器又可进一步分为两个 8 位寄存器（如 AX 分为 AH 和 AL）。其中，E 表示 Extended，用来标识 32 位寄存器。</p>
+<figure>
+<img src="../assets/ch4/fig-p184.png" alt="x86处理器中的主要寄存器及说明" loading="lazy">
+<figcaption>图4.11 x86处理器中的主要寄存器及说明（王道教材）</figcaption>
+</figure>
+<p>各寄存器的惯用角色：EAX 为累加器（Accumulator）、EBX 为基址寄存器（Base Register）、ECX 为计数寄存器（Count Register）、EDX 为数据寄存器（Data Register）、ESI 与 EDI 为变址寄存器（Index Register）、EBP 为堆栈基址指针（Base Pointer）、ESP 为堆栈栈顶指针（Stack Pointer）。<strong>除 EBP（基址指针）和 ESP（栈顶指针）外，其余通用寄存器的用法是比较灵活的</strong>。</p>
+
+<h4>2. 常用指令</h4>
+<p>汇编指令通常可分为数据传送指令、算术与逻辑运算指令和控制流指令。下面以 <strong>Intel 格式</strong>为例，介绍一些常用指令。以下用操作数的标记分别表示寄存器、内存和常数：</p>
+<ul>
+<li><code class="bin">&lt;reg&gt;</code>：表示任意寄存器。若其后有寄存器字号，则指明其位数，如 <code class="bin">&lt;reg32&gt;</code> 表示 32 位寄存器（eax、ebx、ecx、edx、esi、edi、esp 或 ebp）；<code class="bin">&lt;reg16&gt;</code> 表示 16 位寄存器（ax、bx、cx 或 dx）；<code class="bin">&lt;reg8&gt;</code> 表示 8 位寄存器（ah、al、bh、bl、ch、cl、dh、dl）；</li>
+<li><code class="bin">&lt;mem&gt;</code>：表示内存地址，如 <code class="bin">[eax]</code>、<code class="bin">[var+4]</code> 或 <code class="bin">dword ptr [eax+ebx]</code>；</li>
+<li><code class="bin">&lt;con&gt;</code>：表示 8 位（<code class="bin">&lt;con8&gt;</code>）、16 位（<code class="bin">&lt;con16&gt;</code>）或 32 位（<code class="bin">&lt;con32&gt;</code>）常数。</li>
+</ul>
+<div class="callout exam">
+<span class="tag">考点</span>分析汇编指令对应的二进制代码（2010 真题）。
+</div>
+<p>x86 指令的机器代码一般为 1 字节以上，但整体指令长度可变。同一指令（如 mov）因操作数类型或寄存器不同，可能对应多种机器码编码，如图 4.12 所示。</p>
+<figure>
+<img src="../assets/ch4/fig-p184_2.png" alt="mov指令汇编与机器码对照" loading="lazy">
+<figcaption>图4.12 mov指令汇编与机器码对照代码框（王道教材）</figcaption>
+</figure>
+
+<h5>（1）数据传送指令</h5>
+<p><strong>1）mov 指令</strong>。将第二个操作数（寄存器内容、内存内容或常数值）复制到第一个操作数（寄存器或内存）。其语法如下：</p>
+<pre><code>mov &lt;reg&gt;,&lt;reg&gt;
+mov &lt;mem&gt;,&lt;reg&gt;
+mov &lt;reg&gt;,&lt;mem&gt;
+mov &lt;reg&gt;,&lt;con&gt;
+mov &lt;mem&gt;,&lt;con&gt;</code></pre>
+<p>举例：</p>
+<pre><code>mov eax, ebx             ; 将 ebx 寄存器的值复制到 eax
+mov byte ptr [var], 5    ; 将常数 5 存入 1 字节的内存单元 var</code></pre>
+<p><strong>双操作数不能同时为内存</strong>，即 mov 指令不能用于直接从内存复制到内存。若需在内存之间复制，可先将源内存内容加载到寄存器，再从该寄存器写入目标内存。</p>
+<p><strong>2）push 指令</strong>。将操作数压入栈中，常用于函数调用和现场保护。ESP 是栈顶，入栈时先将 ESP 减 4（栈向低地址方向增长），再将操作数压入 ESP 所指地址。其语法如下（注意：栈中元素固定为 32 位）：</p>
+<pre><code>push &lt;reg32&gt;
+push &lt;mem&gt;
+push &lt;con32&gt;</code></pre>
+<p>举例：</p>
+<pre><code>push eax       ; 将 eax 的值压栈
+push [var]     ; 将地址 var 处的 4 字节内容压栈</code></pre>
+<p><strong>3）pop 指令</strong>。与 push 指令相反，从栈中弹出数据。出栈时先将 ESP 所指地址的内容读出，再将 ESP 加 4。其语法如下：</p>
+<pre><code>pop &lt;reg&gt;      ; 弹出栈顶元素并存入 eax 等寄存器
+pop &lt;mem&gt;      ; 弹出栈顶元素并存入 ebx 等所指的 4 字节内存地址</code></pre>
+
+<h5>（2）算术与逻辑运算指令</h5>
+<p><strong>1）add/sub 指令</strong>。add 将两个操作数相加，sub 将第一个操作数减去第二个操作数，结果均保存在第一个操作数中。其语法如下：</p>
+<pre><code>add &lt;reg&gt;,&lt;reg&gt; / sub &lt;reg&gt;,&lt;reg&gt;
+add &lt;reg&gt;,&lt;mem&gt; / sub &lt;reg&gt;,&lt;mem&gt;
+add &lt;mem&gt;,&lt;reg&gt; / sub &lt;mem&gt;,&lt;reg&gt;
+add &lt;reg&gt;,&lt;con&gt; / sub &lt;reg&gt;,&lt;con&gt;
+add &lt;mem&gt;,&lt;con&gt; / sub &lt;mem&gt;,&lt;con&gt;</code></pre>
+<p>举例：</p>
+<pre><code>sub eax, 10            ; eax ← eax - 10
+add byte ptr [var], 10 ; 将地址 var 处的 1 字节内容与 10 相加，结果存回该地址</code></pre>
+<p><strong>2）inc/dec 指令</strong>。分别对操作数执行自增 1 或自减 1 操作。其语法如下：</p>
+<pre><code>inc &lt;reg&gt; / dec &lt;reg&gt;
+inc &lt;mem&gt; / dec &lt;mem&gt;</code></pre>
+<p>举例：</p>
+<pre><code>dec eax                  ; eax 值自减 1
+inc dword ptr [var]      ; 将地址 var 处的 4 字节内容自增 1</code></pre>
+<p><strong>3）imul 指令</strong>。有符号整数乘法指令，支持两种格式：① 双操作数格式，将第一、第二操作数相乘，结果存入第一个操作数（必须为寄存器）；② 三操作数格式，将第二、第三操作数相乘，结果存入第一个操作数（必须为寄存器）。其语法如下：</p>
+<pre><code>imul &lt;reg32&gt;,&lt;reg32&gt;
+imul &lt;reg32&gt;,&lt;mem&gt;
+imul &lt;reg32&gt;,&lt;reg32&gt;,&lt;con&gt;
+imul &lt;reg32&gt;,&lt;mem&gt;,&lt;con&gt;</code></pre>
+<p>举例：</p>
+<pre><code>imul eax, [var]     ; eax ← eax * [var]
+imul esi, edi, 25   ; esi ← edi * 25</code></pre>
+<p>无符号整数乘法用 <strong>mul 指令</strong>实现，仅支持单操作数格式，被乘数隐含在 eax 中，乘积结果放在 edx:eax 中。当 edx≠0 时，表示结果无法用 32 位无符号数表示，CPU 置 CF=1 和 OF=1。<strong>imul 在结果溢出时，同样置 CF=1 和 OF=1。无符号乘法以 CF 判断溢出，有符号乘法则以 OF 为准。</strong></p>
+<p><strong>4）idiv 指令</strong>。有符号整数除法指令，仅指定除数，被除数为 edx:eax 组成的 64 位有符号数（edx 为高 32 位，eax 为低 32 位）。执行后，商存入 eax，余数存入 edx。其语法如下：</p>
+<pre><code>idiv &lt;reg32&gt;
+idiv &lt;mem&gt;</code></pre>
+<p>举例：</p>
+<pre><code>idiv ebx
+idiv dword ptr [var]</code></pre>
+<p>无符号整数除法指令 <strong>div</strong> 的格式与 idiv 完全一致，仅对操作数的解释不同。</p>
+<p><strong>5）and/or/xor 指令</strong>。分别执行按位与、或、异或操作，结果存入第一个操作数。其语法如下：</p>
+<pre><code>and &lt;reg&gt;,&lt;reg&gt; / or &lt;reg&gt;,&lt;reg&gt; / xor &lt;reg&gt;,&lt;reg&gt;
+and &lt;reg&gt;,&lt;mem&gt; / or &lt;reg&gt;,&lt;mem&gt; / xor &lt;reg&gt;,&lt;mem&gt;
+and &lt;reg&gt;,&lt;con&gt; / or &lt;reg&gt;,&lt;con&gt; / xor &lt;reg&gt;,&lt;con&gt;
+and &lt;mem&gt;,&lt;con&gt; / or &lt;mem&gt;,&lt;con&gt; / xor &lt;mem&gt;,&lt;con&gt;</code></pre>
+<p>举例：</p>
+<pre><code>and eax, 0FH    ; 将 eax 的高 28 位置 0，低 4 位保持不变
+xor edx, edx    ; 将 edx 清零</code></pre>
+<p><strong>6）not 指令</strong>。按位取反指令，将操作数的每一位 0 变 1、1 变 0。其语法如下：</p>
+<pre><code>not &lt;reg&gt;
+not &lt;mem&gt;</code></pre>
+<p>举例：</p>
+<pre><code>not byte ptr [var]   ; 将地址 var 处的 1 字节内容按位取反</code></pre>
+<p><strong>7）neg 指令</strong>。取负指令，计算操作数的二进制补码（\(-x\)）。其语法如下：</p>
+<pre><code>neg &lt;reg&gt;
+neg &lt;mem&gt;</code></pre>
+<p>举例：</p>
+<pre><code>neg eax    ; eax ← -eax</code></pre>
+<p><strong>8）shl/shr 指令</strong>。逻辑移位指令，shl 为逻辑左移，shr 为逻辑右移，第一个操作数是被移位数，第二个操作数是移位位数，其语法如下：</p>
+<pre><code>shl &lt;reg&gt;,&lt;con8&gt; / shr &lt;reg&gt;,&lt;con8&gt;
+shl &lt;mem&gt;,&lt;con8&gt; / shr &lt;mem&gt;,&lt;con8&gt;
+shl &lt;reg&gt;,&lt;cl&gt;   / shr &lt;reg&gt;,&lt;cl&gt;
+shl &lt;mem&gt;,&lt;cl&gt;   / shr &lt;mem&gt;,&lt;cl&gt;</code></pre>
+<p>举例：</p>
+<pre><code>shl eax, 1     ; eax 逻辑左移 1 位
+shr ebx, cl    ; ebx 逻辑右移 n 位（n 为 cl 中的值）</code></pre>
+
+<h5>（3）控制流指令</h5>
+<p>x86 处理器通过<strong>指令指针寄存器 EIP</strong>（相当于程序计数器即 PC）指示当前执行指令的地址。每条指令执行后，EIP 自动指向下一条指令。EIP 不能直接访问，但可通过控制流指令修改。程序中常用<strong>标签（label）</strong>标记指令地址，例如：</p>
+<pre><code>      指令①
+begin:
+      指令②
+      指令③</code></pre>
+<p>此处标签 begin 指向第二条指令，控制流指令通过标签实现转移。</p>
+<div class="callout exam">
+<span class="tag">考点</span>无条件转移指令的指令格式（2021 真题）。
+</div>
+<p><strong>1）jmp 指令</strong>。无条件转移到 label 标签所指的地址继续执行。其语法如下：</p>
+<pre><code>jmp &lt;label&gt;</code></pre>
+<p>举例：</p>
+<pre><code>jmp begin    ; 转移到 begin 标记处执行</code></pre>
+<div class="callout exam">
+<span class="tag">考点</span>条件转移指令与标志位的结合（2013 真题）。
+</div>
+<p><strong>2）j&lt;condition&gt; 指令</strong>。条件转移指令，根据程序状态字寄存器中的状态标志（如零标志 ZF、符号标志 SF 等）决定是否转移。常见指令包括：</p>
+<pre><code>je  &lt;label&gt;    ; 相等时转移（jump when equal）
+jz  &lt;label&gt;    ; 结果为零时转移（jump when last result was zero）
+jne &lt;label&gt;    ; 不相等时转移（jump when not equal）
+jg  &lt;label&gt;    ; 大于时转移（jump when greater）
+jge &lt;label&gt;    ; 大于等于时转移（jump when greater than or equal to）
+jl  &lt;label&gt;    ; 小于时转移（jump when less than）
+jle &lt;label&gt;    ; 小于等于时转移（jump when less than or equal to）</code></pre>
+<p>举例：</p>
+<pre><code>cmp eax, ebx
+jle done        ; 若 eax≤ebx，则转移到 done；否则顺序执行下一条指令</code></pre>
+<p><strong>3）cmp/test 指令</strong>。cmp 指令执行减法但不保存结果，仅根据结果设置标志位；test 指令执行按位与运算但不保存结果，仅更新标志位（特别是 ZF）。其语法如下：</p>
+<pre><code>cmp &lt;reg&gt;,&lt;reg&gt; / test &lt;reg&gt;,&lt;reg&gt;
+cmp &lt;reg&gt;,&lt;mem&gt; / test &lt;reg&gt;,&lt;mem&gt;
+cmp &lt;mem&gt;,&lt;reg&gt; / test &lt;mem&gt;,&lt;reg&gt;
+cmp &lt;reg&gt;,&lt;con&gt; / test &lt;reg&gt;,&lt;con&gt;</code></pre>
+<p>cmp 和 test 指令常与 j&lt;condition&gt; 指令配合使用。举例：</p>
+<pre><code>cmp dword ptr [var], 10    ; 将 var 处的 4 字节内容与 10 比较
+jne loop                   ; 若不相等则跳到 loop；否则顺序执行
+test eax, eax              ; 测试 eax 是否为零
+jz xxxx                    ; 若 eax 为零（ZF=1），则转移到 xxxx</code></pre>
+<div class="callout exam">
+<span class="tag">考点</span>call 指令的功能（2019 真题）。
+</div>
+<p><strong>4）call/ret 指令</strong>。分别用于实现子程序（过程）调用与返回，其语法如下：</p>
+<pre><code>call &lt;label&gt;
+ret</code></pre>
+<p>call 指令将下一条指令的地址（<strong>返回地址</strong>）压入栈，然后转移到 label 处执行；ret 指令从栈顶弹出返回地址，并转移到该地址继续执行。<strong>call 和 ret 是函数调用机制的核心指令</strong>。</p>
+<p>掌握上述指令的语法与功能，有助于解答相关考题。建议读者在学习 C 语言程序时，结合调试工具（如 GDB）查看其对应的汇编代码，以加深对机器级指令的理解。</p>
+
+<h4>3. 汇编指令格式</h4>
+<p>使用不同的编程工具开发程序时，所用的汇编器也不同，主要有 <strong>AT&amp;T 格式</strong>和 <strong>Intel 格式</strong>两种（统考常涉及的是 Intel 格式）。它们的主要区别如下：</p>
+<ol>
+<li>AT&amp;T 格式的指令名必须使用<strong>小写字母</strong>，Intel 格式对大小写不敏感；</li>
+<li><strong>操作数顺序不同</strong>：AT&amp;T 格式为「源, 目的」，Intel 格式为「目的, 源」；</li>
+<li>AT&amp;T 格式中，寄存器前加「%」，立即数前加「$」；Intel 格式中，两者均无前缀；</li>
+<li><strong>内存寻址符号不同</strong>：AT&amp;T 使用圆括号 ( )，Intel 使用方括号 [ ]；</li>
+<li><strong>复杂寻址方式表示不同</strong>：AT&amp;T 格式的内存操作数 <code class="bin">disp(base, index, scale)</code> 分别表示偏移量、基址寄存器、变址寄存器和比例因子，如 <code class="bin">8(%edx,%eax,2)</code> 表示操作数地址为 R[edx]+R[eax]*2+8；对应的 Intel 格式为 <code class="bin">[edx+eax*2+8]</code>；</li>
+<li><strong>操作数长度指定方式不同</strong>：AT&amp;T 格式在指令助记符后加后缀，表明操作数大小，「b」表示 byte（字节）、「w」表示 word（字）或「l」表示 long（双字）；Intel 格式则在内存操作数前使用 <code class="bin">byte ptr</code>、<code class="bin">word ptr</code> 或 <code class="bin">dword ptr</code> 显式指定长度。</li>
+</ol>
+<div class="callout warn">
+<span class="tag">注意</span>在 x86 体系结构中，32 或 64 位都是由 16 位扩展来的，因此 word（字）始终表示 16 位。
+</div>
+<p>表 4.2 所示为 AT&amp;T 格式与 Intel 格式的指令对比。其中，mov 指令用于在寄存器与内存之间或寄存器之间传送数据；<strong>lea 指令用于将有效地址（而非内存内容）加载到寄存器</strong>。</p>
+<table>
+<thead>
+<tr><th>AT&amp;T 格式</th><th>Intel 格式</th><th>含义</th></tr>
+</thead>
+<tbody>
+<tr><td><code>mov $100, %eax</code></td><td><code>mov eax, 100</code></td><td>100→R[eax]</td></tr>
+<tr><td><code>mov %eax, %ebx</code></td><td><code>mov ebx, eax</code></td><td>R[eax]→R[ebx]</td></tr>
+<tr><td><code>mov %eax, (%ebx)</code></td><td><code>mov [ebx], eax</code></td><td>R[eax]→M[R[ebx]]</td></tr>
+<tr><td><code>mov %eax, -8(%ebp)</code></td><td><code>mov [ebp-8], eax</code></td><td>R[eax]→M[R[ebp]-8]</td></tr>
+<tr><td><code>lea 8(%edx,%eax,2), %eax</code></td><td><code>lea eax, [edx+eax*2+8]</code></td><td>R[edx]+R[eax]*2+8→R[eax]</td></tr>
+<tr><td><code>movl %eax, %ebx</code></td><td><code>mov dword ptr [ebx], eax</code></td><td>32 位 R[eax]→M[R[ebx]]</td></tr>
+</tbody>
+</table>
+<p>注：R[r] 表示寄存器 r 的内容，M[addr] 表示存储单元 addr 的内容，→ 表示信息传送方向。两种汇编格式的相互转换并不复杂，历年真题通常采用 Intel 格式。</p>
+<div class="callout warn">
+<span class="tag">细节</span>表 4.2 末行按「含义」列（32 位 R[eax] 写入内存 M[R[ebx]]），AT&amp;T 侧更规范的写法应是 <code>movl %eax, (%ebx)</code>；原书此格的 AT&amp;T 列印作 <code>movl %eax, %ebx</code>，看表时以「含义」列为准，重点是记住 <strong>l 后缀 ↔ dword ptr</strong> 的长度对应关系。
+</div>
+
+<h3><span class="sec-id">4.3.2</span>选择语句的机器级表示</h3>
+<p>常见的选择结构语句有 if-then、if-then-else 等。编译器通过<strong>条件码（标志位）设置指令</strong>和<strong>各类条件转移指令</strong>来实现程序中的选择结构。条件码描述了最近算术或逻辑运算的结果属性，通常由专门的算术指令在执行时自动设置。常见的条件码有<strong> CF、ZF、SF 和 OF</strong>。</p>
+<p>常见的算术逻辑运算指令（add、sub、imul、or、and、shl、inc、dec、not、sal 等）在执行时会自动设置条件码。此外，<strong>cmp 和 test 指令专门用于设置条件码</strong>，它们执行相应的运算（cmp 相当于 sub，test 相当于 and），但<strong>不保存结果</strong>，仅根据结果更新标志位。</p>
+<p>之前介绍的 j&lt;condition&gt; 条件转移指令，就是根据条件码 ZF、OF 或 SF 来实现转移的。if-else 语句的通用形式如下：</p>
+<pre><code>if(test_expr)              //test_expr 为条件测试表达式
+    then_statement         //当 test_expr 为真时，执行 then_statement 语句
+else
+    else_statement         //当 test_expr 为假时，执行 else_statement 语句</code></pre>
+<p>在 C 语言中，test_expr 是一个整数表达式，其值为 0 时表示「假」，非 0（包括负数）时表示「真」。两个分支语句（then_statement 或 else_statement）中只会执行其中一个。</p>
+<p>这种通用形式可以被翻译成如下等价的 goto 语句形式：</p>
+<pre><code>    t=test_expr;          //保存测试表达式的结果
+    if(!t) goto false;    //若条件为假（t=0），选择 else 分支
+    then_statement        //分支为真（t≠0）时执行
+    goto done;            //执行完该分支后，跳过另一分支，转移至结束点
+    false:
+    else_statement        //假分支：仅当 t=0 时执行
+    done:                 //整个 if-else 结构的结束点</code></pre>
+<p>下面以一个具体的 C 语言函数为例：</p>
+<pre><code>int get_cont(int *p1, int *p2){
+    if(p1 &gt; p2)
+        return *p2;
+    else
+        return *p1;
+}</code></pre>
+<p>已知 p1 和 p2 对应的实参已被压入调用函数的栈帧，它们对应的存储地址分别为 R[ebp]+8、R[ebp]+12（EBP 指向当前栈帧底部），函数返回值需存放在 eax 中。对应的汇编代码为</p>
+<pre><code>mov eax, dword ptr [ebp+8]     #R[eax]←M[R[ebp]+8]，即加载参数 p1 到 eax
+mov edx, dword ptr [ebp+12]    #R[edx]←M[R[ebp]+12]，即加载参数 p2 到 edx
+cmp eax, edx                   #比较 p1 和 p2，根据结果设置条件码
+jbe .L1                        #若 p1&lt;=p2，则转移到 L1
+mov eax, dword ptr [edx]       #R[eax]←M[R[edx]]，即取 *p2 作为返回值
+jmp .L2                        #无条件转移到 L2，跳过 else 分支
+.L1:
+mov eax, dword ptr [eax]       #R[eax]←M[R[eax]]，即取 *p1 作为返回值
+.L2:</code></pre>
+<p>p1 和 p2 是指针变量，在 32 位机器中占 4 字节（一个 dword），比较指令 cmp 的两个操作数应来自寄存器，因此需先将 p1 和 p2 对应的实参从栈中加载到寄存器。指针比较在 C 语言中按<strong>无符号数</strong>处理，故使用 jbe（无符号小于等于）进行条件转移。</p>
+
+<h3><span class="sec-id">4.3.3</span>循环语句的机器级表示</h3>
+<div class="callout exam">
+<span class="tag">考点</span>循环语句的机器级代码分析（2014、2017、2019、2023 真题）。
+</div>
+<p>常见的循环结构语句有 while、for 和 do-while。x86 指令集中没有直接对应这些高级循环结构的指令，编译器通过条件测试（如 cmp、test）和条件转移（如 je、jne、jg、jl 等）指令的组合来实现循环逻辑。实际上，大多数编译器都会将这三种循环转换成 <strong>do-while 形式</strong>。</p>
+
+<h4>1. do-while 循环</h4>
+<p>do-while 语句是一种「<strong>后测试</strong>」型循环，其通用形式如下：</p>
+<pre><code>do                       //先执行循环体，再判断循环条件
+    body_statement       //body_statement 为循环体执行语句
+while(test_expr);        //test_expr 为循环继续的条件表达式</code></pre>
+<p>这种结构可以翻译成如下所示的条件和 goto 语句组合：</p>
+<pre><code>    loop:
+    body_statement       //执行循环体语句（首次进入时必然执行）
+    t=test_expr;         //计算循环条件
+    if(t)                //若条件为真（t≠0）
+        goto loop;       //跳回 loop 标签，继续下一轮迭代</code></pre>
+<p>由于循环体在条件判断之前执行，因此无论 test_expr 的初始值是什么，<strong>body_statement 至少会被执行一次</strong>。每次执行结束后，程序会重新计算 test_expr 的值：如果结果为真（非零），就跳回循环开头继续执行；否则，顺序执行后续代码，退出循环。</p>
+
+<h4>2. while 循环</h4>
+<p>while 语句是一种「<strong>前测试</strong>」型循环，其通用形式如下：</p>
+<pre><code>while(test_expr)          //test_expr 为判断循环体的条件表达式
+    body_statement        //当 test_expr 为真时重复执行 body_statement 语句</code></pre>
+<p>与 do-while 不同，while 循环<strong>第一次执行 body_statement 之前就会测试 test_expr</strong> 的值。如果初始条件不假（test_expr≠0），那么循环体一次都不会执行。</p>
+<p>为了用转移指令实现这一语义，编译器通常采用「<strong>先判断、再进入循环体</strong>」的策略。具体来说，可以将 while 循环转换为一个带前置判断的 do-while 式结构，如下所示：</p>
+<pre><code>    t=test_expr;          //计算初始循环条件
+    if(!t)                //若初始条件为假（t=0）
+        goto done;        //跳过循环体，直接转至结束点
+    do
+        body_statement    //执行循环体
+    while(test_expr);     //重新测试条件
+    done:                 //循环结构的结束点</code></pre>
+<p>进一步展开为纯 goto 语句的形式：</p>
+<pre><code>    t=test_expr;          //计算初始循环条件
+    if(!t)                //若为假
+        goto done;        //跳过循环
+    loop:
+    body_statement       //执行循环体
+    t=test_expr;         //重新计算条件
+    if(t)                //若仍为真
+        goto loop;       //继续下一轮
+    done:</code></pre>
+<p>这种转换确保了 while 循环「先判断、后执行」的语义，同时复用了 do-while 的结构。</p>
+
+<h4>3. for 循环</h4>
+<p>for 循环是一种语法更紧凑的循环形式，其通用形式如下：</p>
+<pre><code>for(init_expr; test_expr; update_expr)
+    body_statement        //body_statement 为循环体执行语句</code></pre>
+<p>init_expr 为初始化表达式，用于初始化循环计数器（如 i=0）；test_expr 为条件判断表达式，每次执行循环体前测试（如 i&lt;10）；update_expr 为更新表达式，每次循环体执行完后执行（如 i++）。</p>
+<p>从执行逻辑上看，for 循环完全等价于下面这个 while 循环代码：</p>
+<pre><code>    init_expr;            //初始化（只执行一次）
+    while(test_expr){
+        body_statement    //执行循环体
+        update_expr;      //更新循环变量
+    }</code></pre>
+<p>因此，可以先将 for 循环转为 while 形式，再按照前述方法转换为 goto 语句：</p>
+<pre><code>    init_expr;            //执行初始化
+    t=test_expr;          //测试循环条件
+    if(!t)                //若初始条件为假
+        goto done;        //跳过循环
+    loop:
+    body_statement       //执行循环体
+    update_expr;         //更新循环变量
+    t=test_expr;          //重新测试条件
+    if(t)                //若条件为真
+        goto loop;       //跳回循环体
+    done:</code></pre>
+<p>下面以一个具体的 C 语言函数为例，展示 for 循环如何被转换为汇编代码：</p>
+<pre><code>int nsum_for(int n){
+    int i;
+    int result = 0;
+    for(i=1; i&lt;=n; i++)
+        result += i;
+    return result;
+}</code></pre>
+<p>在这段代码中，for 循环的各个组成部分如下：</p>
+<pre><code>init_expr           i=1
+test_expr           i&lt;=n
+update_expr         i++
+body_statement      result += i</code></pre>
+<p>通过替换前面给出的模板中的相应位置，很容易将 for 循环转换为 while 或 do-while 循环。将这个函数翻译为 goto 语句代码后，不难得出其过程体的汇编代码：</p>
+<pre><code>mov ecx, dword ptr [ebp+8]    #R[ecx]←M[R[ebp]+8]，即加载参数 n 到 ecx
+mov eax, 0                    #R[eax]←0，即初始化 result=0
+mov edx, 1                    #R[edx]←1，即初始化 i=1
+cmp edx, ecx                  #比较 i 与 n（R[edx] 与 R[ecx]）并设置标志位
+jg .L2                        #If greater，则转移到 L2
+.L1:                          #循环体入口
+add eax, edx                  #R[eax]←R[eax]+R[edx]，即 result += i
+add edx, 1                    #R[edx]←R[edx]+1，即 i++
+cmp edx, ecx                  #再次比较 i 与 n
+jle .L1                       #If less or equal，则转移到 L1
+.L2:                          #循环结束点</code></pre>
+<p>已知变量 n 已被压入调用函数的栈帧，其对应的存储地址为 R[ebp]+8。编译器将<strong>频繁使用的局部变量优化到寄存器</strong>中：此处，result 被分配到 eax（同时也是返回值寄存器），i 被分配到 edx。由于 i 与 n 均为 int 型，判断条件 i&lt;=n 属于<strong>有符号数比较</strong>，因此使用 jle 和 jg 等<strong>有符号</strong>转移指令。</p>
+<div class="callout warn">
+<span class="tag">易混</span>同样是「≤」，指针比较用 <strong>jbe</strong>（无符号），int 变量比较用 <strong>jle</strong>（有符号）——条件转移指令选谁，取决于参与比较的操作数按什么数解释，这是选择语句和循环语句综合题里最隐蔽的采分点。
+</div>
+
+<h3><span class="sec-id">4.3.4</span>过程调用的机器级表示</h3>
+<p>在程序执行过程中，当一个过程（函数）调用另一个过程时，需要完成<strong>参数传递、控制转移、现场保护与返回</strong>等一系列操作。x86 架构通过 <strong>call 和 ret 指令</strong>支持这一机制，它们都属于<strong>无条件转移指令</strong>，但配合栈的使用，实现了完整的「调用—返回」语义。</p>
+<p>假定过程 P（调用者）调用过程 Q（被调用者），被调用过程的执行步骤如下：</p>
+<ol>
+<li>P 将<strong>入口参数（实参）</strong>放到 Q 能访问到的地方；</li>
+<li>P 执行 <strong>call 指令</strong>，将返回地址（call 的下一条指令地址）压入栈中，并转移到 Q；</li>
+<li>Q 建立<strong>自己的栈帧</strong>，为局部变量分配空间，并在必要时保存某些寄存器；</li>
+<li>Q 执行主体代码；</li>
+<li>Q 将<strong>返回结果</strong>放到约定位置，释放局部变量空间，并恢复之前保存的寄存器；</li>
+<li>Q 执行 <strong>ret 指令</strong>，从栈顶弹出返回地址，并转移到 P 继续执行。</li>
+</ol>
+<p>上述过程中，入口参数、返回地址、局部变量、返回结果以及需保护的寄存器内容，都需要在内存中的某个位置保存。由于寄存器数量有限，调用双方若共用寄存器资源，若不加保护地直接覆盖，将导致程序出错。因此，调用约定做了如下重要规定：寄存器 <strong>EAX、ECX、EDX 是调用者保存寄存器</strong>。若 P 想在调用后仍使用这些寄存器的值，则 P 必须在调用前自行保存（如压栈），并在返回后恢复。寄存器 <strong>EBX、ESI、EDI 是被调用者保存寄存器</strong>：若 Q 需要使用这些寄存器，则 Q 必须在使用前将它们保存到栈中，并在返回前恢复。</p>
+<p>每当一个过程在执行时，都会在运行时栈中分配一块<strong>栈帧</strong>区域，称为栈帧。整个运行时栈由多个连续的栈帧组成。<strong>EBP（基址指针）指向当前栈帧的基址</strong>（保存旧 EBP 的位置），<strong>ESP（栈指针）始终指向当前栈顶</strong>，栈从高地址向低地址增长。有了栈帧，ESP 随着数据的入栈/出栈动态变化，而 EBP 在当前过程执行期间保持不变，使过程能通过固定偏移量访问参数和局部变量。</p>
+<p>下面用一个简单的 C 语言程序来说明过程调用的机器级实现。</p>
+<pre><code>int addint(int x, int y){
+    return x+y;
+}
+
+int caller(){
+    int temp1=125;
+    int temp2=80;
+    int sum=add(temp1, temp2);
+    return sum;
+}</code></pre>
+<p>经 GCC 编译后，caller 对应的汇编代码如下：</p>
+<pre><code>push ebp                        #保存调用者 P 的 EBP
+mov ebp, esp                    #建立栈帧：EBP←当前栈顶
+sub esp, 24                     #为局部变量和参数区分配 24 字节空间
+mov [ebp-12], 125               #即 temp1=125
+mov [ebp-8], 80                 #即 temp2=80
+mov eax, dword ptr [ebp-8]      #R[eax]←M[R[ebp]-8]，即 temp2
+mov [esp+4], eax                #M[R[esp]+4]←R[eax]，将 temp2 放入参数区高地址
+mov eax, dword ptr [ebp-12]     #R[eax]←M[R[ebp]-12]，即 temp1
+mov [esp], eax                  #M[R[esp]]←R[eax]，将 temp1 放入参数区低地址
+call addint                     #调用 addint，返回值将保存于 EAX
+mov [ebp-4], eax                #M[R[ebp]-4]←R[eax]，将返回值保存到 sum
+mov eax, dword ptr [ebp-4]      #R[eax]←M[R[ebp]-4]，将 sum 作为返回值
+leave                           #等价于 mov esp,ebp 和 pop ebp
+ret                             #弹出返回地址并返回</code></pre>
+<p>假设 caller 被过程 P 调用。在执行完「sub esp, 24」后，caller 的栈帧已建立，ESP 指向新栈顶。GCC 为 caller 分配了 24 字节的空间，从代码可见：</p>
+<ul>
+<li>caller 仅使用了 EAX（属调用者保存寄存器），没有使用任何被调用者保存寄存器，因此其栈帧中除了通过「push ebp」保存调用者 P 的旧 EBP 外，无须保存其他寄存器；</li>
+<li>caller 的三个局部变量 temp1、temp2 和 sum 被分配在栈帧中，共 12 字节；</li>
+<li>在 call 指令调用 addint 之前，caller 依次将入口参数 temp2 和 temp1 的值（80 和 125）写入参数区：temp1 在低地址（[esp]），temp2 在高地址（[esp+4]）——参数入栈顺序与形参表相反（从右到左），参数区共占 8 字节；</li>
+<li>执行 call 指令时把返回地址压入栈中，占 4 字节。</li>
+</ul>
+<p>包括最初压入栈中的旧 EBP 值（4 字节）在内，caller 栈帧实际使用的大小是 \(4+12+8+4=28\) 字节。然而，由于 GCC 为了保证数据的严格对齐，规定每个函数的栈帧大小必须是 <strong>16 字节的倍数</strong>，最终分配的栈帧大小为 <strong>32 字节</strong>，这意味着有 4 字节（未使用）作为对齐填充。</p>
+<p>call 指令执行后，add 函数的返回值保存在 EAX 中。因此，call 指令后面的两条指令分别完成：指令「mov [ebp-4], eax」将 add 的结果保存在变量 sum 的存储位置，该变量位于地址 R[ebp]-4；指令「mov eax, dword ptr [ebp-4]」再将 sum 的值加载到 EAX，作为 caller 的返回值。</p>
+<p>在执行 ret 指令之前，必须释放当前栈帧并恢复调用者 P 的栈顶指针。上述第 14 行 leave 指令正是用于完成这一任务，其功能等价于下面两条指令：</p>
+<pre><code>mov esp, ebp     #将栈指针 ESP 设置为当前 EBP 的值，即指向保存旧 EBP 的位置
+pop ebp          #从栈中弹出旧 EBP 值，恢复调用过程 P 的基址指针</code></pre>
+<p>执行完这两条指令后，EBP 已恢复为过程 P 中的原值，而 ESP 则指向栈顶的返回地址。此时，ret 指令便可从 ESP 所指位置取出该返回地址，并转移回过程 P 继续执行。当然，编译器也可以不使用 leave 指令，而是通过显式的 pop 操作配合对 ESP 的调整来实现栈帧的回收。</p>
+<p>add 过程经 GCC 编译并链接后，对应的机器代码如下：</p>
+<figure>
+<img src="../assets/ch4/fig-p193.png" alt="add过程经GCC编译链接后的机器代码" loading="lazy">
+<figcaption>add过程经GCC编译链接后的机器代码（虚拟地址-机器码-汇编对照，王道教材）</figcaption>
+</figure>
+<p>通常，一个过程的机器级代码可分为三个部分：<strong>准备阶段、过程体和结束阶段</strong>。</p>
+<ul>
+<li><strong>准备阶段（第 1、2 行）</strong>：「push ebp」将 caller 的 EBP 值保存到栈中，随后「mov ebp, esp」使 EBP 指向当前栈帧的基址。EBP 指向 add 栈帧底部，这里 add 的入口参数 x 和 y 对应的值（125 和 80）分别在地址为 R[ebp]+8、R[ebp]+12 的存储单元中；</li>
+<li><strong>过程体（第 3、4、5 行）</strong>：第 3 行将 y（[ebp+12]）加载到 EAX，第 4 行将 x（[ebp+8]）加载到 EDX，第 5 行使用 lea 指令计算 edx+eax，并将结果存回 EAX，作为函数的返回值。这里好像没有加法指令，实际上 lea 指令执行的是加法运算 R[edx]+R[eax]=x+y；</li>
+<li><strong>结束阶段（第 6、7 行）</strong>：「pop ebp」恢复 caller 的 EBP 值，使栈帧指针回到调用前的状态；随后 ret 指令从栈顶弹出返回地址，并转移回调用点。此时栈顶正是 call 指令执行时压入的返回地址，对应 caller 中紧跟在「call addint」之后的那条指令（mov [ebp-4], eax）。</li>
+</ul>
+<p>由于 add 过程不包含局部变量，未使用任何被调用者保存的寄存器，且不再调用其他过程（没有入口参数和返回地址以外的访存），因此其栈帧结构极为简洁：仅需保存 EBP 以维持调用链的完整性，无须额外空间用于寄存器保存、局部变量或嵌套调用。</p>
+<div class="callout exam">
+<span class="tag">考点</span>过程调用综合题的标准套路：①按「实参入栈（从右到左）→ call 压返回地址 → 保存旧 EBP → 建新栈帧」的顺序推算每个变量的栈内地址（相对 EBP/ESP 的偏移）；②记住 <strong>EAX/ECX/EDX 调用者保存、EBX/ESI/EDI 被调用者保存</strong>的约定；③返回值永远约定放在 EAX；④leave = mov esp,ebp + pop ebp。
+</div>
+<div class="callout tip">
+<span class="tag">小结</span>本节主线：「寄存器 → 传送/算逻/控制流三类指令 → 条件码（CF/ZF/SF/OF）+ cmp/test + j&lt;condition&gt; 组合出选择与循环 → call/ret + 栈帧完成过程调用」。选择与循环的汇编题先找「比较点」（cmp/test）和「跳转点」（j× 与标签），过程调用题先画栈帧再算偏移。
+</div>
+
+<div class="pager">
+  <a class="prev" href="s-42.html"><span class="dir">上一篇</span>4.2 指令的寻址方式</a>
+  <a class="next" href="s-44.html"><span class="dir">下一篇</span>4.4 CISC 和 RISC 的基本概念</a>
+</div>
+</main>
+<footer class="site-footer"><div class="inner">
+  <p>本站为个人学习用途整理，内容与插图取自王道《计算机组成原理考研复习指导》，版权归原出版方所有，仅供交流，请勿商用。</p>
+  <p><a href="../index.html">← 返回首页</a> · <a href="quiz.html">本章习题</a></p>
+</div></footer>
+</body>
+</html>
