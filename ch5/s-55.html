@@ -8,17 +8,95 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
 <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+<script defer src="../assets/app.js?v=1"></script>
 </head>
-<body>
-<header class="site-header"><div class="inner">
-  <a class="site-title" href="../index.html">408 计算机组成原理带学</a>
-  <nav class="chapnav">
-    <a href="../index.html">首页</a>
-    <a href="index.html" class="cur">第5章</a>
-    <a href="quiz.html">本章习题</a>
-  </nav>
+<body data-root="../" data-page="ch5/s-55.html">
+<header class="topbar"><div class="topbar-inner">
+  <button id="menuBtn" class="icon-btn side-only" aria-label="打开目录">☰</button>
+  <a class="topbar-brand" href="../index.html">408计组带学<span class="topbar-tag">清爽带学 · 教材 × 大纲 × 真题</span></a>
+  <div class="searchbox"><span class="search-ico">🔍</span>
+    <input id="searchBox" type="search" placeholder="搜索知识点 / 小节 / 习题…" autocomplete="off">
+    <ul id="searchResults"></ul>
+  </div>
+  <div class="topbar-actions">
+    <button id="fontMinus" class="icon-btn" title="减小字号">A-</button>
+    <button id="fontPlus" class="icon-btn" title="增大字号">A+</button>
+    <button id="themeBtn" class="icon-btn" title="切换夜间模式">🌙</button>
+  </div>
 </div></header>
-<main>
+<aside class="sidebar">
+<div class="side-brand"><div class="side-logo">温故知新</div><div class="side-brand-t1">408计组 · 带学手册</div><div class="side-brand-t2">王道蓝本 · 紧扣考纲 · 学练结合</div></div>
+<div class="side-group"><div class="side-group-head"><span>王道计组同步精讲</span><span class="side-counter" data-counter-group="g1"></span></div><ul>
+<li class="side-item side-ch" data-ch="1"><a href="../ch1/index.html">第1章 计算机系统概述</a><button class="side-arrow" aria-label="展开目录">▶</button></li>
+<ul class="side-sub">
+<li><a data-page-id="ch1/index.html" data-group="g1" href="../ch1/index.html">本章导学</a></li>
+<li><a data-page-id="ch1/s-11.html" data-group="g1" href="../ch1/s-11.html">*1.1 计算机发展历程</a></li>
+<li><a data-page-id="ch1/s-12.html" data-group="g1" href="../ch1/s-12.html">1.2 计算机系统层次结构</a></li>
+<li><a data-page-id="ch1/s-13.html" data-group="g1" href="../ch1/s-13.html">1.3 计算机的性能指标</a></li>
+<li><a data-page-id="ch1/quiz.html" data-group="g1" href="../ch1/quiz.html">本章习题</a></li>
+</ul>
+<li class="side-item side-ch" data-ch="2"><a href="../ch2/index.html">第2章 数据的表示和运算</a><button class="side-arrow" aria-label="展开目录">▶</button></li>
+<ul class="side-sub">
+<li><a data-page-id="ch2/index.html" data-group="g1" href="../ch2/index.html">本章导学</a></li>
+<li><a data-page-id="ch2/s-21.html" data-group="g1" href="../ch2/s-21.html">2.1 数制与编码</a></li>
+<li><a data-page-id="ch2/s-22.html" data-group="g1" href="../ch2/s-22.html">2.2 运算方法和运算电路</a></li>
+<li><a data-page-id="ch2/s-23.html" data-group="g1" href="../ch2/s-23.html">2.3 浮点数的表示与运算</a></li>
+<li><a data-page-id="ch2/quiz.html" data-group="g1" href="../ch2/quiz.html">本章习题</a></li>
+</ul>
+<li class="side-item side-ch" data-ch="3"><a href="../ch3/index.html">第3章 存储系统</a><button class="side-arrow" aria-label="展开目录">▶</button></li>
+<ul class="side-sub">
+<li><a data-page-id="ch3/index.html" data-group="g1" href="../ch3/index.html">本章导学</a></li>
+<li><a data-page-id="ch3/s-31.html" data-group="g1" href="../ch3/s-31.html">3.1 存储器概述</a></li>
+<li><a data-page-id="ch3/s-32.html" data-group="g1" href="../ch3/s-32.html">3.2 主存储器</a></li>
+<li><a data-page-id="ch3/s-33.html" data-group="g1" href="../ch3/s-33.html">3.3 主存与CPU的连接</a></li>
+<li><a data-page-id="ch3/s-34.html" data-group="g1" href="../ch3/s-34.html">3.4 外部存储器</a></li>
+<li><a data-page-id="ch3/s-35.html" data-group="g1" href="../ch3/s-35.html">3.5 高速缓冲存储器</a></li>
+<li><a data-page-id="ch3/s-36.html" data-group="g1" href="../ch3/s-36.html">3.6 虚拟存储器</a></li>
+<li><a data-page-id="ch3/quiz.html" data-group="g1" href="../ch3/quiz.html">本章习题</a></li>
+</ul>
+<li class="side-item side-ch" data-ch="4"><a href="../ch4/index.html">第4章 指令系统</a><button class="side-arrow" aria-label="展开目录">▶</button></li>
+<ul class="side-sub">
+<li><a data-page-id="ch4/index.html" data-group="g1" href="../ch4/index.html">本章导学</a></li>
+<li><a data-page-id="ch4/s-41.html" data-group="g1" href="../ch4/s-41.html">4.1 指令系统</a></li>
+<li><a data-page-id="ch4/s-42.html" data-group="g1" href="../ch4/s-42.html">4.2 指令的寻址方式</a></li>
+<li><a data-page-id="ch4/s-43.html" data-group="g1" href="../ch4/s-43.html">4.3 程序的机器级代码表示</a></li>
+<li><a data-page-id="ch4/s-44.html" data-group="g1" href="../ch4/s-44.html">4.4 CISC和RISC</a></li>
+<li><a data-page-id="ch4/quiz.html" data-group="g1" href="../ch4/quiz.html">本章习题</a></li>
+</ul>
+<li class="side-item side-ch" data-ch="5"><a href="../ch5/index.html">第5章 中央处理器</a><button class="side-arrow" aria-label="展开目录">▶</button></li>
+<ul class="side-sub">
+<li><a data-page-id="ch5/index.html" data-group="g1" href="../ch5/index.html">本章导学</a></li>
+<li><a data-page-id="ch5/s-51.html" data-group="g1" href="../ch5/s-51.html">5.1 CPU的功能和基本结构</a></li>
+<li><a data-page-id="ch5/s-52.html" data-group="g1" href="../ch5/s-52.html">5.2 指令执行过程</a></li>
+<li><a data-page-id="ch5/s-53.html" data-group="g1" href="../ch5/s-53.html">5.3 数据通路</a></li>
+<li><a data-page-id="ch5/s-54.html" data-group="g1" href="../ch5/s-54.html">5.4 控制器</a></li>
+<li><a class="active" data-page-id="ch5/s-55.html" data-group="g1" href="../ch5/s-55.html">5.5 异常和中断机制</a></li>
+<li><a data-page-id="ch5/s-56.html" data-group="g1" href="../ch5/s-56.html">5.6 指令流水线</a></li>
+<li><a data-page-id="ch5/s-57.html" data-group="g1" href="../ch5/s-57.html">5.7 多处理器的基本概念</a></li>
+<li><a data-page-id="ch5/quiz.html" data-group="g1" href="../ch5/quiz.html">本章习题</a></li>
+</ul>
+<li class="side-item side-ch" data-ch="6"><a href="../ch6/index.html">第6章 总线</a><button class="side-arrow" aria-label="展开目录">▶</button></li>
+<ul class="side-sub">
+<li><a data-page-id="ch6/index.html" data-group="g1" href="../ch6/index.html">本章导学</a></li>
+<li><a data-page-id="ch6/s-61.html" data-group="g1" href="../ch6/s-61.html">6.1 总线概述</a></li>
+<li><a data-page-id="ch6/s-62.html" data-group="g1" href="../ch6/s-62.html">6.2 总线事务和定时</a></li>
+<li><a data-page-id="ch6/quiz.html" data-group="g1" href="../ch6/quiz.html">本章习题</a></li>
+</ul>
+<li class="side-item side-ch" data-ch="7"><a href="../ch7/index.html">第7章 输入/输出系统</a><button class="side-arrow" aria-label="展开目录">▶</button></li>
+<ul class="side-sub">
+<li><a data-page-id="ch7/index.html" data-group="g1" href="../ch7/index.html">本章导学</a></li>
+<li><a data-page-id="ch7/s-71.html" data-group="g1" href="../ch7/s-71.html">*7.1 I/O系统基本概念</a></li>
+<li><a data-page-id="ch7/s-72.html" data-group="g1" href="../ch7/s-72.html">7.2 I/O接口</a></li>
+<li><a data-page-id="ch7/s-73.html" data-group="g1" href="../ch7/s-73.html">7.3 I/O方式</a></li>
+<li><a data-page-id="ch7/quiz.html" data-group="g1" href="../ch7/quiz.html">本章习题</a></li>
+</ul>
+</ul></div>
+<div class="side-group"><div class="side-group-head"><span>备考工具</span></div><ul><li class="side-item"><a href="../index.html#syllabus">408 考纲对照</a></li><li class="side-item"><a href="../index.html#guide">使用说明</a></li></ul></div>
+</aside>
+<div class="side-backdrop"></div>
+<div class="main-wrap">
+<main class="main-content">
+<div class="content-card">
 <nav class="crumbs"><a href="../index.html">首页</a> / <a href="index.html">第5章 中央处理器</a> / 5.5 异常和中断机制</nav>
 
 <h1>5.5 异常和中断机制</h1>
@@ -90,10 +168,14 @@
   <a class="prev" href="s-54.html"><span class="dir">上一篇</span>5.4 控制器的功能和工作原理</a>
   <a class="next" href="s-56.html"><span class="dir">下一篇</span>5.6 指令流水线</a>
 </div>
+
+
+</div>
 </main>
-<footer class="site-footer"><div class="inner">
-  <p>本站为个人学习用途整理，内容与插图取自王道《计算机组成原理考研复习指导》，版权归原出版方所有，仅供交流，请勿商用。</p>
-  <p><a href="../index.html">← 返回首页</a> · <a href="quiz.html">本章习题</a></p>
-</div></footer>
+<footer class="site-footer">
+<p>本站为个人学习用途整理，内容与插图取自王道《计算机组成原理考研复习指导》，版权归原出版方所有，仅供交流，请勿商用。</p>
+<p><a href="../index.html">← 返回首页</a> · 进度与打卡保存在本机浏览器中</p>
+</footer>
+</div>
 </body>
 </html>
